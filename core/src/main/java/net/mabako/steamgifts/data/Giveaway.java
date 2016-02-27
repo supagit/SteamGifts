@@ -256,7 +256,11 @@ public class Giveaway extends BasicGiveaway implements IEndlessAdaptable {
     }
 
     public double getEntryRatio() {
-        return (double)copies / entries;
+        if (entries > 0) {
+            return (double) copies / entries;
+        } else {
+            return 0;
+        }
     }
 
     private int calculateRatioColor(double power) {

@@ -86,10 +86,12 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
         giveawayName.setText(giveaway.getTitle());
 
         double entryRatio = giveaway.getEntryRatio();
-        NumberFormat formatter = new DecimalFormat("#0.000");
-        giveawayRatio.setText(formatter.format(entryRatio*500));
-        giveawayRatio.setTextColor(giveaway.getRatioColor());
-        giveawayRatio.setBackgroundColor(Color.WHITE);
+        if (Math.abs(entryRatio)>0.1e-8) {
+            NumberFormat formatter = new DecimalFormat("#0.000");
+            giveawayRatio.setText(formatter.format(entryRatio * 500));
+            giveawayRatio.setTextColor(giveaway.getRatioColor());
+            giveawayRatio.setBackgroundColor(Color.WHITE);
+        }
 
         if (giveaway.getEndTime() != null) {
             giveawayTime.setText(giveaway.getShortRelativeEndTime(activity) + " (" + giveaway.getShortRelativeCreatedTime(activity)+")");
