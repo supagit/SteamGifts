@@ -128,7 +128,7 @@ public class GiveawayListFragment extends SearchableListFragment<GiveawayAdapter
     @NonNull
     @Override
     protected GiveawayAdapter createAdapter() {
-        return new GiveawayAdapter(50, true, PreferenceManager.getDefaultSharedPreferences(getContext()));
+        return new GiveawayAdapter(getActivity(), 50, true, PreferenceManager.getDefaultSharedPreferences(getContext()));
     }
 
     @Override

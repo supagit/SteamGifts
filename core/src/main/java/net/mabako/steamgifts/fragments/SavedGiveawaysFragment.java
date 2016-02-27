@@ -1,5 +1,6 @@
 package net.mabako.steamgifts.fragments;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -124,7 +125,7 @@ public class SavedGiveawaysFragment extends ListFragment<SavedGiveawaysFragment.
     @NonNull
     @Override
     protected SavedGiveawaysAdapter createAdapter() {
-        return new SavedGiveawaysAdapter(-1, false, PreferenceManager.getDefaultSharedPreferences(getContext()));
+        return new SavedGiveawaysAdapter(getActivity(), -1, false, PreferenceManager.getDefaultSharedPreferences(getContext()));
     }
 
     @Override
@@ -253,8 +254,8 @@ public class SavedGiveawaysFragment extends ListFragment<SavedGiveawaysFragment.
     public static class SavedGiveawaysAdapter extends GiveawayAdapter {
         private static final long serialVersionUID = -6841859269105451683L;
 
-        private SavedGiveawaysAdapter(int itemsPerPage, boolean filterItems, SharedPreferences sharedPreferences) {
-            super(itemsPerPage, filterItems, sharedPreferences);
+        private SavedGiveawaysAdapter(Activity context, int itemsPerPage, boolean filterItems, SharedPreferences sharedPreferences) {
+            super(context, itemsPerPage, filterItems, sharedPreferences);
         }
 
         public int getEnteredItemCount() {

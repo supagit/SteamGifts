@@ -3,12 +3,14 @@
     <string-array name="preference_giveaway_load_images_entries">
         <item>Never</item>
         <item>Only on giveaway pages</item>
+        <item>Always on Wifi</item>
         <item>Always</item>
     </string-array>
 
     <string-array name="preference_giveaway_load_images_entry_values">
         <item>-</item>
         <item>details</item>
+        <item>details;wifi</item>
         <item>details;list</item>
     </string-array>
 

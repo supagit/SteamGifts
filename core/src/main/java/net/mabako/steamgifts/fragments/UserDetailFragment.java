@@ -340,7 +340,7 @@ public class UserDetailFragment extends Fragment implements IUserNotifications, 
         @NonNull
         @Override
         protected GiveawayAdapter createAdapter() {
-            return new GiveawayAdapter(25, PreferenceManager.getDefaultSharedPreferences(getContext()));
+            return new GiveawayAdapter(getActivity(), 25, PreferenceManager.getDefaultSharedPreferences(getContext()));
         }
 
         @Override

@@ -1,10 +1,14 @@
 package net.mabako.steamgifts.adapters;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 
 import net.mabako.steamgifts.adapters.viewholder.GiveawayListItemViewHolder;
@@ -52,14 +56,30 @@ public class GiveawayAdapter extends EndlessAdapter {
      */
     private final boolean loadImages;
 
-    public GiveawayAdapter(int itemsPerPage, SharedPreferences sharedPreferences) {
-        this(itemsPerPage, false, sharedPreferences);
+    public GiveawayAdapter(Activity context, int itemsPerPage, SharedPreferences sharedPreferences) {
+        this(context, itemsPerPage, false, sharedPreferences);
     }
 
-    public GiveawayAdapter(int itemsPerPage, boolean filterItems, SharedPreferences sharedPreferences) {
+    public GiveawayAdapter(Activity context, int itemsPerPage, boolean filterItems, SharedPreferences sharedPreferences) {
+        this.context = context;
         this.itemsPerPage = itemsPerPage;
         this.filterItems = filterItems;
-        this.loadImages = sharedPreferences.getString("preference_giveaway_load_images", "details;list").contains("list");
+        if (this.context != null && sharedPreferences.getString("preference_giveaway_load_images", "details;list").contains("wifi")) {
+            this.loadImages = isConnectedToWifi("loadImage", this.context);
+        } else {
+            this.loadImages = sharedPreferences.getString("preference_giveaway_load_images", "details;list").contains("list");
+        }
+    }
+
+    private static boolean isConnectedToWifi(final String tag, final Context context) {
+        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = cm.getActiveNetworkInfo();
+        if (activeNetworkInfo == null || !activeNetworkInfo.isConnected() || activeNetworkInfo.getType() != ConnectivityManager.TYPE_WIFI) {
+            Log.v(tag, "Not checking for messages due to network info: " + activeNetworkInfo);
+            return false;
+        }
+
+        return true;
     }
 
     public void setFragmentValues(@NonNull Activity activity, @NonNull ListFragment fragment, SavedGiveaways savedGiveaways) {

@@ -53,6 +53,10 @@ public abstract class AbstractNotificationCheckReceiver extends BroadcastReceive
             return false;
         }
 
+        return isConnectedToWifi(tag, context);
+    }
+
+    public static boolean isConnectedToWifi(final String tag, final Context context) {
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetworkInfo = cm.getActiveNetworkInfo();
         if (activeNetworkInfo == null || !activeNetworkInfo.isConnected() || activeNetworkInfo.getType() != ConnectivityManager.TYPE_WIFI) {

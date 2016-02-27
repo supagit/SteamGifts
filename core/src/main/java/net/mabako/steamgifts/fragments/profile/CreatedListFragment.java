@@ -41,7 +41,7 @@ public class CreatedListFragment extends ListFragment<GiveawayAdapter> implement
     @NonNull
     @Override
     protected GiveawayAdapter createAdapter() {
-        return new GiveawayAdapter(50, PreferenceManager.getDefaultSharedPreferences(getContext()));
+        return new GiveawayAdapter(getActivity(), 50, PreferenceManager.getDefaultSharedPreferences(getContext()));
     }
 
     @Override

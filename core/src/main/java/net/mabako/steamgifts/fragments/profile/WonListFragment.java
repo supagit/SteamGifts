@@ -38,7 +38,7 @@ public class WonListFragment extends ListFragment<GiveawayAdapter> implements IA
     @NonNull
     @Override
     protected GiveawayAdapter createAdapter() {
-        return new GiveawayAdapter(50, PreferenceManager.getDefaultSharedPreferences(getContext()));
+        return new GiveawayAdapter(getActivity(), 50, PreferenceManager.getDefaultSharedPreferences(getContext()));
     }
 
     @Override
