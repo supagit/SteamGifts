@@ -1,6 +1,8 @@
 package net.mabako.steamgifts.data;
 
+import android.app.Activity;
 import android.content.Context;
+import android.graphics.Color;
 import android.support.annotation.NonNull;
 
 import net.mabako.steamgifts.adapters.IEndlessAdaptable;
@@ -127,8 +129,16 @@ public class Giveaway extends BasicGiveaway implements IEndlessAdaptable {
         return endTime != null ? endTime.toString(context) : null;
     }
 
+    public String getShortRelativeEndTime(Context context) {
+        return endTime != null ? endTime.toString(context, true) : null;
+    }
+
     public String getRelativeCreatedTime(Context context) {
         return createdTime != null ? createdTime.toString(context) : null;
+    }
+
+    public String getShortRelativeCreatedTime(Context context) {
+        return createdTime != null ? createdTime.toString(context, true) : null;
     }
 
     public boolean isOpen() {
@@ -243,5 +253,24 @@ public class Giveaway extends BasicGiveaway implements IEndlessAdaptable {
 
     public Game getGame() {
         return game;
+    }
+
+    public double getEntryRatio() {
+        return (double)copies / entries;
+    }
+
+    private int calculateRatioColor(double power) {
+        if (power>=1) {
+            power = 1;
+        }
+        int R = (int)(255* (1-power));
+        int G = (int)(255* power);
+        int B = 0;
+
+        return Color.argb(255, R, G, B);
+    }
+
+    public int getRatioColor() {
+        return calculateRatioColor(getEntryRatio()*500);
     }
 }

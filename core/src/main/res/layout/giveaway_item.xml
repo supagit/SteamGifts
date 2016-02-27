@@ -30,15 +30,37 @@
             android:orientation="vertical"
             android:padding="4dp">
 
-            <TextView
-                android:id="@+id/giveaway_name"
-                style="@style/NormalText"
+            <RelativeLayout
+                android:id="@+id/header_container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="start"
-                android:singleLine="true"
-                android:text="Name of the Game"
-                android:textAlignment="viewStart" />
+                android:layout_toRightOf="@+id/giveaway_image"
+                android:layout_weight="1"
+                android:orientation="horizontal"
+                android:padding="4dp">
+
+                <TextView
+                    android:id="@+id/giveaway_name"
+                    style="@style/NormalText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="start"
+                    android:singleLine="true"
+                    android:text="Name of the Game"
+                    android:textAlignment="viewStart" />
+
+                <TextView
+                    android:id="@+id/giveaway_ratio"
+                    style="@style/NormalText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    android:singleLine="true"
+                    android:layout_alignParentRight="true"
+                    android:text="Ratio"
+                    android:textAlignment="viewEnd" />
+
+            </RelativeLayout>
 
             <RelativeLayout
                 android:layout_width="match_parent"

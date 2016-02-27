@@ -2,6 +2,7 @@ package net.mabako.steamgifts.adapters.viewholder;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Color;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -31,6 +32,8 @@ import net.mabako.steamgifts.fragments.interfaces.IHasEnterableGiveaways;
 import net.mabako.steamgifts.persistentdata.SavedGiveaways;
 import net.mabako.steamgifts.persistentdata.SteamGiftsUserData;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.Locale;
 
 public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnCreateContextMenuListener, MenuItem.OnMenuItemClickListener {
@@ -39,6 +42,7 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
     private final View itemContainer;
     private final TextView giveawayDetails;
     private final TextView giveawayName;
+    private final TextView giveawayRatio;
     private final TextView giveawayTime;
     private final ImageView giveawayImage;
 
@@ -55,6 +59,7 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
         super(v);
         itemContainer = v.findViewById(R.id.list_item);
         giveawayName = (TextView) v.findViewById(R.id.giveaway_name);
+        giveawayRatio = (TextView) v.findViewById(R.id.giveaway_ratio);
         giveawayDetails = (TextView) v.findViewById(R.id.giveaway_details);
         giveawayTime = (TextView) v.findViewById(R.id.time);
         giveawayImage = (ImageView) v.findViewById(R.id.giveaway_image);
@@ -75,11 +80,19 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
         v.setOnCreateContextMenuListener(this);
     }
 
+
+
     public void setFrom(Giveaway giveaway, boolean showImage) {
         giveawayName.setText(giveaway.getTitle());
 
+        double entryRatio = giveaway.getEntryRatio();
+        NumberFormat formatter = new DecimalFormat("#0.000");
+        giveawayRatio.setText(formatter.format(entryRatio*500));
+        giveawayRatio.setTextColor(giveaway.getRatioColor());
+        giveawayRatio.setBackgroundColor(Color.WHITE);
+
         if (giveaway.getEndTime() != null) {
-            giveawayTime.setText(giveaway.getRelativeEndTime(activity));
+            giveawayTime.setText(giveaway.getShortRelativeEndTime(activity) + " (" + giveaway.getShortRelativeCreatedTime(activity)+")");
         } else {
             giveawayTime.setVisibility(View.GONE);
         }

@@ -74,32 +74,36 @@ public class CustomDateTime implements Serializable {
     }
 
     public String toString(Context context) {
+        return toString(context, false);
+    }
+
+    public String toString(Context context, boolean useAbbreviation) {
         final long realTimeDiff = (Calendar.getInstance().getTimeInMillis() - calendar.getTimeInMillis()) / 1000;
         long timeDiff = Math.abs(realTimeDiff);
 
         if (timeDiff < 60)
-            return toString(timeDiff, realTimeDiff, "second");
+            return toString(timeDiff, realTimeDiff, useAbbreviation ? "s" : "second",useAbbreviation);
         timeDiff /= 60;
 
         if (timeDiff < 60)
-            return toString(timeDiff, realTimeDiff, "minute");
+            return toString(timeDiff, realTimeDiff, useAbbreviation ? "m" : "minute", useAbbreviation);
         timeDiff /= 60;
 
         if (timeDiff < 24)
-            return toString(timeDiff, realTimeDiff, "hour");
+            return toString(timeDiff, realTimeDiff, useAbbreviation ? "h" : "hour", useAbbreviation);
         timeDiff /= 24;
 
         if (timeDiff <= 7)
-            return toString(timeDiff, realTimeDiff, "day");
+            return toString(timeDiff, realTimeDiff, useAbbreviation ? "d" : "day", useAbbreviation);
 
         if (timeDiff <= 30)
-            return toString(timeDiff / 7, realTimeDiff, "week");
+            return toString(timeDiff / 7, realTimeDiff, useAbbreviation ? "w": "week", useAbbreviation);
 
         return DateUtils.formatDateTime(context, calendar.getTimeInMillis(), DateUtils.FORMAT_SHOW_DATE | DateUtils.FORMAT_ABBREV_ALL);
     }
 
-    private String toString(long timeDiff, long realTimeDiff, String unit) {
-        String inWords = String.format("%d %s%s", timeDiff, unit, timeDiff == 1 ? "" : "s");
+    private String toString(long timeDiff, long realTimeDiff, String unit, boolean useAbbreviation) {
+        String inWords = String.format("%d %s%s", timeDiff, unit, useAbbreviation || timeDiff == 1 ? "" : "s");
         if (beginning && realTimeDiff > 0)
             // Giveaway already began, but we don't really know when it does actually -end-.
             return "Began already";
