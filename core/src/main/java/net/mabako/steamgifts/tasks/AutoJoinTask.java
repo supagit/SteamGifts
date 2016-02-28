@@ -135,7 +135,7 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
     private List<Giveaway> filterAndSortGiveaways(List<Giveaway> giveaways, Set<Integer> bookmarkedGameIds) {
         List<Giveaway> result = new ArrayList<>();
         for (Giveaway giveaway : giveaways) {
-            if (!giveaway.isEntered() && !giveaway.isLevelNegative()) {
+            if (!giveaway.isEntered() && !giveaway.isLevelNegative() && !SteamGiftsUserData.getCurrent(context).getName().equals(giveaway.getCreator())) {
                 final long realTimeDiff = Math.abs(Calendar.getInstance().getTimeInMillis() - giveaway.getEndTime().getTimeInMillis());
                 if (bookmarkedGameIds.contains(giveaway.getGameId()) || realTimeDiff <= autoJoinPeriod) {
                     result.add(giveaway);
