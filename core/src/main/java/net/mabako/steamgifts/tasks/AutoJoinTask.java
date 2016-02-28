@@ -4,6 +4,7 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.os.AsyncTask;
+import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
@@ -13,6 +14,7 @@ import net.mabako.steamgifts.core.R;
 import net.mabako.steamgifts.data.Giveaway;
 import net.mabako.steamgifts.fragments.GiveawayDetailFragment;
 import net.mabako.steamgifts.fragments.interfaces.IHasEnterableGiveaways;
+import net.mabako.steamgifts.persistentdata.SavedGiveaways;
 import net.mabako.steamgifts.persistentdata.SteamGiftsUserData;
 
 import org.jsoup.Connection;
@@ -25,13 +27,20 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Task to perform the auto joining
  */
 public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
+    enum AutoJoinOption {
+        ALWAYS_JOIN_GIVEAWAYS_FOR_BOOKMARKS,
+        AUTO_JOIN_ON_NON_WIFI_CONNECTION
+    }
+
     private Context context;
     private long autoJoinPeriod;
     private static final String TAG = AutoJoinTask.class.getSimpleName();
@@ -48,18 +57,46 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
         this.autoJoinPeriod = autoJoinPeriod;
     }
 
+    //TODO read options from settings
+    private boolean isOption(AutoJoinOption option) {
+        switch(option) {
+            case ALWAYS_JOIN_GIVEAWAYS_FOR_BOOKMARKS:
+                return true;
+            case AUTO_JOIN_ON_NON_WIFI_CONNECTION:
+                return true;
+        }
+        return false;
+    }
+
     protected Void doInBackground(Void... params) {
-        if (SteamGiftsUserData.getCurrent(context).isLoggedIn()) {
+        boolean doIt = isOption(AutoJoinOption.AUTO_JOIN_ON_NON_WIFI_CONNECTION) || Utils.isConnectedToWifi(TAG, context);
+
+        if (doIt && SteamGiftsUserData.getCurrent(context).isLoggedIn()) {
+            Set<Integer> bookmarkedGameIds = isOption(AutoJoinOption.ALWAYS_JOIN_GIVEAWAYS_FOR_BOOKMARKS) ? getBookMarkedGameIds() : new HashSet<Integer>();
+
             List<Giveaway> giveaways = loadGiveAways(context);
-            List<Giveaway> filteredGiveaways = filterAndSortGiveaways(giveaways);
-            List<Giveaway> giveAwaysToJoin = calculateGiveawaysToJoin(filteredGiveaways);
+            List<Giveaway> filteredGiveaways = filterAndSortGiveaways(giveaways, bookmarkedGameIds);
+            List<Giveaway> giveAwaysToJoin = calculateGiveawaysToJoin(filteredGiveaways, bookmarkedGameIds);
 
             requestEnterLeave(giveAwaysToJoin, foundXsrfToken);
+
         }
+
         return null;
     }
 
-    private List<Giveaway> calculateGiveawaysToJoin(List<Giveaway> filteredGiveaways) {
+    @NonNull
+    private Set<Integer> getBookMarkedGameIds() {
+        Set<Integer> bookmarkedGameIds = new HashSet<>();
+        SavedGiveaways savedGiveaways = new SavedGiveaways(context);
+        for (Giveaway giveaway : savedGiveaways.all()) {
+            bookmarkedGameIds.add(giveaway.getGameId());
+        }
+        savedGiveaways.close();
+        return bookmarkedGameIds;
+    }
+
+    private List<Giveaway> calculateGiveawaysToJoin(List<Giveaway> filteredGiveaways, Set<Integer> bookmarkedGameIds) {
         points = SteamGiftsUserData.getCurrent(context).getPoints();
 
         int pointsLeft = points;
@@ -82,6 +119,10 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
                 shouldEnterGiveaway = true;
             }
 
+            if (bookmarkedGameIds.contains(giveaway.getGameId())) {
+                shouldEnterGiveaway = true;
+            }
+
             if (shouldEnterGiveaway) {
                 result.add(giveaway);
                 pointsLeft -= giveaway.getPoints();
@@ -91,12 +132,12 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
         return result;
     }
 
-    private List<Giveaway> filterAndSortGiveaways(List<Giveaway> giveaways) {
+    private List<Giveaway> filterAndSortGiveaways(List<Giveaway> giveaways, Set<Integer> bookmarkedGameIds) {
         List<Giveaway> result = new ArrayList<>();
         for (Giveaway giveaway : giveaways) {
             if (!giveaway.isEntered() && !giveaway.isLevelNegative()) {
                 final long realTimeDiff = Math.abs(Calendar.getInstance().getTimeInMillis() - giveaway.getEndTime().getTimeInMillis());
-                if (realTimeDiff <= autoJoinPeriod) {
+                if (bookmarkedGameIds.contains(giveaway.getGameId()) || realTimeDiff <= autoJoinPeriod) {
                     result.add(giveaway);
                 }
             }

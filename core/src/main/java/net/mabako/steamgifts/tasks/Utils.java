@@ -1,8 +1,12 @@
 package net.mabako.steamgifts.tasks;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
+import android.util.Log;
 
 import net.mabako.steamgifts.data.Comment;
 import net.mabako.steamgifts.data.Game;
@@ -245,5 +249,16 @@ public final class Utils {
         }
 
         return description.html();
+    }
+
+    public static boolean isConnectedToWifi(final String tag, final Context context) {
+        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = cm.getActiveNetworkInfo();
+        if (activeNetworkInfo == null || !activeNetworkInfo.isConnected() || activeNetworkInfo.getType() != ConnectivityManager.TYPE_WIFI) {
+            Log.v(tag, "Not checking for messages due to network info: " + activeNetworkInfo);
+            return false;
+        }
+
+        return true;
     }
 }

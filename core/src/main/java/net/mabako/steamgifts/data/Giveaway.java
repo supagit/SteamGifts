@@ -256,18 +256,21 @@ public class Giveaway extends BasicGiveaway implements IEndlessAdaptable {
     }
 
     public int getEstimatedEntries() {
-        final long timeSinceCreation = Math.abs(Calendar.getInstance().getTimeInMillis() - createdTime.getCalendar().getTimeInMillis())/1000;
-        final long timeToEnd = Math.abs(endTime.getCalendar().getTimeInMillis() - Calendar.getInstance().getTimeInMillis())/1000;
+        if (createdTime == null) {
+            return entries;
+        }
+        final long timeSinceCreation = Math.abs(Calendar.getInstance().getTimeInMillis() - createdTime.getCalendar().getTimeInMillis()) / 1000;
+        final long timeToEnd = Math.abs(endTime.getCalendar().getTimeInMillis() - Calendar.getInstance().getTimeInMillis()) / 1000;
 
-        double entriesPerSecond = (double)entries / timeSinceCreation;
-        int additionalEntriesToExpect = (int)(timeToEnd * entriesPerSecond);
+        double entriesPerSecond = (double) entries / timeSinceCreation;
+        int additionalEntriesToExpect = (int) (timeToEnd * entriesPerSecond);
 
         return entries + additionalEntriesToExpect;
     }
 
     public double getEntryRatio() {
         if (entries > 0) {
-            return (double) copies  / getEstimatedEntries();
+            return (double) copies / getEstimatedEntries();
         } else {
             return 0;
         }
@@ -278,17 +281,17 @@ public class Giveaway extends BasicGiveaway implements IEndlessAdaptable {
     }
 
     private int calculateRatioColor(double power) {
-        if (power>=1) {
+        if (power >= 1) {
             power = 1;
         }
-        int R = (int)(255* (1-power));
-        int G = (int)(255* power);
+        int R = (int) (255 * (1 - power));
+        int G = (int) (255 * power);
         int B = 0;
 
         return Color.argb(255, R, G, B);
     }
 
     public int getRatioColor() {
-        return calculateRatioColor(getReadibleEntryRatio());
+        return calculateRatioColor(getReadibleEntryRatio()*2/3);
     }
 }

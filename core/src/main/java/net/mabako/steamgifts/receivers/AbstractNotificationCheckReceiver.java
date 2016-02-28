@@ -13,6 +13,7 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import net.mabako.steamgifts.persistentdata.SteamGiftsUserData;
+import net.mabako.steamgifts.tasks.Utils;
 
 import java.util.List;
 
@@ -53,18 +54,7 @@ public abstract class AbstractNotificationCheckReceiver extends BroadcastReceive
             return false;
         }
 
-        return isConnectedToWifi(tag, context);
-    }
-
-    public static boolean isConnectedToWifi(final String tag, final Context context) {
-        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetworkInfo = cm.getActiveNetworkInfo();
-        if (activeNetworkInfo == null || !activeNetworkInfo.isConnected() || activeNetworkInfo.getType() != ConnectivityManager.TYPE_WIFI) {
-            Log.v(tag, "Not checking for messages due to network info: " + activeNetworkInfo);
-            return false;
-        }
-
-        return true;
+        return Utils.isConnectedToWifi(tag, context);
     }
 
     /**

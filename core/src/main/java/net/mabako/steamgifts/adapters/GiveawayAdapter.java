@@ -17,6 +17,7 @@ import net.mabako.steamgifts.data.Giveaway;
 import net.mabako.steamgifts.fragments.ListFragment;
 import net.mabako.steamgifts.persistentdata.FilterData;
 import net.mabako.steamgifts.persistentdata.SavedGiveaways;
+import net.mabako.steamgifts.tasks.Utils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -65,21 +66,10 @@ public class GiveawayAdapter extends EndlessAdapter {
         this.itemsPerPage = itemsPerPage;
         this.filterItems = filterItems;
         if (this.context != null && sharedPreferences.getString("preference_giveaway_load_images", "details;list").contains("wifi")) {
-            this.loadImages = isConnectedToWifi("loadImage", this.context);
+            this.loadImages = Utils.isConnectedToWifi("loadImage", this.context);
         } else {
             this.loadImages = sharedPreferences.getString("preference_giveaway_load_images", "details;list").contains("list");
         }
-    }
-
-    private static boolean isConnectedToWifi(final String tag, final Context context) {
-        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetworkInfo = cm.getActiveNetworkInfo();
-        if (activeNetworkInfo == null || !activeNetworkInfo.isConnected() || activeNetworkInfo.getType() != ConnectivityManager.TYPE_WIFI) {
-            Log.v(tag, "Not checking for messages due to network info: " + activeNetworkInfo);
-            return false;
-        }
-
-        return true;
     }
 
     public void setFragmentValues(@NonNull Activity activity, @NonNull ListFragment fragment, SavedGiveaways savedGiveaways) {
