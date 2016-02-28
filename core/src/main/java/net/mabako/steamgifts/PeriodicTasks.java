@@ -42,7 +42,7 @@ public class PeriodicTasks {
      */
     public enum Task {
         CHECK_FOR_MESSAGES(AlarmManager.INTERVAL_HALF_HOUR, CheckForNewMessages.class),
-        CHECK_FOR_AUTO_JOIN(1 * 1000, CheckForAutoJoin.class);
+        CHECK_FOR_AUTO_JOIN(CheckForAutoJoin.AUTO_JOIN_PERIOD, CheckForAutoJoin.class);
 
         private final long interval;
         private final Class<? extends BroadcastReceiver> taskClass;
