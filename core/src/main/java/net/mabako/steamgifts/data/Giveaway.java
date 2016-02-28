@@ -255,9 +255,19 @@ public class Giveaway extends BasicGiveaway implements IEndlessAdaptable {
         return game;
     }
 
+    public int getEstimatedEntries() {
+        final long timeSinceCreation = Math.abs(Calendar.getInstance().getTimeInMillis() - createdTime.getCalendar().getTimeInMillis())/1000;
+        final long timeToEnd = Math.abs(endTime.getCalendar().getTimeInMillis() - Calendar.getInstance().getTimeInMillis())/1000;
+
+        double entriesPerSecond = (double)entries / timeSinceCreation;
+        int additionalEntriesToExpect = (int)(timeToEnd * entriesPerSecond);
+
+        return entries + additionalEntriesToExpect;
+    }
+
     public double getEntryRatio() {
         if (entries > 0) {
-            return (double) copies / entries;
+            return (double) copies  / getEstimatedEntries();
         } else {
             return 0;
         }
