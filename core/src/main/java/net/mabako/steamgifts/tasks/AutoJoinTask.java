@@ -37,19 +37,21 @@ import java.util.Set;
  */
 public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
     enum AutoJoinOption {
+        AUTO_JOIN_ACTIVATED,
         ALWAYS_JOIN_GIVEAWAYS_FOR_BOOKMARKS,
         AUTO_JOIN_ON_NON_WIFI_CONNECTION
     }
+
+    public static final int MINIMUM_POINTS_TO_KEEP = 100;
+    public static final int MINIMUM_POINTS_TO_KEEP_FOR_BAD_RATIO = 150;
+    public static final int MINIMUM_POINTS_TO_KEEP_FOR_GREAT_RATIO = 50;
+    public static final double BAD_RATIO = 1.5;
+    public static final double GREAT_RATIO = 3.0;
 
     private Context context;
     private long autoJoinPeriod;
     private static final String TAG = AutoJoinTask.class.getSimpleName();
     private String foundXsrfToken;
-
-    public static final int MINIMUM_POINTS_TO_KEEP = 100;
-    public static final int MINIMUM_POINTS_TO_KEEP_FOR_BAD_RATIO = 150;
-    public static final int MINIMUM_POINTS_TO_KEEP_FOR_GREAT_RATIO = 50;
-
     private int points;
 
     public AutoJoinTask(Context context, long autoJoinPeriod) {
@@ -59,7 +61,9 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
 
     //TODO read options from settings
     private boolean isOption(AutoJoinOption option) {
-        switch(option) {
+        switch (option) {
+            case AUTO_JOIN_ACTIVATED:
+                return true;
             case ALWAYS_JOIN_GIVEAWAYS_FOR_BOOKMARKS:
                 return true;
             case AUTO_JOIN_ON_NON_WIFI_CONNECTION:
@@ -69,9 +73,11 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
     }
 
     protected Void doInBackground(Void... params) {
-        boolean doIt = isOption(AutoJoinOption.AUTO_JOIN_ON_NON_WIFI_CONNECTION) || Utils.isConnectedToWifi(TAG, context);
+        boolean doAutoJoin = SteamGiftsUserData.getCurrent(context).isLoggedIn()
+                && isOption(AutoJoinOption.AUTO_JOIN_ACTIVATED)
+                && (isOption(AutoJoinOption.AUTO_JOIN_ON_NON_WIFI_CONNECTION) || Utils.isConnectedToWifi(TAG, context));
 
-        if (doIt && SteamGiftsUserData.getCurrent(context).isLoggedIn()) {
+        if (doAutoJoin) {
             Set<Integer> bookmarkedGameIds = isOption(AutoJoinOption.ALWAYS_JOIN_GIVEAWAYS_FOR_BOOKMARKS) ? getBookMarkedGameIds() : new HashSet<Integer>();
 
             List<Giveaway> giveaways = loadGiveAways(context);
@@ -109,13 +115,13 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
                 shouldEnterGiveaway = true;
                 //when ratio is bad and we don't have to spent
                 //do not spent points when factor is too small and we are too sharp at the bottom
-                if (ratio < 1 && pointsLeft - MINIMUM_POINTS_TO_KEEP < MINIMUM_POINTS_TO_KEEP_FOR_BAD_RATIO) {
+                if (ratio <= BAD_RATIO && pointsLeft - MINIMUM_POINTS_TO_KEEP < MINIMUM_POINTS_TO_KEEP_FOR_BAD_RATIO) {
                     shouldEnterGiveaway = false;
                 }
             }
 
             //if ratio is too good, we make an exception
-            if (ratio > 3 && pointsLeft - giveaway.getPoints() >= MINIMUM_POINTS_TO_KEEP_FOR_GREAT_RATIO) {
+            if (ratio >= GREAT_RATIO && pointsLeft - giveaway.getPoints() >= MINIMUM_POINTS_TO_KEEP_FOR_GREAT_RATIO) {
                 shouldEnterGiveaway = true;
             }
 
