@@ -263,6 +263,10 @@ public class Giveaway extends BasicGiveaway implements IEndlessAdaptable {
         }
     }
 
+    public double getReadibleEntryRatio() {
+        return getEntryRatio() * 500;
+    }
+
     private int calculateRatioColor(double power) {
         if (power>=1) {
             power = 1;
@@ -275,6 +279,6 @@ public class Giveaway extends BasicGiveaway implements IEndlessAdaptable {
     }
 
     public int getRatioColor() {
-        return calculateRatioColor(getEntryRatio()*500);
+        return calculateRatioColor(getReadibleEntryRatio());
     }
 }

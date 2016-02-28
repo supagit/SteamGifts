@@ -88,7 +88,7 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
         double entryRatio = giveaway.getEntryRatio();
         if (Math.abs(entryRatio)>0.1e-8) {
             NumberFormat formatter = new DecimalFormat("#0.000");
-            giveawayRatio.setText(formatter.format(entryRatio * 500));
+            giveawayRatio.setText(formatter.format(giveaway.getReadibleEntryRatio()));
             giveawayRatio.setTextColor(giveaway.getRatioColor());
             giveawayRatio.setBackgroundColor(Color.WHITE);
         } else {
