@@ -69,6 +69,8 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
                 return true;
             case AUTO_JOIN_ON_NON_WIFI_CONNECTION:
                 return true;
+            case PREFER_HIGH_VALUE_GAMES:
+                return true;
         }
         return false;
     }

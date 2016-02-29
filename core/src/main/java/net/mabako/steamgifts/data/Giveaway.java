@@ -278,7 +278,7 @@ public class Giveaway extends BasicGiveaway implements IEndlessAdaptable {
 
     public double getReadibleEntryRatio(boolean preferHighValue) {
         if (preferHighValue) {
-            return getEntryRatio() * points * 500 / 10;
+            return getEntryRatio() * points  * 500 / 10;
         }
         return getEntryRatio() * 500;
     }
