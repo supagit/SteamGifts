@@ -31,6 +31,7 @@ import net.mabako.steamgifts.fragments.SavedGiveawaysFragment;
 import net.mabako.steamgifts.fragments.interfaces.IHasEnterableGiveaways;
 import net.mabako.steamgifts.persistentdata.SavedGiveaways;
 import net.mabako.steamgifts.persistentdata.SteamGiftsUserData;
+import net.mabako.steamgifts.tasks.AutoJoinTask;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -87,9 +88,11 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
 
         double entryRatio = giveaway.getEntryRatio();
         if (Math.abs(entryRatio)>0.1e-8) {
+            boolean preferHighValue = AutoJoinTask.isOption(activity.getBaseContext(), AutoJoinTask.AutoJoinOption.PREFER_HIGH_VALUE_GAMES);
+
             NumberFormat formatter = new DecimalFormat("#0.000");
-            giveawayRatio.setText(formatter.format(giveaway.getReadibleEntryRatio()));
-            giveawayRatio.setTextColor(giveaway.getRatioColor());
+            giveawayRatio.setText(formatter.format(giveaway.getReadibleEntryRatio(preferHighValue)));
+            giveawayRatio.setTextColor(giveaway.getRatioColor(preferHighValue));
             giveawayRatio.setBackgroundColor(Color.WHITE);
         } else {
             giveawayRatio.setText("");

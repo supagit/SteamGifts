@@ -36,10 +36,11 @@ import java.util.Set;
  * Task to perform the auto joining
  */
 public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
-    enum AutoJoinOption {
+    public enum AutoJoinOption {
         AUTO_JOIN_ACTIVATED,
         ALWAYS_JOIN_GIVEAWAYS_FOR_BOOKMARKS,
-        AUTO_JOIN_ON_NON_WIFI_CONNECTION
+        AUTO_JOIN_ON_NON_WIFI_CONNECTION,
+        PREFER_HIGH_VALUE_GAMES
     }
 
     public static final int MINIMUM_POINTS_TO_KEEP = 100;
@@ -60,7 +61,7 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
     }
 
     //TODO read options from settings
-    private boolean isOption(AutoJoinOption option) {
+    public static boolean isOption(Context context, AutoJoinOption option) {
         switch (option) {
             case AUTO_JOIN_ACTIVATED:
                 return true;
@@ -70,6 +71,10 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
                 return true;
         }
         return false;
+    }
+
+    private boolean isOption(AutoJoinOption option) {
+        return isOption(context, option);
     }
 
     protected Void doInBackground(Void... params) {
@@ -84,8 +89,11 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
             List<Giveaway> filteredGiveaways = filterAndSortGiveaways(giveaways, bookmarkedGameIds);
             List<Giveaway> giveAwaysToJoin = calculateGiveawaysToJoin(filteredGiveaways, bookmarkedGameIds);
 
-            requestEnterLeave(giveAwaysToJoin, foundXsrfToken);
-
+            if (giveAwaysToJoin.isEmpty()) {
+                showNotification(context, new HashMap<Giveaway, Boolean>());
+            } else {
+                requestEnterLeave(giveAwaysToJoin, foundXsrfToken);
+            }
         }
 
         return null;
@@ -105,11 +113,13 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
     private List<Giveaway> calculateGiveawaysToJoin(List<Giveaway> filteredGiveaways, Set<Integer> bookmarkedGameIds) {
         points = SteamGiftsUserData.getCurrent(context).getPoints();
 
+        final boolean preferHighValue = isOption(AutoJoinOption.PREFER_HIGH_VALUE_GAMES);
+
         int pointsLeft = points;
 
         List<Giveaway> result = new ArrayList<>();
         for (Giveaway giveaway : filteredGiveaways) {
-            double ratio = giveaway.getReadibleEntryRatio();
+            double ratio = giveaway.getReadibleEntryRatio(preferHighValue);
             boolean shouldEnterGiveaway = false;
             if (pointsLeft - giveaway.getPoints() >= MINIMUM_POINTS_TO_KEEP) {
                 shouldEnterGiveaway = true;
@@ -139,6 +149,7 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
     }
 
     private List<Giveaway> filterAndSortGiveaways(List<Giveaway> giveaways, Set<Integer> bookmarkedGameIds) {
+
         List<Giveaway> result = new ArrayList<>();
         for (Giveaway giveaway : giveaways) {
             if (!giveaway.isEntered() && !giveaway.isLevelNegative() && !SteamGiftsUserData.getCurrent(context).getName().equals(giveaway.getCreator())) {
@@ -148,10 +159,12 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
                 }
             }
         }
+
+        final boolean preferHighValue = isOption(AutoJoinOption.PREFER_HIGH_VALUE_GAMES);
         Collections.sort(result, new Comparator<Giveaway>() {
             @Override
             public int compare(Giveaway lhs, Giveaway rhs) {
-                return (int) (10000 * (rhs.getEntryRatio() - lhs.getEntryRatio()));
+                return (int) (10000 * (rhs.getReadibleEntryRatio(preferHighValue) - lhs.getReadibleEntryRatio(preferHighValue)));
             }
         });
         return result;
