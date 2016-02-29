@@ -275,26 +275,4 @@ public class Giveaway extends BasicGiveaway implements IEndlessAdaptable {
             return 0;
         }
     }
-
-    public double getReadibleEntryRatio(boolean preferHighValue) {
-        if (preferHighValue) {
-            return getEntryRatio() * points  * 500 / 10;
-        }
-        return getEntryRatio() * 500;
-    }
-
-    private int calculateRatioColor(double power) {
-        if (power >= 1) {
-            power = 1;
-        }
-        int R = (int) (255 * (1 - power));
-        int G = (int) (255 * power);
-        int B = 0;
-
-        return Color.argb(255, R, G, B);
-    }
-
-    public int getRatioColor(boolean preferHighValue) {
-        return calculateRatioColor(getReadibleEntryRatio(preferHighValue)*2/3);
-    }
 }

@@ -1,6 +1,7 @@
 package net.mabako.steamgifts.adapters.viewholder;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.support.v4.app.Fragment;
@@ -31,7 +32,8 @@ import net.mabako.steamgifts.fragments.SavedGiveawaysFragment;
 import net.mabako.steamgifts.fragments.interfaces.IHasEnterableGiveaways;
 import net.mabako.steamgifts.persistentdata.SavedGiveaways;
 import net.mabako.steamgifts.persistentdata.SteamGiftsUserData;
-import net.mabako.steamgifts.tasks.AutoJoinTask;
+import net.mabako.steamgifts.tasks.AutoJoinOptions;
+import net.mabako.steamgifts.tasks.AutoJoinUtils;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -55,6 +57,7 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
     private final View indicatorWhitelist, indicatorGroup, indicatorLevelPositive, indicatorLevelNegative, indicatorPrivate, indicatorRegionRestricted;
 
     private static int measuredHeight = 0;
+    private final Context context;
 
     public GiveawayListItemViewHolder(View v, Activity activity, EndlessAdapter adapter, Fragment fragment, SavedGiveaways savedGiveaways) {
         super(v);
@@ -73,6 +76,7 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
         indicatorRegionRestricted = v.findViewById(R.id.giveaway_list_indicator_region_restricted);
 
         this.activity = activity;
+        this.context = activity.getBaseContext();
         this.fragment = fragment;
         this.adapter = adapter;
         this.savedGiveaways = savedGiveaways;
@@ -87,12 +91,10 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
         giveawayName.setText(giveaway.getTitle());
 
         double entryRatio = giveaway.getEntryRatio();
-        if (Math.abs(entryRatio)>0.1e-8) {
-            boolean preferHighValue = AutoJoinTask.isOption(activity.getBaseContext(), AutoJoinTask.AutoJoinOption.PREFER_HIGH_VALUE_GAMES);
-
-            NumberFormat formatter = new DecimalFormat("#0.000");
-            giveawayRatio.setText(formatter.format(giveaway.getReadibleEntryRatio(preferHighValue)));
-            giveawayRatio.setTextColor(giveaway.getRatioColor(preferHighValue));
+        if (AutoJoinOptions.isOptionBoolean(context, AutoJoinOptions.AutoJoinOption.SHOW_AUTO_JOIN_RATIO) && Math.abs(entryRatio)>0.1e-8) {
+            NumberFormat formatter = new DecimalFormat("#0.0");
+            giveawayRatio.setText(formatter.format(AutoJoinUtils.calculateReadibleEntryRatio(activity.getBaseContext(),giveaway)));
+            giveawayRatio.setTextColor(AutoJoinUtils.calculateRatioColor(context, giveaway));
             giveawayRatio.setBackgroundColor(Color.WHITE);
         } else {
             giveawayRatio.setText("");

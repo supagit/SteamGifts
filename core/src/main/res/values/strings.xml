@@ -148,6 +148,18 @@
     <string name="preference_giveaway_show_pinned_on">Always showing at the top</string>
     <string name="preference_giveaway_show_pinned_off">Not highlighted in a special way</string>
 
+    <string name="preferences_autojoin">Autojoin</string>
+    <string name="preferences_autojoin_show_ratio">show ratio</string>
+    <string name="preferences_autojoin_activated">activated</string>
+    <string name="preferences_autojoin_always_join_bookmarks">always join bookmarks</string>
+    <string name="preferences_autojoin_on_non_wifi">autojoin on non wifi</string>
+    <string name="preferences_autojoin_prefer_high_value_games">prefer high value games</string>
+    <string name="preferences_autojoin_bad_ratio">bad ratio</string>
+    <string name="preferences_autojoin_great_ratio">great ratio</string>
+    <string name="preferences_autojoin_minimum_points_to_keep_for_bad_ratio">points to keep for bad ratio</string>
+    <string name="preferences_autojoin_minimum_points_to_keep_for_great_ratio">points to keep for great ratio</string>
+
+
     <string name="preferences_discussions">Discussions</string>
     <string name="preference_sidebar_discussion_list">Navigation Items</string>
     <string name="preference_discussion_comments_reversed">Inverse Comment Order</string>

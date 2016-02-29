@@ -16,6 +16,7 @@ import net.mabako.steamgifts.fragments.GiveawayDetailFragment;
 import net.mabako.steamgifts.fragments.interfaces.IHasEnterableGiveaways;
 import net.mabako.steamgifts.persistentdata.SavedGiveaways;
 import net.mabako.steamgifts.persistentdata.SteamGiftsUserData;
+import net.mabako.steamgifts.receivers.AbstractNotificationCheckReceiver;
 
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
@@ -36,19 +37,6 @@ import java.util.Set;
  * Task to perform the auto joining
  */
 public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
-    public enum AutoJoinOption {
-        AUTO_JOIN_ACTIVATED,
-        ALWAYS_JOIN_GIVEAWAYS_FOR_BOOKMARKS,
-        AUTO_JOIN_ON_NON_WIFI_CONNECTION,
-        PREFER_HIGH_VALUE_GAMES
-    }
-
-    public static final int MINIMUM_POINTS_TO_KEEP = 100;
-    public static final int MINIMUM_POINTS_TO_KEEP_FOR_BAD_RATIO = 150;
-    public static final int MINIMUM_POINTS_TO_KEEP_FOR_GREAT_RATIO = 50;
-    public static final double BAD_RATIO = 1.5;
-    public static final double GREAT_RATIO = 3.0;
-
     private Context context;
     private long autoJoinPeriod;
     private static final String TAG = AutoJoinTask.class.getSimpleName();
@@ -60,32 +48,17 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
         this.autoJoinPeriod = autoJoinPeriod;
     }
 
-    //TODO read options from settings
-    public static boolean isOption(Context context, AutoJoinOption option) {
-        switch (option) {
-            case AUTO_JOIN_ACTIVATED:
-                return true;
-            case ALWAYS_JOIN_GIVEAWAYS_FOR_BOOKMARKS:
-                return true;
-            case AUTO_JOIN_ON_NON_WIFI_CONNECTION:
-                return true;
-            case PREFER_HIGH_VALUE_GAMES:
-                return true;
-        }
-        return false;
-    }
-
-    private boolean isOption(AutoJoinOption option) {
-        return isOption(context, option);
+    private boolean isOption(AutoJoinOptions.AutoJoinOption option) {
+        return AutoJoinOptions.isOptionBoolean(context, option);
     }
 
     protected Void doInBackground(Void... params) {
         boolean doAutoJoin = SteamGiftsUserData.getCurrent(context).isLoggedIn()
-                && isOption(AutoJoinOption.AUTO_JOIN_ACTIVATED)
-                && (isOption(AutoJoinOption.AUTO_JOIN_ON_NON_WIFI_CONNECTION) || Utils.isConnectedToWifi(TAG, context));
+                && isOption(AutoJoinOptions.AutoJoinOption.AUTO_JOIN_ACTIVATED)
+                && (isOption(AutoJoinOptions.AutoJoinOption.AUTO_JOIN_ON_NON_WIFI_CONNECTION) || Utils.isConnectedToWifi(TAG, context));
 
         if (doAutoJoin) {
-            Set<Integer> bookmarkedGameIds = isOption(AutoJoinOption.ALWAYS_JOIN_GIVEAWAYS_FOR_BOOKMARKS) ? getBookMarkedGameIds() : new HashSet<Integer>();
+            Set<Integer> bookmarkedGameIds = isOption(AutoJoinOptions.AutoJoinOption.ALWAYS_JOIN_GIVEAWAYS_FOR_BOOKMARKS) ? getBookMarkedGameIds() : new HashSet<Integer>();
 
             List<Giveaway> giveaways = loadGiveAways(context);
             List<Giveaway> filteredGiveaways = filterAndSortGiveaways(giveaways, bookmarkedGameIds);
@@ -115,25 +88,30 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
     private List<Giveaway> calculateGiveawaysToJoin(List<Giveaway> filteredGiveaways, Set<Integer> bookmarkedGameIds) {
         points = SteamGiftsUserData.getCurrent(context).getPoints();
 
-        final boolean preferHighValue = isOption(AutoJoinOption.PREFER_HIGH_VALUE_GAMES);
+        int minPointsToKeepForBadRatio = AutoJoinOptions.getOptionInteger(context, AutoJoinOptions.AutoJoinOption.MINIMUM_POINTS_TO_KEEP_FOR_BAD_RATIO);
+        int minPointsToKeepForGreatRatio = AutoJoinOptions.getOptionInteger(context, AutoJoinOptions.AutoJoinOption.MINIMUM_POINTS_TO_KEEP_FOR_GREAT_RATIO);
+        int minPointsToKeep = (minPointsToKeepForBadRatio + minPointsToKeepForGreatRatio) / 2;
+
+        int badRatio = AutoJoinOptions.getOptionInteger(context, AutoJoinOptions.AutoJoinOption.BAD_RATIO);
+        int greatRatio = AutoJoinOptions.getOptionInteger(context, AutoJoinOptions.AutoJoinOption.GREAT_RATIO);
 
         int pointsLeft = points;
 
         List<Giveaway> result = new ArrayList<>();
         for (Giveaway giveaway : filteredGiveaways) {
-            double ratio = giveaway.getReadibleEntryRatio(preferHighValue);
+            double ratio = AutoJoinUtils.calculateReadibleEntryRatio(context, giveaway);
             boolean shouldEnterGiveaway = false;
-            if (pointsLeft - giveaway.getPoints() >= MINIMUM_POINTS_TO_KEEP) {
+            if (pointsLeft - giveaway.getPoints() >= minPointsToKeep) {
                 shouldEnterGiveaway = true;
                 //when ratio is bad and we don't have to spent
                 //do not spent points when factor is too small and we are too sharp at the bottom
-                if (ratio <= BAD_RATIO && pointsLeft - MINIMUM_POINTS_TO_KEEP < MINIMUM_POINTS_TO_KEEP_FOR_BAD_RATIO) {
+                if (ratio <= badRatio && pointsLeft - minPointsToKeep < minPointsToKeepForBadRatio) {
                     shouldEnterGiveaway = false;
                 }
             }
 
             //if ratio is too good, we make an exception
-            if (ratio >= GREAT_RATIO && pointsLeft - giveaway.getPoints() >= MINIMUM_POINTS_TO_KEEP_FOR_GREAT_RATIO) {
+            if (ratio >= greatRatio && pointsLeft - giveaway.getPoints() >= minPointsToKeepForGreatRatio) {
                 shouldEnterGiveaway = true;
             }
 
@@ -162,11 +140,11 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
             }
         }
 
-        final boolean preferHighValue = isOption(AutoJoinOption.PREFER_HIGH_VALUE_GAMES);
+        final boolean preferHighValue = isOption(AutoJoinOptions.AutoJoinOption.PREFER_HIGH_VALUE_GAMES);
         Collections.sort(result, new Comparator<Giveaway>() {
             @Override
             public int compare(Giveaway lhs, Giveaway rhs) {
-                return (int) (10000 * (rhs.getReadibleEntryRatio(preferHighValue) - lhs.getReadibleEntryRatio(preferHighValue)));
+                return (int) (10000 * (AutoJoinUtils.calculateReadibleEntryRatio(context, rhs) - AutoJoinUtils.calculateReadibleEntryRatio(context, lhs)));
             }
         });
         return result;
@@ -236,7 +214,7 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
                 .setAutoCancel(true)
                 .build();
 
-        int notificationId = (int) System.currentTimeMillis();
+        int notificationId = AbstractNotificationCheckReceiver.NotificationId.AUTO_JOIN.ordinal();
         ((NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE)).notify(notificationId, notification);
     }
 
