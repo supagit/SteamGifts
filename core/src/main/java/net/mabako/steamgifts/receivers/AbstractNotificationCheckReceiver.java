@@ -31,7 +31,7 @@ public abstract class AbstractNotificationCheckReceiver extends BroadcastReceive
     protected static final int MAX_DISPLAYED_NOTIFICATIONS = 5;
 
     public enum NotificationId {
-        MESSAGES, WON, NO_TYPE, AUTO_JOIN
+        MESSAGES, WON, NO_TYPE, AUTO_JOIN, AUTO_JOIN_STATS
     }
 
     /**

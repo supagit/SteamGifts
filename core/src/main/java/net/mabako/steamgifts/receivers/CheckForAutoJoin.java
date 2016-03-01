@@ -15,7 +15,6 @@ public class CheckForAutoJoin extends AbstractNotificationCheckReceiver {
     @Override
     public void onReceive(final Context context, Intent intent) {
         new AutoJoinTask(context,AUTO_JOIN_PERIOD).execute();
-
     }
 
 
