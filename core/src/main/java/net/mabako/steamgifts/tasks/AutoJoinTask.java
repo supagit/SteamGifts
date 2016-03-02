@@ -3,9 +3,7 @@ package net.mabako.steamgifts.tasks;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.AsyncTask;
-import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
@@ -14,6 +12,7 @@ import android.widget.Toast;
 import net.mabako.Constants;
 import net.mabako.steamgifts.core.R;
 import net.mabako.steamgifts.data.Giveaway;
+import net.mabako.steamgifts.data.Statistics;
 import net.mabako.steamgifts.fragments.GiveawayDetailFragment;
 import net.mabako.steamgifts.fragments.interfaces.IHasEnterableGiveaways;
 import net.mabako.steamgifts.persistentdata.SavedGiveaways;
@@ -26,7 +25,6 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -42,19 +40,16 @@ import java.util.Set;
 public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
     private Context context;
     private long autoJoinPeriod;
-    private static final String TAG = AutoJoinTask.class.getSimpleName();
+    public static final String TAG = AutoJoinTask.class.getSimpleName();
     private String foundXsrfToken;
     private int points;
+    private final Statistics statistics;
 
-    long dailyPointsSpent = 0;
-    long dailyGiveawaysEntered = 0;
-    long overallPointsSpent = 0;
-    long overallGiveawaysEntered = 0;
-    long lastAutoJoin = 0;
 
     public AutoJoinTask(Context context, long autoJoinPeriod) {
         this.context = context;
         this.autoJoinPeriod = autoJoinPeriod;
+        statistics = new Statistics(context);
     }
 
     private boolean isOption(AutoJoinOptions.AutoJoinOption option) {
@@ -66,15 +61,8 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
                 && isOption(AutoJoinOptions.AutoJoinOption.AUTO_JOIN_ACTIVATED)
                 && (isOption(AutoJoinOptions.AutoJoinOption.AUTO_JOIN_ON_NON_WIFI_CONNECTION) || Utils.isConnectedToWifi(TAG, context));
 
-        loadStats();
+        statistics.showDailyStatsNotificationIfNewDay();
 
-        if (isNewDay()) {
-            lastAutoJoin = new Date().getTime();
-            showAutoJoinStatsNotification(context);
-            dailyPointsSpent = 0;
-            dailyGiveawaysEntered = 0;
-            saveStats();
-        }
 
         if (doAutoJoin) {
             Set<Integer> bookmarkedGameIds = isOption(AutoJoinOptions.AutoJoinOption.ALWAYS_JOIN_GIVEAWAYS_FOR_BOOKMARKS) ? getBookMarkedGameIds() : new HashSet<Integer>();
@@ -93,37 +81,6 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
         }
 
         return null;
-    }
-
-    private boolean isNewDay() {
-        Date lastDate = new Date(lastAutoJoin);
-        Date now = new Date();
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(lastDate);
-        int day = cal.get(Calendar.DAY_OF_YEAR);
-        cal.setTime(now);
-        int today = cal.get(Calendar.DAY_OF_YEAR);
-        return today != day;
-    }
-
-    private void loadStats() {
-        SharedPreferences sharedPreferences = context.getSharedPreferences(AutoJoinTask.TAG, Context.MODE_PRIVATE);
-        lastAutoJoin = sharedPreferences.getLong("lastAutoJoin", lastAutoJoin);
-        dailyGiveawaysEntered = sharedPreferences.getLong("dailyGiveawaysEntered", dailyGiveawaysEntered);
-        dailyPointsSpent = sharedPreferences.getLong("dailyPointsSpent", dailyPointsSpent);
-        overallGiveawaysEntered = sharedPreferences.getLong("overallGiveawaysEntered", overallGiveawaysEntered);
-        overallPointsSpent = sharedPreferences.getLong("overallPointsSpent", overallPointsSpent);
-    }
-
-    private void saveStats() {
-        SharedPreferences sharedPreferences = context.getSharedPreferences(AutoJoinTask.TAG, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putLong("lastAutoJoin", lastAutoJoin);
-        editor.putLong("dailyGiveawaysEntered", dailyGiveawaysEntered);
-        editor.putLong("dailyPointsSpent", dailyPointsSpent);
-        editor.putLong("overallGiveawaysEntered", overallGiveawaysEntered);
-        editor.putLong("overallPointsSpent", overallPointsSpent);
-        editor.apply();
     }
 
     @NonNull
@@ -181,7 +138,6 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
     }
 
     private List<Giveaway> filterAndSortGiveaways(List<Giveaway> giveaways, Set<Integer> bookmarkedGameIds) {
-
         List<Giveaway> result = new ArrayList<>();
         for (Giveaway giveaway : giveaways) {
             if (!giveaway.isEntered() && !giveaway.isLevelNegative() && !SteamGiftsUserData.getCurrent(context).getName().equals(giveaway.getCreator())) {
@@ -225,11 +181,8 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
                         Log.v(TAG, "entered giveaway " + giveaway.getTitle());
                         Toast.makeText(context, "entered giveaway " + giveaway.getTitle(), Toast.LENGTH_SHORT).show();
 
-                        dailyGiveawaysEntered++;
-                        dailyPointsSpent += giveaway.getPoints();
-                        overallGiveawaysEntered++;
-                        overallPointsSpent += giveaway.getPoints();
-                        saveStats();
+                        statistics.addGiveaway(giveaway);
+
                     } else {
                         Toast.makeText(context, "failed to enter giveaway " + giveaway.getTitle(), Toast.LENGTH_SHORT).show();
                     }
@@ -275,24 +228,6 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
                 .build();
 
         int notificationId = AbstractNotificationCheckReceiver.NotificationId.AUTO_JOIN.ordinal();
-        ((NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE)).notify(notificationId, notification);
-    }
-
-    private void showAutoJoinStatsNotification(Context context) {
-        String title = "Entered: " + overallGiveawaysEntered + " Spent: " + overallPointsSpent;
-        String content = "Today Entered: " + dailyGiveawaysEntered + " Spent: " + dailyPointsSpent;
-
-        Notification notification = new NotificationCompat.Builder(context)
-                .setSmallIcon(R.drawable.sgwhite)
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setCategory(NotificationCompat.CATEGORY_MESSAGE)
-                .setContentTitle(title)
-                .setContentText(content)
-                .setStyle(new NotificationCompat.BigTextStyle().bigText(content))
-                .setAutoCancel(true)
-                .build();
-
-        int notificationId = AbstractNotificationCheckReceiver.NotificationId.AUTO_JOIN_STATS.ordinal();
         ((NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE)).notify(notificationId, notification);
     }
 
