@@ -110,22 +110,14 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
         for (Giveaway giveaway : filteredGiveaways) {
             double ratio = AutoJoinUtils.calculateReadibleEntryRatio(context, giveaway);
             boolean shouldEnterGiveaway = false;
-            if (pointsLeft - giveaway.getPoints() >= minPointsToKeep) {
-                shouldEnterGiveaway = true;
-                //when ratio is bad and we don't have to spent
-                //do not spent points when factor is too small and we are too sharp at the bottom
-                if (ratio <= badRatio && pointsLeft - minPointsToKeep < minPointsToKeepForBadRatio) {
-                    shouldEnterGiveaway = false;
-                }
-            }
+            int leftAfterJoin = pointsLeft - giveaway.getPoints();
 
-            //if ratio is too good, we make an exception
-            if (ratio >= greatRatio && pointsLeft - giveaway.getPoints() >= minPointsToKeepForGreatRatio) {
-                shouldEnterGiveaway = true;
-            }
-
-            if (bookmarkedGameIds.contains(giveaway.getGameId())) {
-                shouldEnterGiveaway = true;
+            if (ratio>=greatRatio) {
+                shouldEnterGiveaway = leftAfterJoin >= minPointsToKeepForGreatRatio;
+            } else if (ratio<=badRatio) {
+                shouldEnterGiveaway = leftAfterJoin >= minPointsToKeepForBadRatio;
+            } else {
+                shouldEnterGiveaway = leftAfterJoin >= minPointsToKeep;
             }
 
             if (shouldEnterGiveaway) {
