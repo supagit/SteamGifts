@@ -19,6 +19,7 @@ import net.mabako.steamgifts.activities.SyncActivity;
 import net.mabako.steamgifts.core.R;
 import net.mabako.steamgifts.data.Giveaway;
 import net.mabako.steamgifts.data.GiveawayExtras;
+import net.mabako.steamgifts.data.Statistics;
 import net.mabako.steamgifts.fragments.GiveawayDetailFragment;
 import net.mabako.steamgifts.fragments.util.GiveawayDetailsCard;
 import net.mabako.steamgifts.persistentdata.SteamGiftsUserData;
@@ -177,6 +178,7 @@ public class GiveawayCardViewHolder extends RecyclerView.ViewHolder {
                 public void onClick(View v) {
                     if (extras != null) {
                         enterGiveaway.setEnabled(false);
+                        new Statistics(fragment.getContext()).addGiveaway(giveaway);
                         fragment.requestEnterLeave(giveaway.getGiveawayId(), GiveawayDetailFragment.ENTRY_INSERT, extras.getXsrfToken());
                     }
                 }
@@ -187,6 +189,7 @@ public class GiveawayCardViewHolder extends RecyclerView.ViewHolder {
                 public void onClick(View v) {
                     if (extras != null) {
                         leaveGiveaway.setEnabled(false);
+                        new Statistics(fragment.getContext()).removeGiveaway(giveaway);
                         fragment.requestEnterLeave(giveaway.getGiveawayId(), GiveawayDetailFragment.ENTRY_DELETE, extras.getXsrfToken());
                     }
                 }

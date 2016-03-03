@@ -26,6 +26,7 @@ import net.mabako.steamgifts.core.R;
 import net.mabako.steamgifts.data.BasicGiveaway;
 import net.mabako.steamgifts.data.Game;
 import net.mabako.steamgifts.data.Giveaway;
+import net.mabako.steamgifts.data.Statistics;
 import net.mabako.steamgifts.fragments.GiveawayDetailFragment;
 import net.mabako.steamgifts.fragments.GiveawayListFragment;
 import net.mabako.steamgifts.fragments.SavedGiveawaysFragment;
@@ -247,9 +248,11 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
         Log.d(TAG, "onMenuItemClick(" + item.getItemId() + ")");
         switch (item.getItemId()) {
             case 1:
+                new Statistics(context).addGiveaway(giveaway);
                 ((IHasEnterableGiveaways) fragment).requestEnterLeave(giveaway.getGiveawayId(), GiveawayDetailFragment.ENTRY_DELETE, adapter.getXsrfToken());
                 return true;
             case 2:
+                new Statistics(context).removeGiveaway(giveaway);
                 ((IHasEnterableGiveaways) fragment).requestEnterLeave(giveaway.getGiveawayId(), GiveawayDetailFragment.ENTRY_INSERT, adapter.getXsrfToken());
                 return true;
             case 3:

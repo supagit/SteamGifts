@@ -3,6 +3,7 @@ package net.mabako.steamgifts.tasks;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
@@ -43,13 +44,12 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
     public static final String TAG = AutoJoinTask.class.getSimpleName();
     private String foundXsrfToken;
     private int points;
-    private final Statistics statistics;
+    private Statistics statistics;
 
 
     public AutoJoinTask(Context context, long autoJoinPeriod) {
         this.context = context;
         this.autoJoinPeriod = autoJoinPeriod;
-        statistics = new Statistics(context);
     }
 
     private boolean isOption(AutoJoinOptions.AutoJoinOption option) {
@@ -61,8 +61,8 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
                 && isOption(AutoJoinOptions.AutoJoinOption.AUTO_JOIN_ACTIVATED)
                 && (isOption(AutoJoinOptions.AutoJoinOption.AUTO_JOIN_ON_NON_WIFI_CONNECTION) || Utils.isConnectedToWifi(TAG, context));
 
+        statistics = new Statistics(context);
         statistics.showDailyStatsNotificationIfNewDay();
-
 
         if (doAutoJoin) {
             Set<Integer> bookmarkedGameIds = isOption(AutoJoinOptions.AutoJoinOption.ALWAYS_JOIN_GIVEAWAYS_FOR_BOOKMARKS) ? getBookMarkedGameIds() : new HashSet<Integer>();
@@ -109,7 +109,7 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
         List<Giveaway> result = new ArrayList<>();
         for (Giveaway giveaway : filteredGiveaways) {
             double ratio = AutoJoinUtils.calculateReadibleEntryRatio(context, giveaway);
-            boolean shouldEnterGiveaway = false;
+            boolean shouldEnterGiveaway;
             int leftAfterJoin = pointsLeft - giveaway.getPoints();
 
             if (ratio>=greatRatio) {

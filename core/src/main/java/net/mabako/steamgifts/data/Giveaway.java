@@ -270,6 +270,25 @@ public class Giveaway extends BasicGiveaway implements IEndlessAdaptable {
 
     public double getEntryRatio() {
         if (entries > 0) {
+            if (copies == 0) {
+                long copies = 1;
+                int index = title.indexOf("Copies");
+                if (index != -1) {
+                    int i = title.indexOf("(");
+                    if (i != -1) {
+                        String value = title.substring(i+1,index-1);
+                        try {
+                            copies = Long.parseLong(value);
+                        }
+                        catch (Exception ex) {
+
+                        }
+                    }
+                }
+
+
+                return (double)copies / getEntries();
+            }
             return (double) copies / getEstimatedEntries();
         } else {
             return 0;

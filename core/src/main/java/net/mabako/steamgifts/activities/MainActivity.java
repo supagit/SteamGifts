@@ -9,6 +9,7 @@ import android.support.v7.widget.Toolbar;
 
 import net.mabako.steamgifts.ApplicationTemplate;
 import net.mabako.steamgifts.core.R;
+import net.mabako.steamgifts.data.Statistics;
 import net.mabako.steamgifts.fragments.DiscussionListFragment;
 import net.mabako.steamgifts.fragments.GiveawayListFragment;
 import net.mabako.steamgifts.fragments.SavedFragment;
@@ -45,6 +46,8 @@ public class MainActivity extends CommonActivity implements IPointUpdateNotifica
         // savedInstanceState is non-null if a fragment state is saved from a previous configuration.
         if (savedInstanceState == null) {
             ((ApplicationTemplate) getApplication()).showBetaNotification(this, true);
+
+
 
             // Load a default fragment to show all giveaways
             Serializable type = getIntent().getSerializableExtra(ARG_TYPE);

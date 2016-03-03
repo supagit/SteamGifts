@@ -1,8 +1,10 @@
 package net.mabako.steamgifts.data;
 
+import android.app.AlertDialog;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.support.v4.app.NotificationCompat;
 
@@ -78,6 +80,16 @@ public class Statistics {
         save();
     }
 
+    public void removeGiveaway(Giveaway giveaway) {
+        dailyGiveawaysEntered--;
+        dailyPointsSpent -= giveaway.getPoints();
+        dailyEntries -= giveaway.getEntries();
+        overallGiveawaysEntered--;
+        overallPointsSpent -= giveaway.getPoints();
+        overallEntries -= giveaway.getEntries();
+        save();
+    }
+
     public void showDailyStatsNotification() {
         String title = "Entered: " + overallGiveawaysEntered + " Spent: " + overallPointsSpent;
         String content = "Today Entered: " + dailyGiveawaysEntered + " Spent: " + dailyPointsSpent;
@@ -104,4 +116,36 @@ public class Statistics {
             save();
         }
     }
+
+    public void showDialog() {
+        String title = "Entered: " + overallGiveawaysEntered + " Spent: " + overallPointsSpent;
+        String content = "Today Entered: " + dailyGiveawaysEntered + " Spent: " + dailyPointsSpent;
+
+        AlertDialog dialog = new AlertDialog.Builder(context).setMessage(title + content)
+                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                        // Do stuff if user accepts
+                    }
+                }).setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                        // Do stuff when user neglects.
+                    }
+                }).setOnCancelListener(new DialogInterface.OnCancelListener() {
+
+                    @Override
+                    public void onCancel(DialogInterface dialog) {
+                        dialog.dismiss();
+                        // Do stuff when cancelled
+                    }
+                }).create();
+        dialog.show();
+    }
+
+
 }
