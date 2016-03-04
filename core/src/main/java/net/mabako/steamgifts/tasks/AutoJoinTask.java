@@ -112,7 +112,9 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
             boolean shouldEnterGiveaway;
             int leftAfterJoin = pointsLeft - giveaway.getPoints();
 
-            if (ratio>=greatRatio) {
+            if (bookmarkedGameIds.contains(giveaway.getGameId())) {
+                shouldEnterGiveaway = true;
+            } else if (ratio>=greatRatio) {
                 shouldEnterGiveaway = leftAfterJoin >= minPointsToKeepForGreatRatio;
             } else if (ratio<=badRatio) {
                 shouldEnterGiveaway = leftAfterJoin >= minPointsToKeepForBadRatio;
