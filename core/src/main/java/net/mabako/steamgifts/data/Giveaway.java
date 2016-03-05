@@ -119,6 +119,7 @@ public class Giveaway extends BasicGiveaway implements IEndlessAdaptable {
                     }
                 }
             }
+            return 1;
         }
         return copies;
     }

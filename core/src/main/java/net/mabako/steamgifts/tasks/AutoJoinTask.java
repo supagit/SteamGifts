@@ -194,6 +194,10 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
             }
         }
 
+        long newPoints = points - pointsSpent;
+        SteamGiftsUserData.getCurrent(context).setPoints((int)newPoints);
+
+
         statistics.updateStatsNotification(giveawaysEntered, pointsSpent, entries);
     }
 
