@@ -1,24 +1,18 @@
 package net.mabako.steamgifts.tasks;
 
-import android.app.Notification;
-import android.app.NotificationManager;
 import android.content.Context;
-import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
-import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
 
 import net.mabako.Constants;
-import net.mabako.steamgifts.core.R;
 import net.mabako.steamgifts.data.Giveaway;
 import net.mabako.steamgifts.data.Statistics;
 import net.mabako.steamgifts.fragments.GiveawayDetailFragment;
 import net.mabako.steamgifts.fragments.interfaces.IHasEnterableGiveaways;
 import net.mabako.steamgifts.persistentdata.SavedGiveaways;
 import net.mabako.steamgifts.persistentdata.SteamGiftsUserData;
-import net.mabako.steamgifts.receivers.AbstractNotificationCheckReceiver;
 
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
@@ -62,7 +56,6 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
                 && (isOption(AutoJoinOptions.AutoJoinOption.AUTO_JOIN_ON_NON_WIFI_CONNECTION) || Utils.isConnectedToWifi(TAG, context));
 
         statistics = new Statistics(context);
-        statistics.showDailyStatsNotificationIfNewDay();
 
         if (doAutoJoin) {
             Set<Integer> bookmarkedGameIds = isOption(AutoJoinOptions.AutoJoinOption.ALWAYS_JOIN_GIVEAWAYS_FOR_BOOKMARKS) ? getBookMarkedGameIds() : new HashSet<Integer>();
@@ -73,7 +66,7 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
                 List<Giveaway> giveAwaysToJoin = calculateGiveawaysToJoin(filteredGiveaways, bookmarkedGameIds);
 
                 if (giveAwaysToJoin.isEmpty()) {
-                    showAutoJoinNotification(context, new HashMap<Giveaway, Boolean>());
+                    showAutoJoinNotification(new HashMap<Giveaway, Boolean>());
                 } else {
                     requestEnterLeave(giveAwaysToJoin, foundXsrfToken);
                 }
@@ -166,19 +159,18 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
 
                 @Override
                 public void onEnterLeaveResult(String giveawayId, String what, Boolean success, boolean propagate) {
-                    giveawaysJoined.put(giveaway, success);
-                    if (giveawaysJoined.size() == giveawaysToJoin.size()) {
-                        showAutoJoinNotification(context, giveawaysJoined);
-                    }
-
                     if (success) {
                         Log.v(TAG, "entered giveaway " + giveaway.getTitle());
                         Toast.makeText(context, "entered giveaway " + giveaway.getTitle(), Toast.LENGTH_SHORT).show();
-
                         statistics.addGiveaway(giveaway);
 
                     } else {
                         Toast.makeText(context, "failed to enter giveaway " + giveaway.getTitle(), Toast.LENGTH_SHORT).show();
+                    }
+
+                    giveawaysJoined.put(giveaway, success);
+                    if (giveawaysJoined.size() == giveawaysToJoin.size()) {
+                        showAutoJoinNotification(giveawaysJoined);
                     }
                 }
             }, context, giveaway.getGiveawayId(), xsrfToken, GiveawayDetailFragment.ENTRY_INSERT);
@@ -186,10 +178,10 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
         }
     }
 
-    private void showAutoJoinNotification(Context context, Map<Giveaway, Boolean> joinedGiveawayMap) {
+    private void showAutoJoinNotification(Map<Giveaway, Boolean> joinedGiveawayMap) {
         int pointsSpent = 0;
         int giveawaysEntered = 0;
-        int giveawaysEnteringFailed = 0;
+        long entries = 0;
 
         for (Map.Entry<Giveaway, Boolean> entrySet : joinedGiveawayMap.entrySet()) {
             Giveaway giveaway = entrySet.getKey();
@@ -197,32 +189,12 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
             if (success) {
                 giveawaysEntered++;
                 pointsSpent += giveaway.getPoints();
+                entries += giveaway.getEntries()/giveaway.getCopies();
 
-            } else {
-                giveawaysEnteringFailed++;
             }
         }
-        int pointsLeft = points - pointsSpent;
 
-        String title = "Entered Giveaways " + giveawaysEntered;
-        if (giveawaysEnteringFailed != 0) {
-            title += " Failed: " + giveawaysEnteringFailed;
-        }
-
-        String content = "Points spent: " + pointsSpent + " left: " + pointsLeft;
-
-        Notification notification = new NotificationCompat.Builder(context)
-                .setSmallIcon(R.drawable.sgwhite)
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setCategory(NotificationCompat.CATEGORY_MESSAGE)
-                .setContentTitle(title)
-                .setContentText(content)
-                .setStyle(new NotificationCompat.BigTextStyle().bigText(content))
-                .setAutoCancel(true)
-                .build();
-
-        int notificationId = AbstractNotificationCheckReceiver.NotificationId.AUTO_JOIN.ordinal();
-        ((NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE)).notify(notificationId, notification);
+        statistics.updateStatsNotification(giveawaysEntered, pointsSpent, entries);
     }
 
     protected List<Giveaway> loadGiveAways(Context context) {
