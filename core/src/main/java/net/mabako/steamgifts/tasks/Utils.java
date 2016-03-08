@@ -8,17 +8,30 @@ import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.util.Log;
 
+import net.mabako.Constants;
 import net.mabako.steamgifts.data.Comment;
 import net.mabako.steamgifts.data.Game;
 import net.mabako.steamgifts.data.Giveaway;
 import net.mabako.steamgifts.data.ICommentHolder;
 import net.mabako.steamgifts.data.IImageHolder;
 import net.mabako.steamgifts.data.Image;
+import net.mabako.steamgifts.data.Statistics;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.jsoup.Connection;
+import org.jsoup.Jsoup;
+import org.jsoup.helper.HttpConnection;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -178,7 +191,7 @@ public final class Utils {
      * @param document the loaded document
      * @return list of giveaways
      */
-    public static List<Giveaway> loadGiveawaysFromList(Document document) {
+    public static List<Giveaway> loadGiveawaysFromList(Document document, Statistics statistics) {
         Elements giveaways = document.select(".giveaway__row-inner-wrap");
 
         List<Giveaway> giveawayList = new ArrayList<>();
@@ -214,9 +227,111 @@ public final class Utils {
 
             Utils.loadGiveaway(giveaway, element, "giveaway", "giveaway__heading__thin", uriIcon);
             giveawayList.add(giveaway);
+
+            applyGiveawayRating(giveaway, statistics);
         }
 
+        statistics.saveIfDirty();
         return giveawayList;
+    }
+
+    public static void applyGiveawayRating(Giveaway giveaway, Statistics statistics) {
+        Integer ratingForGame = statistics.getRatingForGame(giveaway.getGameId());
+        if (ratingForGame == null) {
+            ratingForGame = fetchGiveawayRating(giveaway);
+            statistics.setRatingForGame(giveaway.getGameId(), ratingForGame);
+        }
+
+        giveaway.setRating(ratingForGame);
+    }
+
+    public static int fetchGiveawayRating(Giveaway giveaway) {
+        int gameId = giveaway.getGame().getGameId();
+
+        Integer ratingFromMetacritics = getRatingFromMetacritics(gameId);
+        if (ratingFromMetacritics != null) {
+            return ratingFromMetacritics;
+        }
+        Integer ratingFromRatingValue = getRatingFromRatingValue(gameId);
+        return ratingFromRatingValue != null ? ratingFromRatingValue : 0;
+    }
+
+    private static Integer getRatingFromRatingValue(int gameId) {
+        try {
+            Connection connect = Jsoup.connect("http://store.steampowered.com/app/" + gameId)
+                    .userAgent(Constants.JSOUP_USER_AGENT)
+                    .timeout(Constants.JSOUP_TIMEOUT);
+
+            Document document = connect.get();
+            String s = document.toString();
+
+            String ratingText = getValueFromHtml(s, "ratingValue");
+
+            if (ratingText != null) {
+                return Integer.parseInt(ratingText) * 10;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private static Integer getRatingFromMetacritics(int gameId) {
+        String fileData = doGet("http://store.steampowered.com/api/appdetails?appids=" + gameId);
+
+        try {
+            JSONObject jsonObject = new JSONObject(fileData);
+            JSONObject gameJsonObject = jsonObject.getJSONObject(Integer.toString(gameId));
+            JSONObject dataJsonObject = gameJsonObject.getJSONObject("data");
+            JSONObject metacriticJsonObject = dataJsonObject.getJSONObject("metacritic");
+            return metacriticJsonObject.getInt("score");
+        } catch (JSONException e) {
+            return null;
+        }
+    }
+
+    @NonNull
+    private static String doGet(String urlPath) {
+        StringBuilder total = new StringBuilder();
+        try {
+            URL url = new URL(urlPath);
+            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+            urlConnection.setRequestMethod("GET");
+            try {
+                InputStream in = new BufferedInputStream(urlConnection.getInputStream());
+                BufferedReader r = new BufferedReader(new InputStreamReader(in));
+
+                String line;
+                while ((line = r.readLine()) != null) {
+                    total.append(line);
+                }
+            } finally {
+                urlConnection.disconnect();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return total.toString();
+    }
+
+
+    private static String getValueFromHtml(String body, String valueName) {
+        int startIdx = body.indexOf(valueName);
+        if (startIdx != -1) {
+            int contentStartIndex = body.indexOf("content=\"", startIdx);
+            if (contentStartIndex != -1) {
+                int contentStart = contentStartIndex + "content=\"".length();
+                if (contentStart != -1) {
+                    int contentEnd = body.indexOf("\"", contentStart);
+                    if (contentEnd != -1) {
+                        String value = body.substring(contentStart, contentEnd);
+                        return value;
+                    }
+                }
+
+            }
+        }
+        return null;
     }
 
     /**

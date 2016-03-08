@@ -87,14 +87,14 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
     }
 
 
-
     public void setFrom(Giveaway giveaway, boolean showImage) {
         giveawayName.setText(giveaway.getTitle());
 
         double entryRatio = giveaway.getEntryRatio();
-        if (AutoJoinOptions.isOptionBoolean(context, AutoJoinOptions.AutoJoinOption.SHOW_AUTO_JOIN_RATIO) && Math.abs(entryRatio)>0.1e-8) {
+        if (AutoJoinOptions.isOptionBoolean(context, AutoJoinOptions.AutoJoinOption.SHOW_AUTO_JOIN_RATIO) && Math.abs(entryRatio) > 0.1e-8) {
             NumberFormat formatter = new DecimalFormat("#0.0");
-            giveawayRatio.setText(formatter.format(AutoJoinUtils.calculateReadibleEntryRatio(activity.getBaseContext(),giveaway)));
+            String ratioText = formatter.format(AutoJoinUtils.calculateReadibleEntryRatio(activity.getBaseContext(), giveaway));
+            giveawayRatio.setText(ratioText);
             giveawayRatio.setTextColor(AutoJoinUtils.calculateRatioColor(context, giveaway));
             giveawayRatio.setBackgroundColor(Color.WHITE);
         } else {
@@ -104,7 +104,7 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
         if (giveaway.getEndTime() != null) {
             String endTimeText = giveaway.getShortRelativeEndTime(activity);
             if (giveaway.getShortRelativeCreatedTime(activity) != null) {
-                endTimeText += " (" + giveaway.getShortRelativeCreatedTime(activity)+")";
+                endTimeText += " (" + giveaway.getShortRelativeCreatedTime(activity) + ")";
             }
             giveawayTime.setText(endTimeText);
         } else {
@@ -112,6 +112,9 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
         }
 
         StringBuilder sb = new StringBuilder();
+        if (giveaway.getRating() != 0)
+            sb.append(giveaway.getRating()).append("% | ");
+
         if (giveaway.getCopies() > 1)
             sb.append(activity.getResources().getQuantityString(R.plurals.copies, giveaway.getCopies(), giveaway.getCopies())).append(" | ");
 

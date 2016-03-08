@@ -9,6 +9,8 @@ import android.content.SharedPreferences;
 import android.graphics.Paint;
 import android.graphics.Typeface;
 
+import com.google.gson.Gson;
+
 import net.mabako.steamgifts.activities.MainActivity;
 import net.mabako.steamgifts.core.R;
 import net.mabako.steamgifts.persistentdata.SteamGiftsUserData;
@@ -18,7 +20,9 @@ import net.mabako.steamgifts.tasks.AutoJoinTask;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Statistics
@@ -32,6 +36,8 @@ public class Statistics {
     long overallEntries = 0;
     long lastAutoJoin = 0;
     long dayCount = 0;
+    boolean isDirty = false;
+    GameRatings gameRatings = new GameRatings();
 
     private Context context;
     private Paint mPaint;
@@ -44,6 +50,21 @@ public class Statistics {
 //        reset();
     }
 
+    public Integer getRatingForGame(Integer gameId) {
+        return gameRatings.getGameIdRatingMap().get(gameId);
+    }
+
+    public void setRatingForGame(int gameId, Integer ratingForGame) {
+        gameRatings.getGameIdRatingMap().put(gameId, ratingForGame);
+        isDirty = true;
+    }
+
+    public void saveIfDirty() {
+        if (isDirty) {
+            save();
+        }
+    }
+
     public void reset() {
         todayPointsSpent = 0;
         todayEntered = 0;
@@ -53,6 +74,7 @@ public class Statistics {
         overallEntries = 0;
         lastAutoJoin = 0;
         dayCount = 0;
+        gameRatings = new GameRatings();
         save();
     }
 
@@ -66,6 +88,14 @@ public class Statistics {
         overallGiveawaysEntered = sharedPreferences.getLong("overallGiveawaysEntered", overallGiveawaysEntered);
         overallPointsSpent = sharedPreferences.getLong("overallPointsSpent", overallPointsSpent);
         overallEntries = sharedPreferences.getLong("overallEntries", overallEntries);
+
+        String gameRatings = sharedPreferences.getString("gameRatings", null);
+        if (gameRatings != null) {
+            this.gameRatings = new Gson().fromJson(gameRatings, GameRatings.class);
+        }
+
+
+        isDirty = false;
     }
 
     private void save() {
@@ -87,7 +117,10 @@ public class Statistics {
         editor.putLong("overallGiveawaysEntered", overallGiveawaysEntered);
         editor.putLong("overallPointsSpent", overallPointsSpent);
         editor.putLong("overallEntries", overallEntries);
+        editor.putString("gameRatings", new Gson().toJson(gameRatings));
+
         editor.apply();
+        isDirty = false;
     }
 
     private boolean isNewDay() {
@@ -123,7 +156,7 @@ public class Statistics {
 
     public void updateStatsNotification(int giveawaysEntered, int pointsSpent, long entries) {
         String title = "Stats - Points Left: " + SteamGiftsUserData.getCurrent(context).getPoints();
-        String content = "Today Entered: " + todayEntered + " Spent: " + todayPointsSpent;
+        String content = "Just Entered: " + giveawaysEntered + " Spent: " + pointsSpent;
 
         long avEntries = giveawaysEntered != 0 ? entries / giveawaysEntered : 0;
         long avTodayEntries = todayEntered != 0 ? todayEntries / todayEntered : 0;
@@ -135,15 +168,13 @@ public class Statistics {
 
         long dailyEntered = dayCount != 0 ? overallGiveawaysEntered / dayCount : 0;
         long dailyPointsSpent = dayCount != 0 ? overallPointsSpent / dayCount : 0;
-        long dailyEntries = dayCount != 0 ? avOverallEntries / dayCount : 0;
-        long dailyPoints = dayCount != 0 ? avOverallPoints / dayCount : 0;
 
         List<String> lines = new ArrayList<>();
         lines.add(makeRow("Stats", "Last", "Today", "Daily", "Overall"));
         lines.add(makeRow("Entered", giveawaysEntered, todayEntered, dailyEntered, overallGiveawaysEntered));
         lines.add(makeRow("Points", pointsSpent, todayPointsSpent, dailyPointsSpent, overallPointsSpent));
-        lines.add(makeRow("Av Entries", avEntries, avTodayEntries, dailyEntries, avOverallEntries));
-        lines.add(makeRow("Av Points", avPoints, avTodayPoints, dailyPoints, avOverallPoints));
+        lines.add(makeRow("Av Entries", avEntries, avTodayEntries, "-", avOverallEntries));
+        lines.add(makeRow("Av Points", avPoints, avTodayPoints, "-", avOverallPoints));
 
         android.app.Notification.Builder builder = new Notification.Builder(context);
 
@@ -170,17 +201,7 @@ public class Statistics {
         ((NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE)).notify(notificationId, notification);
     }
 
-    private String makeRow(String text, long... vals) {
-        String[] all = new String[vals.length + 1];
-        all[0] = text;
-        for (int i = 0; i < vals.length; i++) {
-            all[i + 1] = Long.toString(vals[i]);
-        }
-
-        return makeRow(all);
-    }
-
-    private String makeRow(String... vals) {
+    private String makeRow(Object... vals) {
         StringBuilder sb = new StringBuilder();
 
         float desiredWidth = 0;
@@ -214,14 +235,23 @@ public class Statistics {
         return mPaint.measureText(text, 0, text.length());
     }
 
-    private String makeText(String text, float maxTextWidth) {
-        String curText = text;
+    private String makeText(Object text, float maxTextWidth) {
+        String curText = text.toString();
+        boolean toggle = false;
         while (true) {
             float w = getTextWidth(curText);
             if (w >= maxTextWidth) {
                 return curText;
             }
-            curText = " " + curText;
+            if (toggle) {
+                curText = " " + curText;
+            } else {
+                curText = curText + " ";
+            }
+            toggle = !toggle;
         }
     }
+
+
+
 }

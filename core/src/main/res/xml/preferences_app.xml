@@ -51,6 +51,11 @@
             android:key="preferences_autojoin_prefer_high_value_games"
             android:title="@string/preferences_autojoin_prefer_high_value_games" />
 
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="preferences_autojoin_prefer_high_rating_games"
+            android:title="@string/preferences_autojoin_prefer_high_rating_games" />
+
         <net.mabako.sgtools.EditTextIntegerPreference
             android:defaultValue="15"
             android:numeric="integer"

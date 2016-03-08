@@ -33,6 +33,7 @@ public class Giveaway extends BasicGiveaway implements IEndlessAdaptable {
     private int entries;
     private int copies;
     private int points;
+    private int rating;
 
     /**
      * When was this giveaway created?
@@ -289,5 +290,13 @@ public class Giveaway extends BasicGiveaway implements IEndlessAdaptable {
         } else {
             return 0;
         }
+    }
+
+    public int getRating() {
+        return rating;
+    }
+
+    public void setRating(int rating) {
+        this.rating = rating;
     }
 }

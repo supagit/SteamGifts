@@ -18,6 +18,7 @@ import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -244,7 +245,7 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
             document.select(".pinned-giveaways__outer-wrap").html("");
 
             // Parse all rows of giveaways
-            return Utils.loadGiveawaysFromList(document);
+            return Utils.loadGiveawaysFromList(document, statistics);
         } catch (Exception e) {
             Log.e(TAG, "Error fetching URL", e);
             return null;

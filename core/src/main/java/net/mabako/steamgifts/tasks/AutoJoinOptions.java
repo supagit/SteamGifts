@@ -13,6 +13,7 @@ public class AutoJoinOptions {
         ALWAYS_JOIN_GIVEAWAYS_FOR_BOOKMARKS("preferences_autojoin_always_join_bookmarks", true),
         AUTO_JOIN_ON_NON_WIFI_CONNECTION("preferences_autojoin_on_non_wifi", true),
         PREFER_HIGH_VALUE_GAMES("preferences_autojoin_prefer_high_value_games", true),
+        PREFER_HIGH_RATING_GAMES("preferences_autojoin_prefer_high_rating_games", true),
 
         MINIMUM_POINTS_TO_KEEP_FOR_BAD_RATIO("preferences_autojoin_minimum_points_to_keep_for_bad_ratio", 150),
         MINIMUM_POINTS_TO_KEEP_FOR_GREAT_RATIO("preferences_autojoin_minimum_points_to_keep_for_great_ratio", 50),

@@ -12,10 +12,19 @@ public class AutoJoinUtils {
     private static int READIBLE_ENTRY_RATIO_FACTOR = 5000;
 
     public static double calculateReadibleEntryRatio(Context context, Giveaway giveaway) {
-        if (AutoJoinOptions.isOptionBoolean(context, AutoJoinOptions.AutoJoinOption.PREFER_HIGH_VALUE_GAMES)) {
-            return giveaway.getEntryRatio() * giveaway.getPoints()  * READIBLE_ENTRY_RATIO_FACTOR / 10;
+        double factor = 1.0;
+        if (AutoJoinOptions.isOptionBoolean(context, AutoJoinOptions.AutoJoinOption.PREFER_HIGH_RATING_GAMES)) {
+            int rating = giveaway.getRating();
+            if (rating == 0) {
+                rating = 50;
+            }
+            int diffTo75 = rating - 75;
+            factor*= ((double)diffTo75*2 + 100) / 100;
         }
-        return giveaway.getEntryRatio() * READIBLE_ENTRY_RATIO_FACTOR;
+        if (AutoJoinOptions.isOptionBoolean(context, AutoJoinOptions.AutoJoinOption.PREFER_HIGH_VALUE_GAMES)) {
+            factor *= (double)giveaway.getPoints() / 10;
+        }
+        return giveaway.getEntryRatio() * factor * READIBLE_ENTRY_RATIO_FACTOR;
     }
 
 
