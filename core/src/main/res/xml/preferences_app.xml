@@ -48,6 +48,11 @@
 
         <CheckBoxPreference
             android:defaultValue="true"
+            android:key="preferences_autojoin_prefer_less_entries"
+            android:title="@string/preferences_autojoin_prefer_less_entries" />
+
+        <CheckBoxPreference
+            android:defaultValue="true"
             android:key="preferences_autojoin_prefer_high_value_games"
             android:title="@string/preferences_autojoin_prefer_high_value_games" />
 

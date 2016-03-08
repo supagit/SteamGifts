@@ -18,13 +18,19 @@ public class AutoJoinUtils {
             if (rating == 0) {
                 rating = 50;
             }
-            int diffTo75 = rating - 75;
-            factor*= ((double)diffTo75*2 + 100) / 100;
+            int diffTo75 = rating - 80;
+            factor *= ((double) diffTo75 * 2 + 100) / 100;
         }
         if (AutoJoinOptions.isOptionBoolean(context, AutoJoinOptions.AutoJoinOption.PREFER_HIGH_VALUE_GAMES)) {
-            factor *= (double)giveaway.getPoints() / 10;
+            factor *= (double) giveaway.getPoints() / 10;
         }
-        return giveaway.getEntryRatio() * factor * READIBLE_ENTRY_RATIO_FACTOR;
+
+        if (AutoJoinOptions.isOptionBoolean(context, AutoJoinOptions.AutoJoinOption.PREFER_LESS_ENTRIES)) {
+            return giveaway.getEntryRatio() * factor * READIBLE_ENTRY_RATIO_FACTOR;
+        } else {
+            //factor += 0.25;
+            return factor * factor * factor * 10;
+        }
     }
 
 

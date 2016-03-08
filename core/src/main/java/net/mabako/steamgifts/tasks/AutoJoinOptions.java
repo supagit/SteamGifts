@@ -12,6 +12,7 @@ public class AutoJoinOptions {
         AUTO_JOIN_ACTIVATED("preferences_autojoin_activated", true),
         ALWAYS_JOIN_GIVEAWAYS_FOR_BOOKMARKS("preferences_autojoin_always_join_bookmarks", true),
         AUTO_JOIN_ON_NON_WIFI_CONNECTION("preferences_autojoin_on_non_wifi", true),
+        PREFER_LESS_ENTRIES("preferences_autojoin_prefer_less_entries", true),
         PREFER_HIGH_VALUE_GAMES("preferences_autojoin_prefer_high_value_games", true),
         PREFER_HIGH_RATING_GAMES("preferences_autojoin_prefer_high_rating_games", true),
 
