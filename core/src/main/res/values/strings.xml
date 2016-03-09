@@ -150,7 +150,6 @@
     <string name="preference_giveaway_show_pinned_on">Always showing at the top</string>
     <string name="preference_giveaway_show_pinned_off">Not highlighted in a special way</string>
     <string name="preferences_hide_low_rating_games">Hide games with a low rating</string>
-    <string name="preferences_autojoin_rating">Autojoin Ratings above this</string>
 
     <string name="preferences_autojoin">Autojoin</string>
     <string name="preferences_autojoin_show_ratio">show ratio</string>

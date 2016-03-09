@@ -14,6 +14,7 @@ import net.mabako.steamgifts.data.Giveaway;
 import net.mabako.steamgifts.fragments.ListFragment;
 import net.mabako.steamgifts.persistentdata.FilterData;
 import net.mabako.steamgifts.persistentdata.SavedGiveaways;
+import net.mabako.steamgifts.tasks.AutoJoinOptions;
 import net.mabako.steamgifts.receivers.CheckForAutoJoin;
 import net.mabako.steamgifts.tasks.AutoJoinCalculator;
 import net.mabako.steamgifts.tasks.AutoJoinOptions;
