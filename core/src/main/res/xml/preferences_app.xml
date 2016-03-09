@@ -23,6 +23,12 @@
             android:summaryOff="@string/preference_giveaway_show_pinned_off"
             android:summaryOn="@string/preference_giveaway_show_pinned_on"
             android:title="@string/preference_giveaway_show_pinned" />
+
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="preferences_hide_low_rating_games"
+            android:title="@string/preferences_hide_low_rating_games"
+            android:summary="hides games with a rating below the minimum rating to autojoin"/>
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/preferences_autojoin">

@@ -1,14 +1,10 @@
 package net.mabako.steamgifts.adapters;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.SharedPreferences;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.View;
 
 import net.mabako.steamgifts.adapters.viewholder.GiveawayListItemViewHolder;
@@ -17,6 +13,7 @@ import net.mabako.steamgifts.data.Giveaway;
 import net.mabako.steamgifts.fragments.ListFragment;
 import net.mabako.steamgifts.persistentdata.FilterData;
 import net.mabako.steamgifts.persistentdata.SavedGiveaways;
+import net.mabako.steamgifts.tasks.AutoJoinOptions;
 import net.mabako.steamgifts.tasks.Utils;
 
 import java.util.ArrayList;
@@ -142,6 +139,9 @@ public class GiveawayAdapter extends EndlessAdapter {
         if (filterItems && fragment != null) {
             FilterData fd = FilterData.getCurrent(fragment.getContext());
 
+            boolean hideGamesWithBadRating = AutoJoinOptions.isOptionBoolean(context, AutoJoinOptions.AutoJoinOption.HIDE_GAMES_WITH_BAD_RATING);
+            int minimumRating = AutoJoinOptions.getOptionInteger(context, AutoJoinOptions.AutoJoinOption.MINIMUM_RATING);
+
             int minPoints = fd.getMinPoints();
             int maxPoints = fd.getMaxPoints();
 
@@ -178,6 +178,8 @@ public class GiveawayAdapter extends EndlessAdapter {
                     } else if (entriesPerCopy && (minEntries >= 0 && entriesPerCopyValue < minEntries) || (maxEntries >= 0 && entriesPerCopyValue > maxEntries)) {
                         iter.remove();
                     } else if (regionRestrictedOnly && !giveaway.isRegionRestricted()) {
+                        iter.remove();
+                    } else if (hideGamesWithBadRating && giveaway.getRating() < minimumRating) {
                         iter.remove();
                     }
                 }
