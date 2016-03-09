@@ -159,6 +159,7 @@ public class GiveawayAdapter extends EndlessAdapter {
 
             if (minPoints >= 0 || maxPoints >= 0
                     || hideEntered
+                    || hideGamesWithBadRating
                     || regionRestrictedOnly
                     || (checkLevelOnlyOnPublicGiveaway && (minLevel >= 0 || maxLevel >= 0))
                     || (entriesPerCopy && (minEntries >= 0 || maxEntries >= 0))) {
