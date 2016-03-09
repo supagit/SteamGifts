@@ -13,6 +13,13 @@ public class AutoJoinUtils {
 
     public static double calculateReadibleEntryRatio(Context context, Giveaway giveaway) {
         double factor = 1.0;
+
+        int minimumRating = AutoJoinOptions.getOptionInteger(context, AutoJoinOptions.AutoJoinOption.MINIMUM_RATING);
+        boolean minimumRatingPresent = giveaway.getRating() >= minimumRating;
+        if (!minimumRatingPresent) {
+            return 0;
+        }
+
         if (AutoJoinOptions.isOptionBoolean(context, AutoJoinOptions.AutoJoinOption.PREFER_HIGH_RATING_GAMES)) {
             int rating = giveaway.getRating();
             if (rating == 0) {

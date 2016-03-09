@@ -15,13 +15,13 @@ import net.mabako.steamgifts.data.Giveaway;
 import net.mabako.steamgifts.data.ICommentHolder;
 import net.mabako.steamgifts.data.IImageHolder;
 import net.mabako.steamgifts.data.Image;
-import net.mabako.steamgifts.data.Statistics;
+import net.mabako.steamgifts.data.Rating;
+import net.mabako.steamgifts.persistentdata.SavedRatings;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
-import org.jsoup.helper.HttpConnection;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -191,7 +191,7 @@ public final class Utils {
      * @param document the loaded document
      * @return list of giveaways
      */
-    public static List<Giveaway> loadGiveawaysFromList(Document document, Statistics statistics) {
+    public static List<Giveaway> loadGiveawaysFromList(Document document, SavedRatings ratings) {
         Elements giveaways = document.select(".giveaway__row-inner-wrap");
 
         List<Giveaway> giveawayList = new ArrayList<>();
@@ -228,35 +228,67 @@ public final class Utils {
             Utils.loadGiveaway(giveaway, element, "giveaway", "giveaway__heading__thin", uriIcon);
             giveawayList.add(giveaway);
 
-            applyGiveawayRating(giveaway, statistics);
+            applyGiveawayRating(giveaway, ratings);
         }
 
-        statistics.saveIfDirty();
         return giveawayList;
     }
 
-    public static void applyGiveawayRating(Giveaway giveaway, Statistics statistics) {
-        Integer ratingForGame = statistics.getRatingForGame(giveaway.getGameId());
-        if (ratingForGame == null) {
-            ratingForGame = fetchGiveawayRating(giveaway);
-            statistics.setRatingForGame(giveaway.getGameId(), ratingForGame);
+    public static void applyGiveawayRating(Giveaway giveaway, SavedRatings ratings) {
+        Rating rating = ratings.get(giveaway.getGameId());
+        if (rating == null || !rating.isRatingValid()) {
+            int ratingForGame = fetchGiveawayRating(giveaway);
+            rating = new Rating(System.currentTimeMillis(), ratingForGame, giveaway.getGameId());
+            ratings.add(rating, giveaway.getGameId());
         }
 
-        giveaway.setRating(ratingForGame);
+        giveaway.setRating(rating.getRating());
     }
 
     public static int fetchGiveawayRating(Giveaway giveaway) {
         int gameId = giveaway.getGame().getGameId();
 
-        Integer ratingFromMetacritics = getRatingFromMetacritics(gameId);
-        if (ratingFromMetacritics != null) {
-            return ratingFromMetacritics;
+        Integer ratingFromSteamDB = getRatingFromSteamDB(gameId);
+        if (ratingFromSteamDB != null) {
+            return ratingFromSteamDB;
         }
-        Integer ratingFromRatingValue = getRatingFromRatingValue(gameId);
-        return ratingFromRatingValue != null ? ratingFromRatingValue : 0;
+        Integer ratingFromMetacritics = getRatingFromMetacritics(gameId);
+        Integer ratingFromSteamPowered = getRatingFromSteamPowered(gameId);
+
+        int rating = 0;
+        if (ratingFromMetacritics != null) {
+            rating = ratingFromMetacritics;
+        }
+
+        if (ratingFromSteamPowered != null && ratingFromSteamPowered>rating) {
+            rating = ratingFromSteamPowered;
+        }
+
+        return rating;
     }
 
-    private static Integer getRatingFromRatingValue(int gameId) {
+    private static Integer getRatingFromSteamDB(int gameId) {
+        try {
+            Connection connect = Jsoup.connect("https://steamdb.info/app/" + gameId)
+                    .userAgent(Constants.JSOUP_USER_AGENT)
+                    .timeout(Constants.JSOUP_TIMEOUT);
+
+            Document document = connect.get();
+            String s = document.toString();
+
+            String ratingText = getValueFromHtml(s, "ratingValue");
+
+            if (ratingText != null) {
+                return Integer.parseInt(ratingText);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+
+    }
+
+    private static Integer getRatingFromSteamPowered(int gameId) {
         try {
             Connection connect = Jsoup.connect("http://store.steampowered.com/app/" + gameId)
                     .userAgent(Constants.JSOUP_USER_AGENT)

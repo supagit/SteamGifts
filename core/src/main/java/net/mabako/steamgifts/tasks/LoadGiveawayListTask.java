@@ -6,9 +6,9 @@ import android.util.Log;
 
 import net.mabako.Constants;
 import net.mabako.steamgifts.data.Giveaway;
-import net.mabako.steamgifts.data.Statistics;
 import net.mabako.steamgifts.fragments.GiveawayListFragment;
 import net.mabako.steamgifts.persistentdata.FilterData;
+import net.mabako.steamgifts.persistentdata.SavedRatings;
 import net.mabako.steamgifts.persistentdata.SteamGiftsUserData;
 
 import org.jsoup.Connection;
@@ -29,11 +29,11 @@ public class LoadGiveawayListTask extends AsyncTask<Void, Void, List<Giveaway>> 
     private final boolean showPinnedGiveaways;
 
     private String foundXsrfToken = null;
-    private final Statistics statistics;
+    private final SavedRatings savedRatings;
 
     public LoadGiveawayListTask(GiveawayListFragment activity, int page, GiveawayListFragment.Type type, String searchQuery, boolean showPinnedGiveaways) {
         this.fragment = activity;
-        statistics = new Statistics(activity.getContext());
+        savedRatings = new SavedRatings(activity.getContext());
         this.page = page;
         this.type = type;
         this.searchQuery = searchQuery;
@@ -84,7 +84,7 @@ public class LoadGiveawayListTask extends AsyncTask<Void, Void, List<Giveaway>> 
                 document.select(".pinned-giveaways__outer-wrap").html("");
 
             // Parse all rows of giveaways
-            return Utils.loadGiveawaysFromList(document, statistics);
+            return Utils.loadGiveawaysFromList(document, savedRatings);
         } catch (Exception e) {
             Log.e(TAG, "Error fetching URL", e);
             return null;

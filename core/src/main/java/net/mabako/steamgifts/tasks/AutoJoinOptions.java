@@ -19,7 +19,8 @@ public class AutoJoinOptions {
         MINIMUM_POINTS_TO_KEEP_FOR_BAD_RATIO("preferences_autojoin_minimum_points_to_keep_for_bad_ratio", 150),
         MINIMUM_POINTS_TO_KEEP_FOR_GREAT_RATIO("preferences_autojoin_minimum_points_to_keep_for_great_ratio", 50),
         BAD_RATIO("preferences_autojoin_bad_ratio", 15),
-        GREAT_RATIO("preferences_autojoin_great_ratio", 30);
+        GREAT_RATIO("preferences_autojoin_great_ratio", 30),
+        MINIMUM_RATING("preferences_autojoin_minimum_rating", 75);
 
         private String preference;
         private Integer defaultInteger;

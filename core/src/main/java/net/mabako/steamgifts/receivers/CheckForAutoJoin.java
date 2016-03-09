@@ -11,10 +11,10 @@ import net.mabako.steamgifts.tasks.AutoJoinTask;
  */
 public class CheckForAutoJoin extends AbstractNotificationCheckReceiver {
     public static final long AUTO_JOIN_PERIOD = AlarmManager.INTERVAL_HALF_HOUR;
-    public static final long FIVE_MINUTES = AlarmManager.INTERVAL_HALF_HOUR / 6;
+    public static final long TEN_MINUTES = AlarmManager.INTERVAL_HALF_HOUR / 3;
     @Override
     public void onReceive(final Context context, Intent intent) {
-        new AutoJoinTask(context,AUTO_JOIN_PERIOD + FIVE_MINUTES).execute();
+        new AutoJoinTask(context,AUTO_JOIN_PERIOD + TEN_MINUTES).execute();
     }
 
 

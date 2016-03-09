@@ -37,7 +37,6 @@ public class Statistics {
     long lastAutoJoin = 0;
     long dayCount = 0;
     boolean isDirty = false;
-    GameRatings gameRatings = new GameRatings();
 
     private Context context;
     private Paint mPaint;
@@ -50,21 +49,6 @@ public class Statistics {
 //        reset();
     }
 
-    public Integer getRatingForGame(Integer gameId) {
-        return gameRatings.getGameIdRatingMap().get(gameId);
-    }
-
-    public void setRatingForGame(int gameId, Integer ratingForGame) {
-        gameRatings.getGameIdRatingMap().put(gameId, ratingForGame);
-        isDirty = true;
-    }
-
-    public void saveIfDirty() {
-        if (isDirty) {
-            save();
-        }
-    }
-
     public void reset() {
         todayPointsSpent = 0;
         todayEntered = 0;
@@ -74,7 +58,6 @@ public class Statistics {
         overallEntries = 0;
         lastAutoJoin = 0;
         dayCount = 0;
-        gameRatings = new GameRatings();
         save();
     }
 
@@ -88,13 +71,6 @@ public class Statistics {
         overallGiveawaysEntered = sharedPreferences.getLong("overallGiveawaysEntered", overallGiveawaysEntered);
         overallPointsSpent = sharedPreferences.getLong("overallPointsSpent", overallPointsSpent);
         overallEntries = sharedPreferences.getLong("overallEntries", overallEntries);
-
-        String gameRatings = sharedPreferences.getString("gameRatings", null);
-        if (gameRatings != null) {
-            this.gameRatings = new Gson().fromJson(gameRatings, GameRatings.class);
-        }
-
-
         isDirty = false;
     }
 
@@ -117,7 +93,6 @@ public class Statistics {
         editor.putLong("overallGiveawaysEntered", overallGiveawaysEntered);
         editor.putLong("overallPointsSpent", overallPointsSpent);
         editor.putLong("overallEntries", overallEntries);
-        editor.putString("gameRatings", new Gson().toJson(gameRatings));
 
         editor.apply();
         isDirty = false;

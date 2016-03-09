@@ -110,6 +110,7 @@ public abstract class SavedElements<T> implements Comparator<T> {
         public void onCreate(SQLiteDatabase db) {
             db.execSQL("CREATE TABLE " + SavedGiveaways.DB_TABLE + "(" + KEY_ID + " text primary key, " + KEY_VALUE + " text)");
             db.execSQL("CREATE TABLE " + SavedDiscussions.DB_TABLE + "(" + KEY_ID + " text primary key, " + KEY_VALUE + " text)");
+            db.execSQL("CREATE TABLE " + SavedRatings.DB_TABLE + "(" + KEY_ID + " text primary key, " + KEY_VALUE + " text)");
         }
 
         private boolean add(T element, String elementId) {
@@ -138,6 +139,8 @@ public abstract class SavedElements<T> implements Comparator<T> {
 
             return elements;
         }
+
+        static boolean doit = true;
 
         public T get(String elementId) {
             Cursor cursor = getReadableDatabase().query(parent.table, new String[]{KEY_VALUE}, KEY_ID + " = ?", new String[]{elementId}, null, null, null, null);

@@ -12,6 +12,7 @@ import net.mabako.steamgifts.data.Statistics;
 import net.mabako.steamgifts.fragments.GiveawayDetailFragment;
 import net.mabako.steamgifts.fragments.interfaces.IHasEnterableGiveaways;
 import net.mabako.steamgifts.persistentdata.SavedGiveaways;
+import net.mabako.steamgifts.persistentdata.SavedRatings;
 import net.mabako.steamgifts.persistentdata.SteamGiftsUserData;
 
 import org.jsoup.Connection;
@@ -40,11 +41,13 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
     private String foundXsrfToken;
     private int points;
     private Statistics statistics;
+    private final SavedRatings savedRatings;
 
 
     public AutoJoinTask(Context context, long autoJoinPeriod) {
         this.context = context;
         this.autoJoinPeriod = autoJoinPeriod;
+        savedRatings = new SavedRatings(context);
     }
 
     private boolean isOption(AutoJoinOptions.AutoJoinOption option) {
@@ -91,6 +94,8 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
     private List<Giveaway> calculateGiveawaysToJoin(List<Giveaway> filteredGiveaways, Set<Integer> bookmarkedGameIds) {
         points = SteamGiftsUserData.getCurrent(context).getPoints();
 
+        int minimumRating = AutoJoinOptions.getOptionInteger(context, AutoJoinOptions.AutoJoinOption.MINIMUM_RATING);
+
         int minPointsToKeepForBadRatio = AutoJoinOptions.getOptionInteger(context, AutoJoinOptions.AutoJoinOption.MINIMUM_POINTS_TO_KEEP_FOR_BAD_RATIO);
         int minPointsToKeepForGreatRatio = AutoJoinOptions.getOptionInteger(context, AutoJoinOptions.AutoJoinOption.MINIMUM_POINTS_TO_KEEP_FOR_GREAT_RATIO);
         int minPointsToKeep = (minPointsToKeepForBadRatio + minPointsToKeepForGreatRatio) / 2;
@@ -106,11 +111,13 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
             boolean shouldEnterGiveaway;
             int leftAfterJoin = pointsLeft - giveaway.getPoints();
 
-            if (bookmarkedGameIds.contains(giveaway.getGameId())) {
+            boolean isBookmarked = bookmarkedGameIds.contains(giveaway.getGameId());
+
+            if (isBookmarked) {
                 shouldEnterGiveaway = true;
-            } else if (ratio>=greatRatio) {
+            } else if (ratio >= greatRatio) {
                 shouldEnterGiveaway = leftAfterJoin >= minPointsToKeepForGreatRatio;
-            } else if (ratio<=badRatio) {
+            } else if (ratio <= badRatio) {
                 shouldEnterGiveaway = leftAfterJoin >= minPointsToKeepForBadRatio;
             } else {
                 shouldEnterGiveaway = leftAfterJoin >= minPointsToKeep;
@@ -138,7 +145,13 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
         Collections.sort(result, new Comparator<Giveaway>() {
             @Override
             public int compare(Giveaway lhs, Giveaway rhs) {
-                return (int) (10000 * (AutoJoinUtils.calculateReadibleEntryRatio(context, rhs) - AutoJoinUtils.calculateReadibleEntryRatio(context, lhs)));
+                int rhsVal = (int) (10000 * AutoJoinUtils.calculateReadibleEntryRatio(context, rhs));
+                int lhsVal = (int) (10000 * AutoJoinUtils.calculateReadibleEntryRatio(context, lhs));
+                int diff = rhsVal - lhsVal;
+                if (diff == 0) {
+                    return lhs.getEntries() - rhs.getEntries();
+                }
+                return diff;
             }
         });
         return result;
@@ -146,7 +159,7 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
 
     private boolean doesGiveawayEndWithInAutoJoinPeriod(Giveaway giveaway) {
         final long realTimeDiff = Math.abs(new Date().getTime() - giveaway.getEndTime().getTimeInMillis());
-        return realTimeDiff<= autoJoinPeriod;
+        return realTimeDiff <= autoJoinPeriod;
     }
 
     public void requestEnterLeave(final List<Giveaway> giveawaysToJoin, String xsrfToken) {
@@ -190,13 +203,13 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
             if (success) {
                 giveawaysEntered++;
                 pointsSpent += giveaway.getPoints();
-                entries += giveaway.getEntries()/giveaway.getCopies();
+                entries += giveaway.getEntries() / giveaway.getCopies();
 
             }
         }
 
         long newPoints = points - pointsSpent;
-        SteamGiftsUserData.getCurrent(context).setPoints((int)newPoints);
+        SteamGiftsUserData.getCurrent(context).setPoints((int) newPoints);
 
 
         statistics.updateStatsNotification(giveawaysEntered, pointsSpent, entries);
@@ -205,7 +218,7 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
     protected List<Giveaway> loadGiveAways(Context context) {
         List<Giveaway> giveaways = loadGiveAways(context, 0);
 
-        if (giveaways !=null) {
+        if (giveaways != null) {
             int page = 1;
             while (doesGiveawayEndWithInAutoJoinPeriod(giveaways.get(giveaways.size() - 1)) && page < 5) {
                 List<Giveaway> pageGiveaways = loadGiveAways(context, page);
@@ -245,7 +258,7 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
             document.select(".pinned-giveaways__outer-wrap").html("");
 
             // Parse all rows of giveaways
-            return Utils.loadGiveawaysFromList(document, statistics);
+            return Utils.loadGiveawaysFromList(document, savedRatings);
         } catch (Exception e) {
             Log.e(TAG, "Error fetching URL", e);
             return null;

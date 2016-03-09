@@ -154,6 +154,7 @@
     <string name="preferences_autojoin_always_join_bookmarks">always join bookmarks</string>
     <string name="preferences_autojoin_on_non_wifi">autojoin on non wifi</string>
     <string name="preferences_autojoin_prefer_less_entries">prefer games with less entries</string>
+    <string name="preferences_autojoin_minimum_rating">minimum rating to autojoin</string>
     <string name="preferences_autojoin_prefer_high_value_games">prefer high value games</string>
     <string name="preferences_autojoin_prefer_high_rating_games">prefer games with higher rating</string>
     <string name="preferences_autojoin_bad_ratio">bad ratio</string>
