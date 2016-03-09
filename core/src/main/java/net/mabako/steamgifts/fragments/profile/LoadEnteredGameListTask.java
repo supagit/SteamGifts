@@ -4,7 +4,9 @@ import android.net.Uri;
 
 import net.mabako.steamgifts.adapters.IEndlessAdaptable;
 import net.mabako.steamgifts.data.Game;
+import net.mabako.steamgifts.data.Rating;
 import net.mabako.steamgifts.fragments.ListFragment;
+import net.mabako.steamgifts.persistentdata.SavedRatings;
 import net.mabako.steamgifts.tasks.LoadGameListTask;
 import net.mabako.steamgifts.tasks.Utils;
 
@@ -14,9 +16,11 @@ import java.util.List;
 
 public class LoadEnteredGameListTask extends LoadGameListTask {
     public static final int ENTRIES_PER_PAGE = 50;
+    private final SavedRatings savedRatings;
 
     public LoadEnteredGameListTask(ListFragment listFragment, int page) {
         super(listFragment, listFragment.getContext(), "giveaways/entered", page, null);
+        savedRatings = new SavedRatings(listFragment.getContext());
     }
 
     @Override
@@ -51,6 +55,11 @@ public class LoadEnteredGameListTask extends LoadGameListTask {
 
         giveaway.setEntered(giveaway.isOpen());
         giveaway.setDeleted(!element.select(".table__column__deleted").isEmpty());
+
+        Rating rating = savedRatings.get(giveaway.getGameId());
+        if (rating != null) {
+            giveaway.setRating(rating.getRating());
+        }
 
         return giveaway;
     }
