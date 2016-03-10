@@ -246,7 +246,11 @@ public final class Utils {
     }
 
     public static int fetchGiveawayRating(Giveaway giveaway) {
-        int gameId = giveaway.getGame().getGameId();
+        Game game = giveaway.getGame();
+        if (game == null) {
+            return 0;
+        }
+        int gameId = game.getGameId();
 
         Integer ratingFromSteamDB = getRatingFromSteamDB(gameId);
         if (ratingFromSteamDB != null) {
