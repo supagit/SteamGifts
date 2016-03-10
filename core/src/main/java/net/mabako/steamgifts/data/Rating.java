@@ -48,6 +48,6 @@ public class Rating {
             return true;
         }
         long timeDiff = System.currentTimeMillis() - time;
-        return timeDiff >= AlarmManager.INTERVAL_DAY*30*3;
+        return timeDiff < AlarmManager.INTERVAL_DAY*30*3;
     }
 }

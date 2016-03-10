@@ -123,7 +123,7 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
                 shouldEnterGiveaway = leftAfterJoin >= minPointsToKeep;
             }
 
-            if (shouldEnterGiveaway) {
+            if (shouldEnterGiveaway && leftAfterJoin>=0) {
                 result.add(giveaway);
                 pointsLeft -= giveaway.getPoints();
             }
