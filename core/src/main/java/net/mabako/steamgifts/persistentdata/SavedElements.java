@@ -102,7 +102,7 @@ public abstract class SavedElements<T> implements Comparator<T> {
         private final SavedElements<T> parent;
 
         public GiveawayOpenHelper(Context context, SavedElements<T> parent) {
-            super(context, "savedelements", null, 3);
+            super(context, "savedelements", null, 4);
             this.parent = parent;
         }
 
@@ -111,6 +111,7 @@ public abstract class SavedElements<T> implements Comparator<T> {
             db.execSQL("CREATE TABLE " + SavedGiveaways.DB_TABLE + "(" + KEY_ID + " text primary key, " + KEY_VALUE + " text)");
             db.execSQL("CREATE TABLE " + SavedDiscussions.DB_TABLE + "(" + KEY_ID + " text primary key, " + KEY_VALUE + " text)");
             db.execSQL("CREATE TABLE " + SavedRatings.DB_TABLE + "(" + KEY_ID + " text primary key, " + KEY_VALUE + " text)");
+            db.execSQL("CREATE TABLE " + SavedGameInfo.DB_TABLE + "(" + KEY_ID + " text primary key, " + KEY_VALUE + " text)");
         }
 
         private boolean add(T element, String elementId) {
@@ -175,6 +176,10 @@ public abstract class SavedElements<T> implements Comparator<T> {
             // Create a new table for saved discussions
             if (oldVersion < 3)
                 db.execSQL("CREATE TABLE " + SavedDiscussions.DB_TABLE + "(" + KEY_ID + " text primary key, " + KEY_VALUE + " text)");
+
+            if (oldVersion < 4)
+                db.execSQL("CREATE TABLE " + SavedGameInfo.DB_TABLE + "(" + KEY_ID + " text primary key, " + KEY_VALUE + " text)");
+
         }
     }
 }

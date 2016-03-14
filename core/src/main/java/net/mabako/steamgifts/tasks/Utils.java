@@ -11,13 +11,14 @@ import android.util.Log;
 import net.mabako.Constants;
 import net.mabako.steamgifts.data.Comment;
 import net.mabako.steamgifts.data.Game;
+import net.mabako.steamgifts.data.GameInfo;
 import net.mabako.steamgifts.data.Giveaway;
 import net.mabako.steamgifts.data.ICommentHolder;
 import net.mabako.steamgifts.data.IImageHolder;
 import net.mabako.steamgifts.data.Image;
-import net.mabako.steamgifts.data.Rating;
-import net.mabako.steamgifts.persistentdata.SavedRatings;
+import net.mabako.steamgifts.persistentdata.SavedGameInfo;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.jsoup.Connection;
@@ -33,8 +34,11 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public final class Utils {
     private Utils() {
@@ -191,7 +195,7 @@ public final class Utils {
      * @param document the loaded document
      * @return list of giveaways
      */
-    public static List<Giveaway> loadGiveawaysFromList(Document document, SavedRatings ratings) {
+    public static List<Giveaway> loadGiveawaysFromList(Document document, SavedGameInfo savedGameInfo) {
         Elements giveaways = document.select(".giveaway__row-inner-wrap");
 
         List<Giveaway> giveawayList = new ArrayList<>();
@@ -228,52 +232,86 @@ public final class Utils {
             Utils.loadGiveaway(giveaway, element, "giveaway", "giveaway__heading__thin", uriIcon);
             giveawayList.add(giveaway);
 
-            applyGiveawayRating(giveaway, ratings);
+            applyGiveawayRating(giveaway, savedGameInfo);
         }
 
         return giveawayList;
     }
 
-    public static void applyGiveawayRating(Giveaway giveaway, SavedRatings ratings) {
-        Rating rating = ratings.get(giveaway.getGameId());
-        if (rating == null || !rating.isRatingValid()) {
-            int ratingForGame = fetchGiveawayRating(giveaway);
-            rating = new Rating(System.currentTimeMillis(), ratingForGame, giveaway.getGameId());
-            ratings.add(rating, giveaway.getGameId());
+    public static void applyGiveawayRating(Giveaway giveaway, SavedGameInfo savedGameInfo) {
+        GameInfo gameInfo = savedGameInfo.get(giveaway.getGameId());
+        if (gameInfo == null || !gameInfo.isValid()) {
+            gameInfo = fetchGameInfo(giveaway.getGameId());
+            if (gameInfo != null) {
+                savedGameInfo.add(gameInfo, gameInfo.getGameId());
+            }
         }
 
-        giveaway.setRating(rating.getRating());
+        if (gameInfo != null) {
+            Set<String> newTags = new HashSet<>();
+            for (String tag : gameInfo.getTags()) {
+                newTags.add(tag.trim());
+            }
+            gameInfo.getTags().clear();
+            gameInfo.getTags().addAll(newTags);
+            savedGameInfo.add(gameInfo, gameInfo.getGameId());
+        }
+
+        if (gameInfo != null) {
+            gameInfo.updateGiveaway(giveaway);
+        }
     }
 
-    public static int fetchGiveawayRating(Giveaway giveaway) {
-        Game game = giveaway.getGame();
-        if (game == null) {
-            return 0;
-        }
-        int gameId = game.getGameId();
+    public static GameInfo fetchGameInfo(int gameId) {
+        GameInfo gameInfo = new GameInfo(gameId, System.currentTimeMillis());
+        updateGameInfoFromSteamDB(gameInfo);
+        updateGameInfoFromMetacritics(gameInfo);
+        updateGameInfoFromSteamPowered(gameInfo);
 
-        Integer ratingFromSteamDB = getRatingFromSteamDB(gameId);
-        if (ratingFromSteamDB != null) {
-            return ratingFromSteamDB;
-        }
-        Integer ratingFromMetacritics = getRatingFromMetacritics(gameId);
-        Integer ratingFromSteamPowered = getRatingFromSteamPowered(gameId);
-
-        int rating = 0;
-        if (ratingFromMetacritics != null) {
-            rating = ratingFromMetacritics;
-        }
-
-        if (ratingFromSteamPowered != null && ratingFromSteamPowered>rating) {
-            rating = ratingFromSteamPowered;
-        }
-
-        return rating;
+        return gameInfo;
     }
 
-    private static Integer getRatingFromSteamDB(int gameId) {
+    private static void updateGameInfoFromSteamDB(GameInfo gameInfo) {
         try {
-            Connection connect = Jsoup.connect("https://steamdb.info/app/" + gameId)
+            Connection connect = Jsoup.connect("https://steamdb.info/app/" + gameInfo.getGameId())
+                    .userAgent(Constants.JSOUP_USER_AGENT)
+                    .timeout(Constants.JSOUP_TIMEOUT);
+
+            Document document = connect.get();
+            String s = document.toString();
+
+            String ratingText = getValueFromHtml(s, "ratingValue");
+            if (ratingText != null) {
+                gameInfo.updateRating(Integer.parseInt(ratingText));
+            }
+
+            gameInfo.getTags().addAll(searchTags(s, "/tags/?tagid", 0));
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static Set<String> searchTags(String s, String subString, int startIdx) {
+        Set<String> tags = new HashSet<>();
+        int idx = s.indexOf(subString, startIdx);
+        while (idx != -1) {
+            int start = s.indexOf(">", idx) + 1;
+            int end = s.indexOf("</a>", start);
+
+            String tag = s.substring(start, end);
+            tags.add(tag.trim());
+
+            idx = s.indexOf(subString, end);
+        }
+
+        return tags;
+    }
+
+    private static void updateGameInfoFromSteamPowered(GameInfo gameInfo) {
+        try {
+            Connection connect = Jsoup.connect("http://store.steampowered.com/app/" + gameInfo.getGameId())
                     .userAgent(Constants.JSOUP_USER_AGENT)
                     .timeout(Constants.JSOUP_TIMEOUT);
 
@@ -283,46 +321,37 @@ public final class Utils {
             String ratingText = getValueFromHtml(s, "ratingValue");
 
             if (ratingText != null) {
-                return Integer.parseInt(ratingText);
+                gameInfo.updateRating(Integer.parseInt(ratingText) * 10);
             }
+
+            int glance_tags = s.indexOf("glance_tags");
+
+            Set<String> tags = searchTags(s, "http://store.steampowered.com/tag", glance_tags);
+            gameInfo.getTags().addAll(tags);
+
+
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return null;
-
     }
 
-    private static Integer getRatingFromSteamPowered(int gameId) {
-        try {
-            Connection connect = Jsoup.connect("http://store.steampowered.com/app/" + gameId)
-                    .userAgent(Constants.JSOUP_USER_AGENT)
-                    .timeout(Constants.JSOUP_TIMEOUT);
-
-            Document document = connect.get();
-            String s = document.toString();
-
-            String ratingText = getValueFromHtml(s, "ratingValue");
-
-            if (ratingText != null) {
-                return Integer.parseInt(ratingText) * 10;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    private static Integer getRatingFromMetacritics(int gameId) {
-        String fileData = doGet("http://store.steampowered.com/api/appdetails?appids=" + gameId);
+    private static void updateGameInfoFromMetacritics(GameInfo gameInfo) {
+        String fileData = doGet("http://store.steampowered.com/api/appdetails?appids=" + gameInfo.getGameId());
 
         try {
             JSONObject jsonObject = new JSONObject(fileData);
-            JSONObject gameJsonObject = jsonObject.getJSONObject(Integer.toString(gameId));
+            JSONObject gameJsonObject = jsonObject.getJSONObject(Integer.toString(gameInfo.getGameId()));
             JSONObject dataJsonObject = gameJsonObject.getJSONObject("data");
             JSONObject metacriticJsonObject = dataJsonObject.getJSONObject("metacritic");
-            return metacriticJsonObject.getInt("score");
+            gameInfo.updateRating(metacriticJsonObject.getInt("score"));
+
+            JSONArray genresJsonArray = dataJsonObject.getJSONArray("genres");
+            for (int i = 0; i < genresJsonArray.length(); i++) {
+                JSONObject jsonObject1 = genresJsonArray.getJSONObject(i);
+                String description = jsonObject1.getString("description");
+                gameInfo.getTags().add(description.trim());
+            }
         } catch (JSONException e) {
-            return null;
         }
     }
 

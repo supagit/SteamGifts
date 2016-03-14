@@ -7,7 +7,7 @@ import net.mabako.Constants;
 import net.mabako.steamgifts.data.Giveaway;
 import net.mabako.steamgifts.data.User;
 import net.mabako.steamgifts.fragments.UserDetailFragment;
-import net.mabako.steamgifts.persistentdata.SavedRatings;
+import net.mabako.steamgifts.persistentdata.SavedGameInfo;
 import net.mabako.steamgifts.persistentdata.SteamGiftsUserData;
 
 import org.jsoup.Connection;
@@ -26,11 +26,11 @@ public class LoadUserDetailsTask extends AsyncTask<Void, Void, List<Giveaway>> {
     private final int page;
     private final User user;
     private String foundXsrfToken;
-    private final SavedRatings savedRatings;
+    private final SavedGameInfo savedGameInfo;
 
     public LoadUserDetailsTask(UserDetailFragment.UserGiveawayListFragment fragment, String path, int page, User user) {
         this.fragment = fragment;
-        savedRatings = new SavedRatings(fragment.getContext());
+        savedGameInfo = new SavedGameInfo(fragment.getContext());
         this.path = path;
         this.page = page;
         this.user = user;
@@ -61,7 +61,7 @@ public class LoadUserDetailsTask extends AsyncTask<Void, Void, List<Giveaway>> {
                     loadUser(document);
 
                 // Parse all rows of giveaways
-                return Utils.loadGiveawaysFromList(document, savedRatings);
+                return Utils.loadGiveawaysFromList(document, savedGameInfo);
             } else {
                 return null;
             }

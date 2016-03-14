@@ -11,15 +11,14 @@ import net.mabako.steamgifts.data.Giveaway;
 import net.mabako.steamgifts.data.Statistics;
 import net.mabako.steamgifts.fragments.GiveawayDetailFragment;
 import net.mabako.steamgifts.fragments.interfaces.IHasEnterableGiveaways;
+import net.mabako.steamgifts.persistentdata.SavedGameInfo;
 import net.mabako.steamgifts.persistentdata.SavedGiveaways;
-import net.mabako.steamgifts.persistentdata.SavedRatings;
 import net.mabako.steamgifts.persistentdata.SteamGiftsUserData;
 
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,13 +40,13 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
     private String foundXsrfToken;
     private int points;
     private Statistics statistics;
-    private final SavedRatings savedRatings;
+    private final SavedGameInfo savedGameInfo;
 
 
     public AutoJoinTask(Context context, long autoJoinPeriod) {
         this.context = context;
         this.autoJoinPeriod = autoJoinPeriod;
-        savedRatings = new SavedRatings(context);
+        savedGameInfo = new SavedGameInfo(context);
     }
 
     private boolean isOption(AutoJoinOptions.AutoJoinOption option) {
@@ -94,8 +93,6 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
     private List<Giveaway> calculateGiveawaysToJoin(List<Giveaway> filteredGiveaways, Set<Integer> bookmarkedGameIds) {
         points = SteamGiftsUserData.getCurrent(context).getPoints();
 
-        int minimumRating = AutoJoinOptions.getOptionInteger(context, AutoJoinOptions.AutoJoinOption.MINIMUM_RATING);
-
         int minPointsToKeepForBadRatio = AutoJoinOptions.getOptionInteger(context, AutoJoinOptions.AutoJoinOption.MINIMUM_POINTS_TO_KEEP_FOR_BAD_RATIO);
         int minPointsToKeepForGreatRatio = AutoJoinOptions.getOptionInteger(context, AutoJoinOptions.AutoJoinOption.MINIMUM_POINTS_TO_KEEP_FOR_GREAT_RATIO);
         int minPointsToKeep = (minPointsToKeepForBadRatio + minPointsToKeepForGreatRatio) / 2;
@@ -104,6 +101,8 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
         int greatRatio = AutoJoinOptions.getOptionInteger(context, AutoJoinOptions.AutoJoinOption.GREAT_RATIO);
 
         int pointsLeft = points;
+
+        sortGreatRatingGamesToTop(filteredGiveaways);
 
         List<Giveaway> result = new ArrayList<>();
         for (Giveaway giveaway : filteredGiveaways) {
@@ -115,7 +114,7 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
 
             if (isBookmarked) {
                 shouldEnterGiveaway = true;
-            } else if (ratio >= greatRatio) {
+            } else if (ratio >= greatRatio || AutoJoinOptions.isGreatOrTagged(context, giveaway)) {
                 shouldEnterGiveaway = leftAfterJoin >= minPointsToKeepForGreatRatio;
             } else if (ratio <= badRatio) {
                 shouldEnterGiveaway = leftAfterJoin >= minPointsToKeepForBadRatio;
@@ -130,6 +129,26 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
         }
 
         return result;
+    }
+
+    private void sortGreatRatingGamesToTop(List<Giveaway> filteredGiveaways) {
+        List<Giveaway> greatRatingGames = new ArrayList<>();
+
+        for (Giveaway giveaway : filteredGiveaways) {
+            if (AutoJoinOptions.isGreatOrTagged(context, giveaway)) {
+                greatRatingGames.add(giveaway);
+            }
+        }
+
+        Collections.sort(greatRatingGames, new Comparator<Giveaway>() {
+            @Override
+            public int compare(Giveaway lhs, Giveaway rhs) {
+                return rhs.getRating() - lhs.getRating();
+            }
+        });
+
+        filteredGiveaways.removeAll(greatRatingGames);
+        filteredGiveaways.addAll(0, greatRatingGames);
     }
 
     private List<Giveaway> filterAndSortGiveaways(List<Giveaway> giveaways, Set<Integer> bookmarkedGameIds) {
@@ -258,7 +277,7 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
             document.select(".pinned-giveaways__outer-wrap").html("");
 
             // Parse all rows of giveaways
-            return Utils.loadGiveawaysFromList(document, savedRatings);
+            return Utils.loadGiveawaysFromList(document, savedGameInfo);
         } catch (Exception e) {
             Log.e(TAG, "Error fetching URL", e);
             return null;

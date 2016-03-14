@@ -122,10 +122,10 @@ public class Statistics {
     public void removeGiveaway(Giveaway giveaway) {
         todayEntered--;
         todayPointsSpent -= giveaway.getPoints();
-        todayEntries -= giveaway.getEntries() / giveaway.getCopies();
+        todayEntries -= giveaway.getEstimatedEntries() / giveaway.getCopies();
         overallGiveawaysEntered--;
         overallPointsSpent -= giveaway.getPoints();
-        overallEntries -= giveaway.getEntries() / giveaway.getCopies();
+        overallEntries -= giveaway.getEstimatedEntries() / giveaway.getCopies();
         save();
     }
 

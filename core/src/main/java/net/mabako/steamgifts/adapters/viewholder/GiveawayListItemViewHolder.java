@@ -156,7 +156,7 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
             params.height = 0;
         }
 
-        StringUtils.setBackgroundDrawable(activity, itemContainer, giveaway.isEntered());
+        StringUtils.setBackgroundDrawable(activity, itemContainer, AutoJoinOptions.isGreatOrTagged(context, giveaway));
 
         // Check all the indicators
         indicatorWhitelist.setVisibility(giveaway.isWhitelist() ? View.VISIBLE : View.GONE);

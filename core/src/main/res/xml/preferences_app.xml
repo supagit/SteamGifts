@@ -68,6 +68,13 @@
             android:title="@string/preferences_autojoin_prefer_high_rating_games" />
 
         <net.mabako.sgtools.EditTextIntegerPreference
+            android:defaultValue="100"
+            android:numeric="integer"
+            android:key="preferences_autojoin_rating"
+            android:title="@string/preferences_autojoin_rating"
+            android:summary="rating above will do automatic autojoin" />
+
+        <net.mabako.sgtools.EditTextIntegerPreference
             android:defaultValue="75"
             android:numeric="integer"
             android:key="preferences_autojoin_minimum_rating"

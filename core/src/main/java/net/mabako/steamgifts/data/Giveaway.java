@@ -10,6 +10,7 @@ import net.mabako.steamgifts.core.R;
 import net.mabako.steamgifts.persistentdata.SteamGiftsUserData;
 
 import java.util.Calendar;
+import java.util.Set;
 
 public class Giveaway extends BasicGiveaway implements IEndlessAdaptable {
     private static final long serialVersionUID = 1356878822345232771L;
@@ -61,6 +62,7 @@ public class Giveaway extends BasicGiveaway implements IEndlessAdaptable {
      * Id used (exclusively?) for filtering games.
      */
     private int internalGameId;
+    private Set<String> tags;
 
     public Giveaway() {
         super(null);
@@ -298,5 +300,25 @@ public class Giveaway extends BasicGiveaway implements IEndlessAdaptable {
 
     public void setRating(int rating) {
         this.rating = rating;
+    }
+
+    public void setTags(Set<String> tags) {
+        this.tags = tags;
+    }
+
+    public Set<String> getTags() {
+        return tags;
+    }
+
+    public boolean isTagMatching(Set<String> optionTags) {
+        if (tags == null) {
+            return false;
+        }
+        for (String tag : optionTags) {
+            if (tags.contains(tag)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

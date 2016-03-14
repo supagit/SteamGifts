@@ -6,8 +6,10 @@ import android.util.Log;
 
 import net.mabako.Constants;
 import net.mabako.steamgifts.data.Giveaway;
+import net.mabako.steamgifts.data.Rating;
 import net.mabako.steamgifts.fragments.GiveawayListFragment;
 import net.mabako.steamgifts.persistentdata.FilterData;
+import net.mabako.steamgifts.persistentdata.SavedGameInfo;
 import net.mabako.steamgifts.persistentdata.SavedRatings;
 import net.mabako.steamgifts.persistentdata.SteamGiftsUserData;
 
@@ -16,8 +18,11 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 public class LoadGiveawayListTask extends AsyncTask<Void, Void, List<Giveaway>> {
     private static final String TAG = LoadGiveawayListTask.class.getSimpleName();
@@ -29,11 +34,11 @@ public class LoadGiveawayListTask extends AsyncTask<Void, Void, List<Giveaway>> 
     private final boolean showPinnedGiveaways;
 
     private String foundXsrfToken = null;
-    private final SavedRatings savedRatings;
+    private final SavedGameInfo savedGameInfo;
 
     public LoadGiveawayListTask(GiveawayListFragment activity, int page, GiveawayListFragment.Type type, String searchQuery, boolean showPinnedGiveaways) {
         this.fragment = activity;
-        savedRatings = new SavedRatings(activity.getContext());
+        savedGameInfo = new SavedGameInfo(activity.getContext());
         this.page = page;
         this.type = type;
         this.searchQuery = searchQuery;
@@ -84,7 +89,7 @@ public class LoadGiveawayListTask extends AsyncTask<Void, Void, List<Giveaway>> 
                 document.select(".pinned-giveaways__outer-wrap").html("");
 
             // Parse all rows of giveaways
-            return Utils.loadGiveawaysFromList(document, savedRatings);
+            return Utils.loadGiveawaysFromList(document, savedGameInfo);
         } catch (Exception e) {
             Log.e(TAG, "Error fetching URL", e);
             return null;

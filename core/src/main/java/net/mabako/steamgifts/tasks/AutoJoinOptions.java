@@ -3,6 +3,12 @@ package net.mabako.steamgifts.tasks;
 import android.content.Context;
 import android.preference.PreferenceManager;
 
+import net.mabako.steamgifts.data.Giveaway;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * Created by Supa on 29.02.2016.
  */
@@ -21,7 +27,8 @@ public class AutoJoinOptions {
         BAD_RATIO("preferences_autojoin_bad_ratio", 15),
         GREAT_RATIO("preferences_autojoin_great_ratio", 30),
         MINIMUM_RATING("preferences_autojoin_minimum_rating", 75),
-        HIDE_GAMES_WITH_BAD_RATING("preferences_hide_low_rating_games", false);
+        HIDE_GAMES_WITH_BAD_RATING("preferences_hide_low_rating_games", false),
+        AUTOJOIN_RATING("preferences_autojoin_rating", 100);
 
         private String preference;
         private Integer defaultInteger;
@@ -50,6 +57,8 @@ public class AutoJoinOptions {
         }
     }
 
+
+
     public static boolean isOptionBoolean(Context context, AutoJoinOption option) {
         return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(option.getPreference(), option.getDefaultBoolean());
     }
@@ -66,5 +75,20 @@ public class AutoJoinOptions {
     public static int getAvarageRatio(Context context) {
         return (getOptionInteger(context, AutoJoinOption.BAD_RATIO) + getOptionInteger(context, AutoJoinOption.GREAT_RATIO)) / 2;
 
+    }
+
+    public static Set<String> getOptionWhiteListTags(Context context) {
+        return new HashSet<>(Arrays.asList("Point &amp; Click","RPG", "FPS"));
+    }
+
+    public static Set<String> getOptionBlackListTags(Context context) {
+        return new HashSet<>(Arrays.asList("Hidden Object"));
+    }
+
+    public static boolean isGreatOrTagged(Context context, Giveaway giveaway) {
+        Set<String> whiteListTags = getOptionWhiteListTags(context);
+        Set<String> blackListTags = getOptionBlackListTags(context);
+
+        return giveaway.getRating() >= getOptionInteger(context,AutoJoinOption.AUTOJOIN_RATING) || (giveaway.isTagMatching(whiteListTags) && !giveaway.isTagMatching(blackListTags));
     }
 }
