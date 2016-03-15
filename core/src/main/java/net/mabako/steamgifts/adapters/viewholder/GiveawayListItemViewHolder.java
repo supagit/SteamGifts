@@ -39,6 +39,7 @@ import net.mabako.steamgifts.tasks.AutoJoinUtils;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Locale;
+import java.util.Set;
 
 public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnCreateContextMenuListener, MenuItem.OnMenuItemClickListener {
     private static final String TAG = GiveawayListItemViewHolder.class.getSimpleName();
@@ -124,8 +125,11 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
         if (giveaway.getLevel() > 0)
             sb.append("L").append(giveaway.getLevel()).append(" | ");
 
-        if (giveaway.getEntries() >= 0)
-            sb.append(activity.getResources().getQuantityString(R.plurals.entries, giveaway.getEntries(), giveaway.getEntries())).append(" | ");
+        if (giveaway.getEntries() >= 0) {
+            sb.append(giveaway.getEntries()).append("-");
+            sb.append(activity.getResources().getQuantityString(R.plurals.entries, giveaway.getEstimatedEntries(), giveaway.getEstimatedEntries())).append(" | ");
+        }
+
 
         giveawayDetails.setText(sb.length() > 3 ? sb.substring(0, sb.length() - 3) : sb.toString());
 
@@ -231,6 +235,8 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
                 }
             }
 
+            menu.add(Menu.NONE, 6, Menu.NONE, R.string.show_tags).setOnMenuItemClickListener(this);
+
             // Hide a game... forever
             if (loggedIn && xsrfEvents && giveaway.getInternalGameId() > 0 && fragment instanceof GiveawayListFragment) {
                 menu.add(Menu.NONE, 3, Menu.NONE, R.string.hide_game).setOnMenuItemClickListener(this);
@@ -273,6 +279,15 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
                         ((SavedGiveawaysFragment) fragment).onRemoveSavedGiveaway(giveaway.getGiveawayId());
                 }
                 return true;
+            case 6: {
+                String tagText = "";
+                Set<String> tags = giveaway.getTags();
+                for (String tag : tags) {
+                    tagText += tag + "\n";
+                }
+                Toast.makeText(fragment.getContext(), tagText, Toast.LENGTH_LONG).show();
+            }
+            return true;
         }
         return false;
     }

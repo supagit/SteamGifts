@@ -93,12 +93,16 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
     private List<Giveaway> calculateGiveawaysToJoin(List<Giveaway> filteredGiveaways, Set<Integer> bookmarkedGameIds) {
         points = SteamGiftsUserData.getCurrent(context).getPoints();
 
+        Set<String> blackListTags = AutoJoinOptions.getOptionBlackListTags(context);
+
         int minPointsToKeepForBadRatio = AutoJoinOptions.getOptionInteger(context, AutoJoinOptions.AutoJoinOption.MINIMUM_POINTS_TO_KEEP_FOR_BAD_RATIO);
         int minPointsToKeepForGreatRatio = AutoJoinOptions.getOptionInteger(context, AutoJoinOptions.AutoJoinOption.MINIMUM_POINTS_TO_KEEP_FOR_GREAT_RATIO);
         int minPointsToKeep = (minPointsToKeepForBadRatio + minPointsToKeepForGreatRatio) / 2;
 
         int badRatio = AutoJoinOptions.getOptionInteger(context, AutoJoinOptions.AutoJoinOption.BAD_RATIO);
         int greatRatio = AutoJoinOptions.getOptionInteger(context, AutoJoinOptions.AutoJoinOption.GREAT_RATIO);
+
+        int minimumRating = AutoJoinOptions.getOptionInteger(context, AutoJoinOptions.AutoJoinOption.MINIMUM_RATING);
 
         int pointsLeft = points;
 
@@ -122,7 +126,11 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
                 shouldEnterGiveaway = leftAfterJoin >= minPointsToKeep;
             }
 
-            if (shouldEnterGiveaway && leftAfterJoin>=0) {
+            if (giveaway.isTagMatching(blackListTags) || giveaway.getRating() < minimumRating) {
+                shouldEnterGiveaway = false;
+            }
+
+            if (shouldEnterGiveaway && leftAfterJoin >= 0) {
                 result.add(giveaway);
                 pointsLeft -= giveaway.getPoints();
             }

@@ -39,6 +39,8 @@ import net.mabako.steamgifts.fragments.UserDetailFragment;
 import net.mabako.steamgifts.intro.IntroActivity;
 import net.mabako.steamgifts.persistentdata.SteamGiftsUserData;
 import net.mabako.steamgifts.receivers.AbstractNotificationCheckReceiver;
+import net.mabako.steamgifts.receivers.CheckForAutoJoin;
+import net.mabako.steamgifts.tasks.AutoJoinTask;
 
 public class Navbar {
     private final CommonActivity activity;
@@ -136,6 +138,8 @@ public class Navbar {
                             ActionBar actionBar = activity.getSupportActionBar();
                             if (actionBar != null)
                                 actionBar.setSubtitle(null);
+                        } else if (identifier == R.string.navigation_start_autojoin) {
+                            new AutoJoinTask(activity.getApplicationContext(), CheckForAutoJoin.FULL_AUTO_PERIOD).execute();
                         } else {
                             for (GiveawayListFragment.Type type : GiveawayListFragment.Type.values()) {
                                 if (type.getNavbarResource() == identifier) {
@@ -256,6 +260,7 @@ public class Navbar {
 
         drawer.addItems(new DividerDrawerItem());
         drawer.addItem(new PrimaryDrawerItem().withName(R.string.navigation_saved_elements).withIdentifier(R.string.navigation_saved_elements).withIcon(FontAwesome.Icon.faw_star));
+        drawer.addItem(new PrimaryDrawerItem().withName(R.string.navigation_start_autojoin).withIdentifier(R.string.navigation_start_autojoin).withIcon(FontAwesome.Icon.faw_arrow_right));
         drawer.addItem(new PrimaryDrawerItem().withName(R.string.preferences).withIdentifier(R.string.preferences).withSelectable(false).withIcon(FontAwesome.Icon.faw_cog));
         drawer.addItem(new PrimaryDrawerItem().withName(R.string.navigation_help).withIdentifier(R.string.navigation_help).withSelectable(false).withIcon(FontAwesome.Icon.faw_question));
         drawer.addItem(new PrimaryDrawerItem().withName(R.string.navigation_about).withIdentifier(R.string.navigation_about).withSelectable(false).withIcon(FontAwesome.Icon.faw_info));

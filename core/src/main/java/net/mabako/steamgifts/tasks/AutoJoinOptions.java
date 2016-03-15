@@ -78,7 +78,7 @@ public class AutoJoinOptions {
     }
 
     public static Set<String> getOptionWhiteListTags(Context context) {
-        return new HashSet<>(Arrays.asList("Point &amp; Click","RPG", "FPS"));
+        return new HashSet<>(Arrays.asList("Point &amp; Click","RPG", "FPS", "Local Multiplayer"));
     }
 
     public static Set<String> getOptionBlackListTags(Context context) {

@@ -220,6 +220,9 @@
 
     <!-- Saving Giveaways -->
     <string name="navigation_saved_elements">Bookmarks</string>
+    <string name="navigation_start_autojoin">Start Autojoin</string>
+
+    <string name="show_tags">Show Tags</string>
 
     <string name="add_saved_giveaway">Bookmark</string>
     <string name="remove_saved_giveaway">Remove Bookmark</string>
