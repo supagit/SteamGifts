@@ -14,21 +14,14 @@ import java.util.Set;
  */
 public class AutoJoinOptions {
     public enum AutoJoinOption {
-        SHOW_AUTO_JOIN_RATIO("preferences_autojoin_show_ratio", true),
         AUTO_JOIN_ACTIVATED("preferences_autojoin_activated", true),
         ALWAYS_JOIN_GIVEAWAYS_FOR_BOOKMARKS("preferences_autojoin_always_join_bookmarks", true),
         AUTO_JOIN_ON_NON_WIFI_CONNECTION("preferences_autojoin_on_non_wifi", true),
-        PREFER_LESS_ENTRIES("preferences_autojoin_prefer_less_entries", true),
-        PREFER_HIGH_VALUE_GAMES("preferences_autojoin_prefer_high_value_games", true),
-        PREFER_HIGH_RATING_GAMES("preferences_autojoin_prefer_high_rating_games", true),
 
-        MINIMUM_POINTS_TO_KEEP_FOR_BAD_RATIO("preferences_autojoin_minimum_points_to_keep_for_bad_ratio", 150),
-        MINIMUM_POINTS_TO_KEEP_FOR_GREAT_RATIO("preferences_autojoin_minimum_points_to_keep_for_great_ratio", 50),
-        BAD_RATIO("preferences_autojoin_bad_ratio", 15),
-        GREAT_RATIO("preferences_autojoin_great_ratio", 30),
+        MINIMUM_POINTS_TO_KEEP_FOR_UNTAGGED("preferences_autojoin_minimum_points_to_keep_for_untagged", 150),
+        MINIMUM_POINTS_TO_KEEP_FOR_GREAT_RATIO("preferences_autojoin_minimum_points_to_keep_for_tagged", 50),
         MINIMUM_RATING("preferences_autojoin_minimum_rating", 75),
-        HIDE_GAMES_WITH_BAD_RATING("preferences_hide_low_rating_games", false),
-        AUTOJOIN_RATING("preferences_autojoin_rating", 100);
+        HIDE_GAMES_WITH_BAD_RATING("preferences_hide_low_rating_games", false);
 
         private String preference;
         private Integer defaultInteger;
@@ -72,23 +65,18 @@ public class AutoJoinOptions {
         }
     }
 
-    public static int getAvarageRatio(Context context) {
-        return (getOptionInteger(context, AutoJoinOption.BAD_RATIO) + getOptionInteger(context, AutoJoinOption.GREAT_RATIO)) / 2;
-
-    }
-
     public static Set<String> getOptionWhiteListTags(Context context) {
         return new HashSet<>(Arrays.asList("Point &amp; Click","RPG", "FPS", "Local Multiplayer"));
     }
 
     public static Set<String> getOptionBlackListTags(Context context) {
-        return new HashSet<>(Arrays.asList("Hidden Object"));
+        return new HashSet<>(Arrays.asList("Hidden Object", ""));
     }
 
-    public static boolean isGreatOrTagged(Context context, Giveaway giveaway) {
+    public static boolean isTagged(Context context, Giveaway giveaway) {
         Set<String> whiteListTags = getOptionWhiteListTags(context);
         Set<String> blackListTags = getOptionBlackListTags(context);
 
-        return giveaway.getRating() >= getOptionInteger(context,AutoJoinOption.AUTOJOIN_RATING) || (giveaway.isTagMatching(whiteListTags) && !giveaway.isTagMatching(blackListTags));
+        return giveaway.getRating() >= getOptionInteger(context,AutoJoinOption.MINIMUM_RATING) && (giveaway.isTagMatching(whiteListTags) && !giveaway.isTagMatching(blackListTags));
     }
 }

@@ -39,11 +39,6 @@
 
         <CheckBoxPreference
             android:defaultValue="true"
-            android:key="preferences_autojoin_show_ratio"
-            android:title="@string/preferences_autojoin_show_ratio" />
-
-        <CheckBoxPreference
-            android:defaultValue="true"
             android:key="preferences_autojoin_always_join_bookmarks"
             android:title="@string/preferences_autojoin_always_join_bookmarks" />
 
@@ -51,28 +46,6 @@
             android:defaultValue="true"
             android:key="preferences_autojoin_on_non_wifi"
             android:title="@string/preferences_autojoin_on_non_wifi" />
-
-        <CheckBoxPreference
-            android:defaultValue="true"
-            android:key="preferences_autojoin_prefer_less_entries"
-            android:title="@string/preferences_autojoin_prefer_less_entries" />
-
-        <CheckBoxPreference
-            android:defaultValue="true"
-            android:key="preferences_autojoin_prefer_high_value_games"
-            android:title="@string/preferences_autojoin_prefer_high_value_games" />
-
-        <CheckBoxPreference
-            android:defaultValue="true"
-            android:key="preferences_autojoin_prefer_high_rating_games"
-            android:title="@string/preferences_autojoin_prefer_high_rating_games" />
-
-        <net.mabako.sgtools.EditTextIntegerPreference
-            android:defaultValue="100"
-            android:numeric="integer"
-            android:key="preferences_autojoin_rating"
-            android:title="@string/preferences_autojoin_rating"
-            android:summary="rating above will do automatic autojoin" />
 
         <net.mabako.sgtools.EditTextIntegerPreference
             android:defaultValue="75"
@@ -82,31 +55,17 @@
             android:summary="minimum rating to autojoin" />
 
         <net.mabako.sgtools.EditTextIntegerPreference
-            android:defaultValue="15"
-            android:numeric="integer"
-            android:key="preferences_autojoin_bad_ratio"
-            android:title="@string/preferences_autojoin_bad_ratio"
-            android:summary="below this is a bad ratio" />
-
-        <net.mabako.sgtools.EditTextIntegerPreference
             android:defaultValue="150"
             android:numeric="integer"
-            android:key="preferences_autojoin_minimum_points_to_keep_for_bad_ratio"
-            android:title="@string/preferences_autojoin_minimum_points_to_keep_for_bad_ratio"
+            android:key="preferences_autojoin_minimum_points_to_keep_for_untagged"
+            android:title="@string/preferences_autojoin_minimum_points_to_keep_for_untagged"
             android:summary="these points will be kept when there are only giveaways with bad ratio left"/>
-
-        <net.mabako.sgtools.EditTextIntegerPreference
-            android:defaultValue="30"
-            android:numeric="integer"
-            android:key="preferences_autojoin_great_ratio"
-            android:title="@string/preferences_autojoin_great_ratio"
-            android:summary="above this is a great ratio"/>
 
         <net.mabako.sgtools.EditTextIntegerPreference
             android:defaultValue="50"
             android:numeric="integer"
-            android:key="preferences_autojoin_minimum_points_to_keep_for_great_ratio"
-            android:title="@string/preferences_autojoin_minimum_points_to_keep_for_great_ratio"
+            android:key="preferences_autojoin_minimum_points_to_keep_for_tagged"
+            android:title="@string/preferences_autojoin_minimum_points_to_keep_for_tagged"
             android:summary="these points will be kept even when there are giveaways with a great ratio are available"/>
 
     </PreferenceCategory>

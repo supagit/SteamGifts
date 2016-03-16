@@ -2,7 +2,6 @@ package net.mabako.steamgifts.tasks;
 
 import android.content.Context;
 import android.os.AsyncTask;
-import android.support.annotation.NonNull;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -12,7 +11,6 @@ import net.mabako.steamgifts.data.Statistics;
 import net.mabako.steamgifts.fragments.GiveawayDetailFragment;
 import net.mabako.steamgifts.fragments.interfaces.IHasEnterableGiveaways;
 import net.mabako.steamgifts.persistentdata.SavedGameInfo;
-import net.mabako.steamgifts.persistentdata.SavedGiveaways;
 import net.mabako.steamgifts.persistentdata.SteamGiftsUserData;
 
 import org.jsoup.Connection;
@@ -20,15 +18,9 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Task to perform the auto joining
@@ -38,9 +30,11 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
     private long autoJoinPeriod;
     public static final String TAG = AutoJoinTask.class.getSimpleName();
     private String foundXsrfToken;
-    private int points;
     private Statistics statistics;
     private final SavedGameInfo savedGameInfo;
+
+    AutoJoinCalculator autoJoinCalculator;
+    private int points;
 
 
     public AutoJoinTask(Context context, long autoJoinPeriod) {
@@ -59,134 +53,21 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
                 && (isOption(AutoJoinOptions.AutoJoinOption.AUTO_JOIN_ON_NON_WIFI_CONNECTION) || Utils.isConnectedToWifi(TAG, context));
 
         statistics = new Statistics(context);
+        autoJoinCalculator = new AutoJoinCalculator(context, autoJoinPeriod);
+        points = SteamGiftsUserData.getCurrent(context).getPoints();
 
         if (doAutoJoin) {
-            Set<Integer> bookmarkedGameIds = isOption(AutoJoinOptions.AutoJoinOption.ALWAYS_JOIN_GIVEAWAYS_FOR_BOOKMARKS) ? getBookMarkedGameIds() : new HashSet<Integer>();
-
             List<Giveaway> giveaways = loadGiveAways(context);
-            if (giveaways != null) {
-                List<Giveaway> filteredGiveaways = filterAndSortGiveaways(giveaways, bookmarkedGameIds);
-                List<Giveaway> giveAwaysToJoin = calculateGiveawaysToJoin(filteredGiveaways, bookmarkedGameIds);
-
-                if (giveAwaysToJoin.isEmpty()) {
-                    showAutoJoinNotification(new HashMap<Giveaway, Boolean>());
-                } else {
-                    requestEnterLeave(giveAwaysToJoin, foundXsrfToken);
-                }
+            List<Giveaway> giveAwaysToJoin = autoJoinCalculator.calculateGiveawaysToJoin(giveaways);
+            if (giveAwaysToJoin.isEmpty()) {
+                showAutoJoinNotification(new HashMap<Giveaway, Boolean>());
+            } else {
+                requestEnterLeave(giveAwaysToJoin, foundXsrfToken);
             }
+
         }
 
         return null;
-    }
-
-    @NonNull
-    private Set<Integer> getBookMarkedGameIds() {
-        Set<Integer> bookmarkedGameIds = new HashSet<>();
-        SavedGiveaways savedGiveaways = new SavedGiveaways(context);
-        for (Giveaway giveaway : savedGiveaways.all()) {
-            bookmarkedGameIds.add(giveaway.getGameId());
-        }
-        savedGiveaways.close();
-        return bookmarkedGameIds;
-    }
-
-    private List<Giveaway> calculateGiveawaysToJoin(List<Giveaway> filteredGiveaways, Set<Integer> bookmarkedGameIds) {
-        points = SteamGiftsUserData.getCurrent(context).getPoints();
-
-        Set<String> blackListTags = AutoJoinOptions.getOptionBlackListTags(context);
-
-        int minPointsToKeepForBadRatio = AutoJoinOptions.getOptionInteger(context, AutoJoinOptions.AutoJoinOption.MINIMUM_POINTS_TO_KEEP_FOR_BAD_RATIO);
-        int minPointsToKeepForGreatRatio = AutoJoinOptions.getOptionInteger(context, AutoJoinOptions.AutoJoinOption.MINIMUM_POINTS_TO_KEEP_FOR_GREAT_RATIO);
-        int minPointsToKeep = (minPointsToKeepForBadRatio + minPointsToKeepForGreatRatio) / 2;
-
-        int badRatio = AutoJoinOptions.getOptionInteger(context, AutoJoinOptions.AutoJoinOption.BAD_RATIO);
-        int greatRatio = AutoJoinOptions.getOptionInteger(context, AutoJoinOptions.AutoJoinOption.GREAT_RATIO);
-
-        int minimumRating = AutoJoinOptions.getOptionInteger(context, AutoJoinOptions.AutoJoinOption.MINIMUM_RATING);
-
-        int pointsLeft = points;
-
-        sortGreatRatingGamesToTop(filteredGiveaways);
-
-        List<Giveaway> result = new ArrayList<>();
-        for (Giveaway giveaway : filteredGiveaways) {
-            double ratio = AutoJoinUtils.calculateReadibleEntryRatio(context, giveaway);
-            boolean shouldEnterGiveaway;
-            int leftAfterJoin = pointsLeft - giveaway.getPoints();
-
-            boolean isBookmarked = bookmarkedGameIds.contains(giveaway.getGameId());
-
-            if (isBookmarked) {
-                shouldEnterGiveaway = true;
-            } else if (ratio >= greatRatio || AutoJoinOptions.isGreatOrTagged(context, giveaway)) {
-                shouldEnterGiveaway = leftAfterJoin >= minPointsToKeepForGreatRatio;
-            } else if (ratio <= badRatio) {
-                shouldEnterGiveaway = leftAfterJoin >= minPointsToKeepForBadRatio;
-            } else {
-                shouldEnterGiveaway = leftAfterJoin >= minPointsToKeep;
-            }
-
-            if (giveaway.isTagMatching(blackListTags) || giveaway.getRating() < minimumRating) {
-                shouldEnterGiveaway = false;
-            }
-
-            if (shouldEnterGiveaway && leftAfterJoin >= 0) {
-                result.add(giveaway);
-                pointsLeft -= giveaway.getPoints();
-            }
-        }
-
-        return result;
-    }
-
-    private void sortGreatRatingGamesToTop(List<Giveaway> filteredGiveaways) {
-        List<Giveaway> greatRatingGames = new ArrayList<>();
-
-        for (Giveaway giveaway : filteredGiveaways) {
-            if (AutoJoinOptions.isGreatOrTagged(context, giveaway)) {
-                greatRatingGames.add(giveaway);
-            }
-        }
-
-        Collections.sort(greatRatingGames, new Comparator<Giveaway>() {
-            @Override
-            public int compare(Giveaway lhs, Giveaway rhs) {
-                return rhs.getRating() - lhs.getRating();
-            }
-        });
-
-        filteredGiveaways.removeAll(greatRatingGames);
-        filteredGiveaways.addAll(0, greatRatingGames);
-    }
-
-    private List<Giveaway> filterAndSortGiveaways(List<Giveaway> giveaways, Set<Integer> bookmarkedGameIds) {
-        List<Giveaway> result = new ArrayList<>();
-        for (Giveaway giveaway : giveaways) {
-            if (!giveaway.isEntered() && !giveaway.isLevelNegative() && !SteamGiftsUserData.getCurrent(context).getName().equals(giveaway.getCreator())) {
-                if (bookmarkedGameIds.contains(giveaway.getGameId()) || doesGiveawayEndWithInAutoJoinPeriod(giveaway)) {
-                    result.add(giveaway);
-                }
-            }
-        }
-
-        Collections.sort(result, new Comparator<Giveaway>() {
-            @Override
-            public int compare(Giveaway lhs, Giveaway rhs) {
-                int rhsVal = (int) (10000 * AutoJoinUtils.calculateReadibleEntryRatio(context, rhs));
-                int lhsVal = (int) (10000 * AutoJoinUtils.calculateReadibleEntryRatio(context, lhs));
-                int diff = rhsVal - lhsVal;
-                if (diff == 0) {
-                    return lhs.getEntries() - rhs.getEntries();
-                }
-                return diff;
-            }
-        });
-        return result;
-    }
-
-    private boolean doesGiveawayEndWithInAutoJoinPeriod(Giveaway giveaway) {
-        final long realTimeDiff = Math.abs(new Date().getTime() - giveaway.getEndTime().getTimeInMillis());
-        return realTimeDiff <= autoJoinPeriod;
     }
 
     public void requestEnterLeave(final List<Giveaway> giveawaysToJoin, String xsrfToken) {
@@ -238,7 +119,6 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
         long newPoints = points - pointsSpent;
         SteamGiftsUserData.getCurrent(context).setPoints((int) newPoints);
 
-
         statistics.updateStatsNotification(giveawaysEntered, pointsSpent, entries);
     }
 
@@ -247,7 +127,7 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
 
         if (giveaways != null) {
             int page = 1;
-            while (doesGiveawayEndWithInAutoJoinPeriod(giveaways.get(giveaways.size() - 1)) && page < 5) {
+            while (autoJoinCalculator.doesGiveawayEndWithInAutoJoinPeriod(giveaways.get(giveaways.size() - 1)) && page < 5) {
                 List<Giveaway> pageGiveaways = loadGiveAways(context, page);
                 if (pageGiveaways == null) {
                     break;

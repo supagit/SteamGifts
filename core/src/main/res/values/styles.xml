@@ -13,6 +13,8 @@
         <item name="colorAccountHeader">@color/colorPrimary</item>
         <item name="colorHighlightBackground">@color/md_blue_100</item>
         <item name="lightTextColor">#9a9a9a</item>
+        <item name="colorBookmarked">#aaffaa</item>
+        <item name="colorBlackListed">#ffaaaa</item>
     </style>
 
     <style name="AppTheme.Dark" parent="MaterialDrawerTheme">

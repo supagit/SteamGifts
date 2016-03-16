@@ -3,7 +3,6 @@ package net.mabako.steamgifts.adapters.viewholder;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -33,11 +32,8 @@ import net.mabako.steamgifts.fragments.SavedGiveawaysFragment;
 import net.mabako.steamgifts.fragments.interfaces.IHasEnterableGiveaways;
 import net.mabako.steamgifts.persistentdata.SavedGiveaways;
 import net.mabako.steamgifts.persistentdata.SteamGiftsUserData;
-import net.mabako.steamgifts.tasks.AutoJoinOptions;
-import net.mabako.steamgifts.tasks.AutoJoinUtils;
+import net.mabako.steamgifts.tasks.AutoJoinCalculator;
 
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.Locale;
 import java.util.Set;
 
@@ -60,6 +56,7 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
 
     private static int measuredHeight = 0;
     private final Context context;
+    private final AutoJoinCalculator autoJoinCalculator;
 
     public GiveawayListItemViewHolder(View v, Activity activity, EndlessAdapter adapter, Fragment fragment, SavedGiveaways savedGiveaways) {
         super(v);
@@ -85,22 +82,31 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
 
         v.setOnClickListener(this);
         v.setOnCreateContextMenuListener(this);
+
+        autoJoinCalculator = new AutoJoinCalculator(context, 0);
     }
 
 
     public void setFrom(Giveaway giveaway, boolean showImage) {
-        giveawayName.setText(giveaway.getTitle());
 
-        double entryRatio = giveaway.getEntryRatio();
-        if (AutoJoinOptions.isOptionBoolean(context, AutoJoinOptions.AutoJoinOption.SHOW_AUTO_JOIN_RATIO) && Math.abs(entryRatio) > 0.1e-8) {
-            NumberFormat formatter = new DecimalFormat("#0.0");
-            String ratioText = formatter.format(AutoJoinUtils.calculateReadibleEntryRatio(activity.getBaseContext(), giveaway));
-            giveawayRatio.setText(ratioText);
-            giveawayRatio.setTextColor(AutoJoinUtils.calculateRatioColor(context, giveaway));
-            giveawayRatio.setBackgroundColor(Color.WHITE);
-        } else {
-            giveawayRatio.setText("");
+        String title = giveaway.getTitle();
+        if (giveaway.getCopies() > 1) {
+            title = giveaway.getCopies() + "x " + title;
         }
+        giveawayName.setText(title);
+
+        giveawayRatio.setText("");
+
+//        double entryRatio = giveaway.getEntryRatio();
+//        if (AutoJoinOptions.isOptionBoolean(context, AutoJoinOptions.AutoJoinOption.SHOW_AUTO_JOIN_RATIO) && Math.abs(entryRatio) > 0.1e-8) {
+//            NumberFormat formatter = new DecimalFormat("#0.0");
+//            String ratioText = formatter.format(AutoJoinUtils.calculateReadibleEntryRatio(activity.getBaseContext(), giveaway));
+//            giveawayRatio.setText(ratioText);
+//            giveawayRatio.setTextColor(AutoJoinUtils.calculateRatioColor(context, giveaway));
+//            giveawayRatio.setBackgroundColor(Color.WHITE);
+//        } else {
+//            giveawayRatio.setText("");
+//        }
 
         if (giveaway.getEndTime() != null) {
             String endTimeText = giveaway.getShortRelativeEndTime(activity);
@@ -116,9 +122,6 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
         if (giveaway.getRating() != 0)
             sb.append(giveaway.getRating()).append("% | ");
 
-        if (giveaway.getCopies() > 1)
-            sb.append(activity.getResources().getQuantityString(R.plurals.copies, giveaway.getCopies(), giveaway.getCopies())).append(" | ");
-
         if (giveaway.getPoints() >= 0)
             sb.append(giveaway.getPoints()).append("P | ");
 
@@ -126,11 +129,9 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
             sb.append("L").append(giveaway.getLevel()).append(" | ");
 
         if (giveaway.getEntries() >= 0) {
-            sb.append(giveaway.getEntries()).append("-");
-            sb.append(activity.getResources().getQuantityString(R.plurals.entries, giveaway.getEstimatedEntries(), giveaway.getEstimatedEntries())).append(" | ");
+            int estimatedEntries = giveaway.getEstimatedEntries();
+            sb.append(activity.getResources().getQuantityString(R.plurals.entries, estimatedEntries, estimatedEntries)).append(" | ");
         }
-
-
         giveawayDetails.setText(sb.length() > 3 ? sb.substring(0, sb.length() - 3) : sb.toString());
 
         // giveaway_image
@@ -160,7 +161,13 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
             params.height = 0;
         }
 
-        StringUtils.setBackgroundDrawable(activity, itemContainer, AutoJoinOptions.isGreatOrTagged(context, giveaway));
+        if (autoJoinCalculator.isBookmarked(giveaway)) {
+            StringUtils.setBackgroundDrawable(activity, itemContainer, true, R.attr.colorBookmarked);
+        } else if (autoJoinCalculator.isBlackListed(giveaway)) {
+            StringUtils.setBackgroundDrawable(activity, itemContainer, true, R.attr.colorBlackListed);
+        } else {
+            StringUtils.setBackgroundDrawable(activity, itemContainer, autoJoinCalculator.isTagged(giveaway));
+        }
 
         // Check all the indicators
         indicatorWhitelist.setVisibility(giveaway.isWhitelist() ? View.VISIBLE : View.GONE);
