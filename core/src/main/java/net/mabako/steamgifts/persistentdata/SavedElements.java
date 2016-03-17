@@ -102,7 +102,7 @@ public abstract class SavedElements<T> implements Comparator<T> {
         private final SavedElements<T> parent;
 
         public GiveawayOpenHelper(Context context, SavedElements<T> parent) {
-            super(context, "savedelements", null, 4);
+            super(context, "savedelements", null, 8);
             this.parent = parent;
         }
 
@@ -112,6 +112,10 @@ public abstract class SavedElements<T> implements Comparator<T> {
             db.execSQL("CREATE TABLE " + SavedDiscussions.DB_TABLE + "(" + KEY_ID + " text primary key, " + KEY_VALUE + " text)");
             db.execSQL("CREATE TABLE " + SavedRatings.DB_TABLE + "(" + KEY_ID + " text primary key, " + KEY_VALUE + " text)");
             db.execSQL("CREATE TABLE " + SavedGameInfo.DB_TABLE + "(" + KEY_ID + " text primary key, " + KEY_VALUE + " text)");
+            db.execSQL("CREATE TABLE " + SavedGamesBlackList.DB_TABLE + "(" + KEY_ID + " text primary key, " + KEY_VALUE + " text)");
+            db.execSQL("CREATE TABLE " + SavedGamesWhiteList.DB_TABLE + "(" + KEY_ID + " text primary key, " + KEY_VALUE + " text)");
+            db.execSQL("CREATE TABLE " + SavedGamesWhiteListTags.DB_TABLE + "(" + KEY_ID + " text primary key, " + KEY_VALUE + " text)");
+            db.execSQL("CREATE TABLE " + SavedGamesBlackListTags.DB_TABLE + "(" + KEY_ID + " text primary key, " + KEY_VALUE + " text)");
         }
 
         private boolean add(T element, String elementId) {
@@ -180,6 +184,17 @@ public abstract class SavedElements<T> implements Comparator<T> {
             if (oldVersion < 4)
                 db.execSQL("CREATE TABLE " + SavedGameInfo.DB_TABLE + "(" + KEY_ID + " text primary key, " + KEY_VALUE + " text)");
 
+            if (oldVersion < 5)
+                db.execSQL("CREATE TABLE " + SavedGamesBlackList.DB_TABLE + "(" + KEY_ID + " text primary key, " + KEY_VALUE + " text)");
+
+            if (oldVersion < 6)
+                db.execSQL("CREATE TABLE " + SavedGamesWhiteList.DB_TABLE + "(" + KEY_ID + " text primary key, " + KEY_VALUE + " text)");
+
+            if (oldVersion < 7)
+                db.execSQL("CREATE TABLE " + SavedGamesWhiteListTags.DB_TABLE + "(" + KEY_ID + " text primary key, " + KEY_VALUE + " text)");
+
+            if (oldVersion < 8)
+                db.execSQL("CREATE TABLE " + SavedGamesBlackListTags.DB_TABLE + "(" + KEY_ID + " text primary key, " + KEY_VALUE + " text)");
         }
     }
 }

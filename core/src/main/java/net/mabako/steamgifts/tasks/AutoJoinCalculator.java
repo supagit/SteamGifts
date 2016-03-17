@@ -2,15 +2,18 @@ package net.mabako.steamgifts.tasks;
 
 import android.content.Context;
 
+import net.mabako.steamgifts.data.GameInfo;
 import net.mabako.steamgifts.data.Giveaway;
-import net.mabako.steamgifts.persistentdata.SavedGiveaways;
+import net.mabako.steamgifts.persistentdata.SavedGamesBlackList;
+import net.mabako.steamgifts.persistentdata.SavedGamesBlackListTags;
+import net.mabako.steamgifts.persistentdata.SavedGamesWhiteList;
+import net.mabako.steamgifts.persistentdata.SavedGamesWhiteListTags;
 import net.mabako.steamgifts.persistentdata.SteamGiftsUserData;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -23,29 +26,24 @@ public class AutoJoinCalculator {
 
     private Context context;
     private long autoJoinPeriod;
-    private final Set<Integer> bookmarkedGameIds;
-    private final Set<String> blackListTags;
+    private final SavedGamesBlackList savedGamesBlackList;
+    private final SavedGamesWhiteList savedGamesWhiteList;
+    private final SavedGamesWhiteListTags savedGamesWhiteListTags;
+    private final SavedGamesBlackListTags savedGamesBlackListTags;
 
     public AutoJoinCalculator(Context context, long autoJoinPeriod) {
         this.context = context;
         this.autoJoinPeriod = autoJoinPeriod;
-        bookmarkedGameIds = isOption(AutoJoinOptions.AutoJoinOption.ALWAYS_JOIN_GIVEAWAYS_FOR_BOOKMARKS) ? getBookMarkedGameIds() : new HashSet<Integer>();
-        blackListTags = AutoJoinOptions.getOptionBlackListTags(context);
+
+        savedGamesBlackList = new SavedGamesBlackList(context);
+        savedGamesWhiteList = new SavedGamesWhiteList(context);
+        savedGamesWhiteListTags = new SavedGamesWhiteListTags(context);
+        savedGamesBlackListTags = new SavedGamesBlackListTags(context);
     }
 
     public List<Giveaway> calculateGiveawaysToJoin(List<Giveaway> giveaways) {
         List<Giveaway> filteredGiveaways = filterGiveaways(giveaways);
         return generateGiveawaysToJoinList(filteredGiveaways);
-    }
-
-    private Set<Integer> getBookMarkedGameIds() {
-        Set<Integer> bookmarkedGameIds = new HashSet<>();
-        SavedGiveaways savedGiveaways = new SavedGiveaways(context);
-        for (Giveaway giveaway : savedGiveaways.all()) {
-            bookmarkedGameIds.add(giveaway.getGameId());
-        }
-        savedGiveaways.close();
-        return bookmarkedGameIds;
     }
 
     private List<Giveaway> generateGiveawaysToJoinList(List<Giveaway> filteredGiveaways) {
@@ -56,17 +54,29 @@ public class AutoJoinCalculator {
 
         int pointsLeft = points;
 
-        List<Giveaway> bookmarkedGiveaways = calculateBookmarkedGames(filteredGiveaways);
-        filteredGiveaways.removeAll(bookmarkedGiveaways);
+        List<Giveaway> blackListedGiveaways = calculateBlackListedGames(filteredGiveaways);
+        filteredGiveaways.removeAll(blackListedGiveaways);
+
+        List<Giveaway> whiteListedGames = calculateWhiteListedGames(filteredGiveaways);
+        filteredGiveaways.removeAll(whiteListedGames);
+
+        List<Giveaway> pointGiveaways = calculatePointGames(filteredGiveaways);
+        filteredGiveaways.removeAll(pointGiveaways);
 
         List<Giveaway> taggedGiveaways = calculateTaggedGames(filteredGiveaways);
         filteredGiveaways.removeAll(taggedGiveaways);
 
-        List<Giveaway> blackListedGiveaways = calculateBlackListedGames(filteredGiveaways);
-        filteredGiveaways.removeAll(blackListedGiveaways);
 
         List<Giveaway> result = new ArrayList<>();
-        for (Giveaway giveaway : bookmarkedGiveaways) {
+        for (Giveaway giveaway : whiteListedGames) {
+            int leftAfterJoin = pointsLeft - giveaway.getPoints();
+            if (leftAfterJoin >= 0) {
+                result.add(giveaway);
+                pointsLeft -= giveaway.getPoints();
+            }
+        }
+
+        for (Giveaway giveaway : pointGiveaways) {
             int leftAfterJoin = pointsLeft - giveaway.getPoints();
             if (leftAfterJoin >= 0) {
                 result.add(giveaway);
@@ -93,13 +103,26 @@ public class AutoJoinCalculator {
         return result;
     }
 
-    private List<Giveaway> calculateBlackListedGames(List<Giveaway> giveaways) {
-
-
+    private List<Giveaway> calculatePointGames(List<Giveaway> giveaways) {
+        int minimumPoints = AutoJoinOptions.getOptionInteger(context, AutoJoinOptions.AutoJoinOption.AUTO_JOIN_POINTS);
         List<Giveaway> result = new ArrayList<>();
 
         for (Giveaway giveaway : giveaways) {
-            if (giveaway.isTagMatching(blackListTags)) {
+            if (giveaway.getPoints() >= minimumPoints) {
+                result.add(giveaway);
+            }
+        }
+
+        sortByRating(result);
+
+        return result;
+    }
+
+    private List<Giveaway> calculateBlackListedGames(List<Giveaway> giveaways) {
+        List<Giveaway> result = new ArrayList<>();
+
+        for (Giveaway giveaway : giveaways) {
+            if (isBlackListedGame(giveaway.getGameId())) {
                 result.add(giveaway);
             }
         }
@@ -113,7 +136,7 @@ public class AutoJoinCalculator {
         List<Giveaway> result = new ArrayList<>();
 
         for (Giveaway giveaway : giveaways) {
-            if (AutoJoinOptions.isTagged(context, giveaway)) {
+            if (isTagMatching(giveaway)) {
                 result.add(giveaway);
             }
         }
@@ -123,11 +146,13 @@ public class AutoJoinCalculator {
         return result;
     }
 
-    private List<Giveaway> calculateBookmarkedGames(List<Giveaway> giveaways) {
+
+
+    private List<Giveaway> calculateWhiteListedGames(List<Giveaway> giveaways) {
         List<Giveaway> result = new ArrayList<>();
 
         for (Giveaway giveaway : giveaways) {
-            if (bookmarkedGameIds.contains(giveaway.getGameId())) {
+            if (isWhiteListedGame(giveaway.getGameId())) {
                 result.add(giveaway);
             }
         }
@@ -151,7 +176,8 @@ public class AutoJoinCalculator {
 
         List<Giveaway> result = new ArrayList<>();
         for (Giveaway giveaway : giveaways) {
-            if (giveaway.getRating() >= minimumRating
+            if (savedGamesBlackList.get(giveaway.getGameId()) == null
+                    && giveaway.getRating() >= minimumRating
                     && doesGiveawayEndWithInAutoJoinPeriod(giveaway)
                     && !giveaway.isEntered()
                     && !giveaway.isLevelNegative()
@@ -168,19 +194,46 @@ public class AutoJoinCalculator {
         return realTimeDiff <= autoJoinPeriod;
     }
 
-    private boolean isOption(AutoJoinOptions.AutoJoinOption option) {
-        return AutoJoinOptions.isOptionBoolean(context, option);
+    public boolean isTagMatching(Giveaway giveaway) {
+        List<String> whiteListTags = savedGamesWhiteListTags.all();
+        List<String> blackListTags = savedGamesBlackListTags.all();
+
+        return giveaway.isTagMatching(whiteListTags) && !giveaway.isTagMatching(blackListTags);
     }
 
-    public boolean isBookmarked(Giveaway giveaway) {
-        return bookmarkedGameIds.contains(giveaway.getGameId());
-    }
-
-    public boolean isTagged(Giveaway giveaway) {
-        return AutoJoinOptions.isTagged(context, giveaway);
-    }
-
-    public boolean isBlackListed(Giveaway giveaway) {
+    public boolean hasBlackListedTag(Giveaway giveaway) {
+        List<String> blackListTags = savedGamesBlackListTags.all();
         return giveaway.isTagMatching(blackListTags);
     }
+
+    public boolean hasPoints(Giveaway giveaway) {
+        int minimumPoints = AutoJoinOptions.getOptionInteger(context, AutoJoinOptions.AutoJoinOption.AUTO_JOIN_POINTS);
+        return giveaway.getPoints() >= minimumPoints;
+    }
+
+    public boolean isBlackListedGame(int gameId) {
+        return savedGamesBlackList.get(gameId) != null;
+    }
+
+    public void removeFromGamesBlackList(int gameId) {
+        savedGamesBlackList.remove(gameId);
+    }
+
+    public void addToGamesBlackList(int gameId) {
+        savedGamesBlackList.add(new GameInfo(gameId, 0), gameId);
+    }
+
+    public boolean isWhiteListedGame(int gameId) {
+        return savedGamesWhiteList.get(gameId) != null;
+    }
+
+    public void removeFromGamesWhiteList(int gameId) {
+        savedGamesWhiteList.remove(gameId);
+    }
+
+    public void addToGamesWhiteList(int gameId) {
+        savedGamesWhiteList.add(new GameInfo(gameId, 0), gameId);
+    }
+
+
 }

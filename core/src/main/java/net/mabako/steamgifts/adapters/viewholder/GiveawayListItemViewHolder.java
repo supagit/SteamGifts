@@ -57,6 +57,7 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
     private static int measuredHeight = 0;
     private final Context context;
     private final AutoJoinCalculator autoJoinCalculator;
+    private boolean showImage;
 
     public GiveawayListItemViewHolder(View v, Activity activity, EndlessAdapter adapter, Fragment fragment, SavedGiveaways savedGiveaways) {
         super(v);
@@ -88,25 +89,14 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
 
 
     public void setFrom(Giveaway giveaway, boolean showImage) {
+        this.showImage = showImage;
 
         String title = giveaway.getTitle();
         if (giveaway.getCopies() > 1) {
             title = giveaway.getCopies() + "x " + title;
         }
         giveawayName.setText(title);
-
         giveawayRatio.setText("");
-
-//        double entryRatio = giveaway.getEntryRatio();
-//        if (AutoJoinOptions.isOptionBoolean(context, AutoJoinOptions.AutoJoinOption.SHOW_AUTO_JOIN_RATIO) && Math.abs(entryRatio) > 0.1e-8) {
-//            NumberFormat formatter = new DecimalFormat("#0.0");
-//            String ratioText = formatter.format(AutoJoinUtils.calculateReadibleEntryRatio(activity.getBaseContext(), giveaway));
-//            giveawayRatio.setText(ratioText);
-//            giveawayRatio.setTextColor(AutoJoinUtils.calculateRatioColor(context, giveaway));
-//            giveawayRatio.setBackgroundColor(Color.WHITE);
-//        } else {
-//            giveawayRatio.setText("");
-//        }
 
         if (giveaway.getEndTime() != null) {
             String endTimeText = giveaway.getShortRelativeEndTime(activity);
@@ -161,12 +151,16 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
             params.height = 0;
         }
 
-        if (autoJoinCalculator.isBookmarked(giveaway)) {
+        if (autoJoinCalculator.isBlackListedGame(giveaway.getGameId())) {
+            StringUtils.setBackgroundDrawable(activity, itemContainer, true, R.attr.colorBlackListed);
+        } else if (autoJoinCalculator.isWhiteListedGame(giveaway.getGameId())) {
             StringUtils.setBackgroundDrawable(activity, itemContainer, true, R.attr.colorBookmarked);
-        } else if (autoJoinCalculator.isBlackListed(giveaway)) {
+        } else if (autoJoinCalculator.hasPoints(giveaway)) {
+            StringUtils.setBackgroundDrawable(activity, itemContainer, true, R.attr.colorPoint);
+        } else if (autoJoinCalculator.hasBlackListedTag(giveaway)) {
             StringUtils.setBackgroundDrawable(activity, itemContainer, true, R.attr.colorBlackListed);
         } else {
-            StringUtils.setBackgroundDrawable(activity, itemContainer, autoJoinCalculator.isTagged(giveaway));
+            StringUtils.setBackgroundDrawable(activity, itemContainer, autoJoinCalculator.isTagMatching(giveaway));
         }
 
         // Check all the indicators
@@ -233,21 +227,33 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
                 }
             }
 
-            // Save/Un-save a game
-            if (savedGiveaways != null && giveaway.getEndTime() != null) {
-                if (!savedGiveaways.exists(giveaway.getGiveawayId())) {
-                    menu.add(Menu.NONE, 4, Menu.NONE, R.string.add_saved_giveaway).setOnMenuItemClickListener(this);
-                } else {
-                    menu.add(Menu.NONE, 5, Menu.NONE, R.string.remove_saved_giveaway).setOnMenuItemClickListener(this);
-                }
-            }
+//            // Save/Un-save a game
+//            if (savedGiveaways != null && giveaway.getEndTime() != null) {
+//                if (!savedGiveaways.exists(giveaway.getGiveawayId())) {
+//                    menu.add(Menu.NONE, 4, Menu.NONE, R.string.add_saved_giveaway).setOnMenuItemClickListener(this);
+//                } else {
+//                    menu.add(Menu.NONE, 5, Menu.NONE, R.string.remove_saved_giveaway).setOnMenuItemClickListener(this);
+//                }
+//            }
 
             menu.add(Menu.NONE, 6, Menu.NONE, R.string.show_tags).setOnMenuItemClickListener(this);
 
-            // Hide a game... forever
-            if (loggedIn && xsrfEvents && giveaway.getInternalGameId() > 0 && fragment instanceof GiveawayListFragment) {
-                menu.add(Menu.NONE, 3, Menu.NONE, R.string.hide_game).setOnMenuItemClickListener(this);
+            if (autoJoinCalculator.isWhiteListedGame(giveaway.getGameId())) {
+                menu.add(Menu.NONE, 9, Menu.NONE, "Remove from Whitelist").setOnMenuItemClickListener(this);
+            } else {
+                menu.add(Menu.NONE, 10, Menu.NONE, "Whitelist").setOnMenuItemClickListener(this);
             }
+
+            if (autoJoinCalculator.isBlackListedGame(giveaway.getGameId())) {
+                menu.add(Menu.NONE, 7, Menu.NONE, "Remove from Blacklist").setOnMenuItemClickListener(this);
+            } else {
+                menu.add(Menu.NONE, 8, Menu.NONE, "Blacklist").setOnMenuItemClickListener(this);
+            }
+
+//            // Hide a game... forever
+//            if (loggedIn && xsrfEvents && giveaway.getInternalGameId() > 0 && fragment instanceof GiveawayListFragment) {
+//                menu.add(Menu.NONE, 3, Menu.NONE, R.string.hide_game).setOnMenuItemClickListener(this);
+//            }
         } else {
             Log.d(TAG, "Not showing context menu for giveaway. (xsrf-token: " + adapter.getXsrfToken() + ")");
         }
@@ -295,6 +301,22 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
                 Toast.makeText(fragment.getContext(), tagText, Toast.LENGTH_LONG).show();
             }
             return true;
+            case 7:
+                autoJoinCalculator.removeFromGamesBlackList(giveaway.getGameId());
+                setFrom(giveaway, showImage);
+                return true;
+            case 8:
+                autoJoinCalculator.addToGamesBlackList(giveaway.getGameId());
+                setFrom(giveaway, showImage);
+                return true;
+            case 9:
+                autoJoinCalculator.removeFromGamesWhiteList(giveaway.getGameId());
+                setFrom(giveaway, showImage);
+                return true;
+            case 10:
+                autoJoinCalculator.addToGamesWhiteList(giveaway.getGameId());
+                setFrom(giveaway, showImage);
+                return true;
         }
         return false;
     }

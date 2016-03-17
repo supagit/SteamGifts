@@ -161,8 +161,9 @@
     <string name="preferences_autojoin_prefer_high_rating_games">prefer games with higher rating</string>
     <string name="preferences_autojoin_bad_ratio">bad ratio</string>
     <string name="preferences_autojoin_great_ratio">great ratio</string>
-    <string name="preferences_autojoin_minimum_points_to_keep_for_untagged">points to keep for untagged games</string>
-    <string name="preferences_autojoin_minimum_points_to_keep_for_tagged">points to keep for tagged games</string>
+    <string name="preferences_autojoin_minimum_points_to_keep_for_untagged">points to keep for games not matching the whitelist tags</string>
+    <string name="preferences_autojoin_minimum_points_to_keep_for_tagged">points to keep for games matching the whitelist tags</string>
+    <string name="preferences_autojoin_games_with_points">autojoin games with points</string>
 
 
     <string name="preferences_discussions">Discussions</string>
@@ -221,6 +222,8 @@
     <!-- Saving Giveaways -->
     <string name="navigation_saved_elements">Bookmarks</string>
     <string name="navigation_start_autojoin">Start Autojoin</string>
+    <string name="navigation_whitelist_tags">Whitelist Tags</string>
+    <string name="navigation_blacklist_tags">Blacklist Tags</string>
 
     <string name="show_tags">Show Tags</string>
 

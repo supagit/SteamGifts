@@ -21,7 +21,8 @@ public class AutoJoinOptions {
         MINIMUM_POINTS_TO_KEEP_FOR_UNTAGGED("preferences_autojoin_minimum_points_to_keep_for_untagged", 150),
         MINIMUM_POINTS_TO_KEEP_FOR_GREAT_RATIO("preferences_autojoin_minimum_points_to_keep_for_tagged", 50),
         MINIMUM_RATING("preferences_autojoin_minimum_rating", 75),
-        HIDE_GAMES_WITH_BAD_RATING("preferences_hide_low_rating_games", false);
+        HIDE_GAMES_WITH_BAD_RATING("preferences_hide_low_rating_games", false),
+        AUTO_JOIN_POINTS("preferences_autojoin_games_with_points",30);
 
         private String preference;
         private Integer defaultInteger;
@@ -50,8 +51,6 @@ public class AutoJoinOptions {
         }
     }
 
-
-
     public static boolean isOptionBoolean(Context context, AutoJoinOption option) {
         return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(option.getPreference(), option.getDefaultBoolean());
     }
@@ -63,20 +62,5 @@ public class AutoJoinOptions {
         } catch (Exception ex) {
             return option.getDefaultInteger();
         }
-    }
-
-    public static Set<String> getOptionWhiteListTags(Context context) {
-        return new HashSet<>(Arrays.asList("Point &amp; Click","RPG", "FPS", "Local Multiplayer"));
-    }
-
-    public static Set<String> getOptionBlackListTags(Context context) {
-        return new HashSet<>(Arrays.asList("Hidden Object", ""));
-    }
-
-    public static boolean isTagged(Context context, Giveaway giveaway) {
-        Set<String> whiteListTags = getOptionWhiteListTags(context);
-        Set<String> blackListTags = getOptionBlackListTags(context);
-
-        return giveaway.getRating() >= getOptionInteger(context,AutoJoinOption.MINIMUM_RATING) && (giveaway.isTagMatching(whiteListTags) && !giveaway.isTagMatching(blackListTags));
     }
 }

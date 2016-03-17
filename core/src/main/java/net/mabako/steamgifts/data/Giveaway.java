@@ -10,6 +10,7 @@ import net.mabako.steamgifts.core.R;
 import net.mabako.steamgifts.persistentdata.SteamGiftsUserData;
 
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Set;
 
 public class Giveaway extends BasicGiveaway implements IEndlessAdaptable {
@@ -310,7 +311,7 @@ public class Giveaway extends BasicGiveaway implements IEndlessAdaptable {
         return tags;
     }
 
-    public boolean isTagMatching(Set<String> optionTags) {
+    public boolean isTagMatching(Collection<String> optionTags) {
         if (tags == null) {
             return false;
         }
