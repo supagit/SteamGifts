@@ -59,7 +59,11 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
         if (doAutoJoin) {
             List<Giveaway> giveaways = loadGiveAways(context);
             List<Giveaway> giveAwaysToJoin = autoJoinCalculator.calculateGiveawaysToJoin(giveaways);
-            if (giveAwaysToJoin.isEmpty()) {
+
+            String suspensionText = SteamGiftsUserData.getCurrent(context).getSuspensionText();
+            if (suspensionText != null) {
+                statistics.updateStatsNotification("Suspended", suspensionText);
+            } else if (giveAwaysToJoin.isEmpty()) {
                 showAutoJoinNotification(new HashMap<Giveaway, Boolean>());
             } else {
                 requestEnterLeave(giveAwaysToJoin, foundXsrfToken);
@@ -125,7 +129,7 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
     protected List<Giveaway> loadGiveAways(Context context) {
         List<Giveaway> giveaways = loadGiveAways(context, 0);
 
-        if (giveaways != null) {
+        if (giveaways != null && !giveaways.isEmpty()) {
             int page = 1;
             while (autoJoinCalculator.doesGiveawayEndWithInAutoJoinPeriod(giveaways.get(giveaways.size() - 1)) && page < 5) {
                 List<Giveaway> pageGiveaways = loadGiveAways(context, page);

@@ -176,6 +176,26 @@ public class Statistics {
         ((NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE)).notify(notificationId, notification);
     }
 
+    public void updateStatsNotification(String title, String text) {
+        android.app.Notification.Builder builder = new Notification.Builder(context);
+
+        int notificationId = AbstractNotificationCheckReceiver.NotificationId.AUTO_JOIN_STATS.ordinal();
+
+        Intent notificationIntent = new Intent(context, MainActivity.class);
+        PendingIntent intent = PendingIntent.getActivity(context, notificationId, notificationIntent, 0);
+        builder.setContentIntent(intent);
+
+        builder.setContentTitle(title)
+                .setContentText(text)
+                .setSmallIcon(R.drawable.sgwhite)
+                .setOngoing(true)
+                .setPriority(Notification.PRIORITY_HIGH);
+
+        Notification notification = builder.build();
+
+        ((NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE)).notify(notificationId, notification);
+    }
+
     private String makeRow(Object... vals) {
         StringBuilder sb = new StringBuilder();
 
@@ -226,7 +246,4 @@ public class Statistics {
             toggle = !toggle;
         }
     }
-
-
-
 }

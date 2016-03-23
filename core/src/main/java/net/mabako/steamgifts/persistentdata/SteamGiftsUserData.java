@@ -30,6 +30,10 @@ public class SteamGiftsUserData {
     private String name;
     private String imageUrl;
 
+
+
+    private String suspensionText;
+
     private transient int points = 0;
     private transient int level = 0;
 
@@ -73,6 +77,19 @@ public class SteamGiftsUserData {
 
         if (document == null)
             return;
+
+        if (document.location().contains("suspensions")) {
+            String doc = document.toString();
+
+            int start = doc.indexOf("Account suspended");
+            int end = doc.indexOf(".", start);
+
+            String text = doc.substring(start, end);
+            SteamGiftsUserData.getCurrent(context).setSuspensionText(text);
+            return;
+        }
+
+        SteamGiftsUserData.getCurrent(context).setSuspensionText(null);
 
         Elements navbar = document.select(".nav__button-container");
 
@@ -161,6 +178,14 @@ public class SteamGiftsUserData {
             }
         }
 
+    }
+
+    public String getSuspensionText() {
+        return suspensionText;
+    }
+
+    public void setSuspensionText(String suspensionText) {
+        this.suspensionText = suspensionText;
     }
 
     public int getLevel() {
