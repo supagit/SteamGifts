@@ -57,6 +57,8 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
         points = SteamGiftsUserData.getCurrent(context).getPoints();
 
         if (doAutoJoin) {
+            statistics.updateStatsNotification("Auto Join in progress", "");
+
             List<Giveaway> giveaways = loadGiveAways(context);
             List<Giveaway> giveAwaysToJoin = autoJoinCalculator.calculateGiveawaysToJoin(giveaways);
 
@@ -70,9 +72,10 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
             }
 
         }
-
         return null;
     }
+
+
 
     public void requestEnterLeave(final List<Giveaway> giveawaysToJoin, String xsrfToken) {
         final Map<Giveaway, Boolean> giveawaysJoined = new HashMap<>();

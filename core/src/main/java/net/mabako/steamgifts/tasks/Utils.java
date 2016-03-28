@@ -238,28 +238,61 @@ public final class Utils {
         return giveawayList;
     }
 
+    private static boolean isWifi(Context context) {
+        return Utils.isConnectedToWifi("Utils", context);
+    }
+
     public static void applyGiveawayRating(Giveaway giveaway, SavedGameInfo savedGameInfo) {
         GameInfo gameInfo = savedGameInfo.get(giveaway.getGameId());
         if (gameInfo == null || !gameInfo.isValid()) {
+            if (!isWifi(savedGameInfo.getContext())) {
+                if (gameInfo != null) {
+                    gameInfo.updateGiveaway(giveaway);
+                }
+                return;
+            }
+
             gameInfo = fetchGameInfo(giveaway.getGameId());
             if (gameInfo != null) {
                 savedGameInfo.add(gameInfo, gameInfo.getGameId());
             }
         }
 
-        if (gameInfo != null) {
-            Set<String> newTags = new HashSet<>();
-            for (String tag : gameInfo.getTags()) {
-                newTags.add(tag.trim());
-            }
-            gameInfo.getTags().clear();
-            gameInfo.getTags().addAll(newTags);
+        if (gameInfo == null) {
+            return;
+        }
+
+        if (gameInfo.getIsBundle() == null && isWifi(savedGameInfo.getContext())) {
+            Boolean bundleInfo = fetchBundleInfo(giveaway.getTitle());
+            gameInfo.setIsBundle(bundleInfo);
             savedGameInfo.add(gameInfo, gameInfo.getGameId());
         }
 
-        if (gameInfo != null) {
-            gameInfo.updateGiveaway(giveaway);
+//        Set<String> newTags = new HashSet<>();
+//        for (String tag : gameInfo.getTags()) {
+//            newTags.add(tag.trim());
+//        }
+//        gameInfo.getTags().clear();
+//        gameInfo.getTags().addAll(newTags);
+//        savedGameInfo.add(gameInfo, gameInfo.getGameId());
+
+        gameInfo.updateGiveaway(giveaway);
+    }
+
+    public static Boolean fetchBundleInfo(String gameName) {
+        try {
+            Connection connect = Jsoup.connect("http://www.steamgifts.com/bundle-games/search?q=" + gameName)
+                    .userAgent(Constants.JSOUP_USER_AGENT)
+                    .timeout(Constants.JSOUP_TIMEOUT);
+
+            Document document = connect.get();
+            String s = document.toString();
+
+            return !s.contains("No results were found.");
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        return null;
     }
 
     public static GameInfo fetchGameInfo(int gameId) {

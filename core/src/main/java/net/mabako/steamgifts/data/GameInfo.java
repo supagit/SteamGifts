@@ -16,6 +16,7 @@ public class GameInfo {
     private long time;
     private Integer rating;
     private int gameId;
+    private Boolean isBundle;
     private Set<String> tags = new HashSet<>();
 
     public GameInfo(int gameId, long time) {
@@ -50,12 +51,20 @@ public class GameInfo {
         return tags;
     }
 
+    public Boolean getIsBundle() {
+        return isBundle;
+    }
+
+    public void setIsBundle(Boolean isBundle) {
+        this.isBundle = isBundle;
+    }
+
     public boolean isValid() {
         if (rating != null) {
             return true;
         }
         long timeDiff = System.currentTimeMillis() - time;
-        return timeDiff < AlarmManager.INTERVAL_DAY * 30 * 3;
+        return timeDiff < AlarmManager.INTERVAL_DAY * 30;
     }
 
     public void updateRating(Integer rating) {
@@ -72,5 +81,6 @@ public class GameInfo {
     public void updateGiveaway(Giveaway giveaway) {
         giveaway.setRating(rating != null ? rating : 0);
         giveaway.setTags(tags);
+        giveaway.setBundle(isBundle);
     }
 }

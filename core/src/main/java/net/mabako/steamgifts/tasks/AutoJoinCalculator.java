@@ -54,6 +54,8 @@ public class AutoJoinCalculator {
 
         int pointsLeft = points;
 
+        List<Giveaway> zeroPointGiveaways = calculateZeroPointGames(filteredGiveaways);
+
         List<Giveaway> blackListedGiveaways = calculateBlackListedGames(filteredGiveaways);
         filteredGiveaways.removeAll(blackListedGiveaways);
 
@@ -63,11 +65,14 @@ public class AutoJoinCalculator {
         List<Giveaway> pointGiveaways = calculatePointGames(filteredGiveaways);
         filteredGiveaways.removeAll(pointGiveaways);
 
+        List<Giveaway> unbundledGiveaways = calculateUnbundledGames(filteredGiveaways);
+        filteredGiveaways.removeAll(unbundledGiveaways);
+
         List<Giveaway> taggedGiveaways = calculateTaggedGames(filteredGiveaways);
         filteredGiveaways.removeAll(taggedGiveaways);
 
 
-        List<Giveaway> result = new ArrayList<>();
+        List<Giveaway> result = new ArrayList<>(zeroPointGiveaways);
         for (Giveaway giveaway : whiteListedGames) {
             int leftAfterJoin = pointsLeft - giveaway.getPoints();
             if (leftAfterJoin >= 0) {
@@ -92,6 +97,14 @@ public class AutoJoinCalculator {
             }
         }
 
+        for (Giveaway giveaway : unbundledGiveaways) {
+            int leftAfterJoin = pointsLeft - giveaway.getPoints();
+            if (leftAfterJoin >= minPointsToKeepForGreatRatio) {
+                result.add(giveaway);
+                pointsLeft -= giveaway.getPoints();
+            }
+        }
+
         for (Giveaway giveaway : filteredGiveaways) {
             int leftAfterJoin = pointsLeft - giveaway.getPoints();
             if (leftAfterJoin >= minPointsToKeepForBadRatio) {
@@ -99,6 +112,34 @@ public class AutoJoinCalculator {
                 pointsLeft -= giveaway.getPoints();
             }
         }
+
+        return result;
+    }
+
+    private List<Giveaway> calculateZeroPointGames(List<Giveaway> giveaways) {
+        List<Giveaway> result = new ArrayList<>();
+
+        for (Giveaway giveaway : giveaways) {
+            if (giveaway.getPoints() == 0) {
+                result.add(giveaway);
+            }
+        }
+
+        sortByRating(result);
+
+        return result;
+    }
+
+    private List<Giveaway> calculateUnbundledGames(List<Giveaway> giveaways) {
+        List<Giveaway> result = new ArrayList<>();
+
+        for (Giveaway giveaway : giveaways) {
+            if (giveaway.getBundle() != null && !giveaway.getBundle()) {
+                result.add(giveaway);
+            }
+        }
+
+        sortByRating(result);
 
         return result;
     }
@@ -145,7 +186,6 @@ public class AutoJoinCalculator {
 
         return result;
     }
-
 
 
     private List<Giveaway> calculateWhiteListedGames(List<Giveaway> giveaways) {

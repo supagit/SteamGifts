@@ -94,7 +94,7 @@ public abstract class SavedElements<T> implements Comparator<T> {
         helper.close();
     }
 
-    protected Context getContext() {
+    public Context getContext() {
         return context;
     }
 
