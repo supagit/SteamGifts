@@ -244,15 +244,16 @@ public final class Utils {
 
     public static void applyGiveawayRating(Giveaway giveaway, SavedGameInfo savedGameInfo) {
         GameInfo gameInfo = savedGameInfo.get(giveaway.getGameId());
-        if (gameInfo == null || !gameInfo.isValid()) {
-            if (!isWifi(savedGameInfo.getContext())) {
-                if (gameInfo != null) {
-                    gameInfo.updateGiveaway(giveaway);
-                }
-                return;
-            }
 
-            gameInfo = fetchGameInfo(giveaway.getGameId());
+        if (!isWifi(savedGameInfo.getContext())) {
+            if (gameInfo != null) {
+                gameInfo.updateGiveaway(giveaway);
+            }
+            return;
+        }
+
+        if (gameInfo == null || !gameInfo.isValid()) {
+            gameInfo = fetchGameInfo(giveaway.getGameId(), giveaway.getTitle());
             if (gameInfo != null) {
                 savedGameInfo.add(gameInfo, gameInfo.getGameId());
             }
@@ -262,7 +263,7 @@ public final class Utils {
             return;
         }
 
-        if (gameInfo.getIsBundle() == null && isWifi(savedGameInfo.getContext())) {
+        if (gameInfo.getIsBundle() == null) {
             Boolean bundleInfo = fetchBundleInfo(giveaway.getTitle());
             gameInfo.setIsBundle(bundleInfo);
             savedGameInfo.add(gameInfo, gameInfo.getGameId());
@@ -295,11 +296,14 @@ public final class Utils {
         return null;
     }
 
-    public static GameInfo fetchGameInfo(int gameId) {
+    public static GameInfo fetchGameInfo(int gameId, String title) {
         GameInfo gameInfo = new GameInfo(gameId, System.currentTimeMillis());
         updateGameInfoFromSteamDB(gameInfo);
         updateGameInfoFromMetacritics(gameInfo);
         updateGameInfoFromSteamPowered(gameInfo);
+
+        Boolean bundleInfo = fetchBundleInfo(title);
+        gameInfo.setIsBundle(bundleInfo);
 
         return gameInfo;
     }
