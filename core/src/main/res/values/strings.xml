@@ -225,6 +225,8 @@
     <string name="navigation_whitelist_tags">Whitelist Tags</string>
     <string name="navigation_blacklist_tags">Blacklist Tags</string>
 
+    <string name="navigation_reset_stats">Reset Autojoin Stats</string>
+
     <string name="show_tags">Show Tags</string>
 
     <string name="add_saved_giveaway">Bookmark</string>

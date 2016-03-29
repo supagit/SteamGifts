@@ -27,6 +27,7 @@ import java.util.Map;
  */
 public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
     private Context context;
+    private boolean resetStats;
     private long autoJoinPeriod;
     public static final String TAG = AutoJoinTask.class.getSimpleName();
     private String foundXsrfToken;
@@ -43,16 +44,35 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
         savedGameInfo = new SavedGameInfo(context);
     }
 
+    public AutoJoinTask(Context context, boolean resetStats) {
+        this.context = context;
+        this.resetStats = resetStats;
+        savedGameInfo = new SavedGameInfo(context);
+    }
+
     private boolean isOption(AutoJoinOptions.AutoJoinOption option) {
         return AutoJoinOptions.isOptionBoolean(context, option);
     }
 
     protected Void doInBackground(Void... params) {
+        statistics = new Statistics(context);
+
+        if (resetStats) {
+            statistics.reset();
+            statistics.updateStatsNotification(0, 0, 0);
+            Toast.makeText(context, "Stats reset done", Toast.LENGTH_SHORT).show();
+        } else {
+            performAutoJoin();
+        }
+        return null;
+    }
+
+    private void performAutoJoin() {
         boolean doAutoJoin = SteamGiftsUserData.getCurrent(context).isLoggedIn()
                 && isOption(AutoJoinOptions.AutoJoinOption.AUTO_JOIN_ACTIVATED)
                 && (isOption(AutoJoinOptions.AutoJoinOption.AUTO_JOIN_ON_NON_WIFI_CONNECTION) || Utils.isConnectedToWifi(TAG, context));
 
-        statistics = new Statistics(context);
+
         autoJoinCalculator = new AutoJoinCalculator(context, autoJoinPeriod);
         points = SteamGiftsUserData.getCurrent(context).getPoints();
 
@@ -72,9 +92,7 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
             }
 
         }
-        return null;
     }
-
 
 
     public void requestEnterLeave(final List<Giveaway> giveawaysToJoin, String xsrfToken) {

@@ -158,13 +158,15 @@ public class Navbar {
                         } else {
                             Context context = fragment.getContext();
                             if (identifier == R.string.navigation_whitelist_tags) {
-                                TagListDialog tagListDialog = new TagListDialog(activity,"Whitelist Tags",new SavedGamesWhiteListTags(context));
+                                TagListDialog tagListDialog = new TagListDialog(activity, "Whitelist Tags", new SavedGamesWhiteListTags(context));
                                 tagListDialog.show();
-                            } else  if (identifier == R.string.navigation_blacklist_tags) {
-                                TagListDialog tagListDialog = new TagListDialog(activity,"Blacklist Tags",new SavedGamesBlackListTags(context));
+                            } else if (identifier == R.string.navigation_blacklist_tags) {
+                                TagListDialog tagListDialog = new TagListDialog(activity, "Blacklist Tags", new SavedGamesBlackListTags(context));
                                 tagListDialog.show();
                             } else if (identifier == R.string.navigation_start_autojoin) {
                                 new AutoJoinTask(context, CheckForAutoJoin.FULL_AUTO_PERIOD).execute();
+                            } else if (identifier == R.string.navigation_reset_stats) {
+                                new AutoJoinTask(context, true).execute();
                             } else {
                                 for (GiveawayListFragment.Type type : GiveawayListFragment.Type.values()) {
                                     if (type.getNavbarResource() == identifier) {
@@ -290,6 +292,7 @@ public class Navbar {
         drawer.addItem(new PrimaryDrawerItem().withName(R.string.navigation_blacklist_tags).withIdentifier(R.string.navigation_blacklist_tags).withIcon(FontAwesome.Icon.faw_thumbs_o_down));
         drawer.addItem(new PrimaryDrawerItem().withName(R.string.navigation_start_autojoin).withIdentifier(R.string.navigation_start_autojoin).withIcon(FontAwesome.Icon.faw_play_circle_o));
         drawer.addItem(new PrimaryDrawerItem().withName(R.string.preferences).withIdentifier(R.string.preferences).withSelectable(false).withIcon(FontAwesome.Icon.faw_cog));
+        drawer.addItem(new PrimaryDrawerItem().withName(R.string.navigation_reset_stats).withIdentifier(R.string.navigation_reset_stats).withIcon(FontAwesome.Icon.faw_undo));
         drawer.addItem(new PrimaryDrawerItem().withName(R.string.navigation_help).withIdentifier(R.string.navigation_help).withSelectable(false).withIcon(FontAwesome.Icon.faw_question));
         drawer.addItem(new PrimaryDrawerItem().withName(R.string.navigation_about).withIdentifier(R.string.navigation_about).withSelectable(false).withIcon(FontAwesome.Icon.faw_info));
     }
