@@ -51,14 +51,6 @@ public class GameInfo {
         return tags;
     }
 
-    public Boolean getIsBundle() {
-        return isBundle;
-    }
-
-    public void setIsBundle(Boolean isBundle) {
-        this.isBundle = isBundle;
-    }
-
     public boolean isValid() {
         if (rating != null) {
             return true;
@@ -81,6 +73,5 @@ public class GameInfo {
     public void updateGiveaway(Giveaway giveaway) {
         giveaway.setRating(rating != null ? rating : 0);
         giveaway.setTags(tags);
-        giveaway.setBundle(isBundle);
     }
 }

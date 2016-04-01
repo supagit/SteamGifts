@@ -1,7 +1,10 @@
 package net.mabako.steamgifts.activities;
 
+import android.app.AlarmManager;
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.TypedArray;
@@ -13,13 +16,17 @@ import android.support.annotation.StringRes;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.InputType;
 import android.view.View;
 import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.mikepenz.fontawesome_typeface_library.FontAwesome;
 import com.mikepenz.materialdrawer.AccountHeader;
@@ -53,6 +60,7 @@ import net.mabako.steamgifts.receivers.AbstractNotificationCheckReceiver;
 import net.mabako.steamgifts.receivers.CheckForAutoJoin;
 import net.mabako.steamgifts.tasks.AutoJoinTask;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -156,7 +164,7 @@ public class Navbar {
                             if (actionBar != null)
                                 actionBar.setSubtitle(null);
                         } else {
-                            Context context = fragment.getContext();
+                            final Context context = fragment.getContext();
                             if (identifier == R.string.navigation_whitelist_tags) {
                                 TagListDialog tagListDialog = new TagListDialog(activity, "Whitelist Tags", new SavedGamesWhiteListTags(context));
                                 tagListDialog.show();
@@ -164,7 +172,42 @@ public class Navbar {
                                 TagListDialog tagListDialog = new TagListDialog(activity, "Blacklist Tags", new SavedGamesBlackListTags(context));
                                 tagListDialog.show();
                             } else if (identifier == R.string.navigation_start_autojoin) {
-                                new AutoJoinTask(context, CheckForAutoJoin.FULL_AUTO_PERIOD).execute();
+
+                                AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+                                builder.setTitle("Choose period to autojoin in hours");
+
+                                final EditText input = new EditText(activity);
+
+                                double timeInHours = (double) CheckForAutoJoin.FULL_AUTO_PERIOD / AlarmManager.INTERVAL_HOUR;
+//                                DecimalFormat df = new DecimalFormat("%.00");
+                                input.setText(String.format("%.2f", timeInHours ));
+                                input.setInputType(InputType.TYPE_NUMBER_FLAG_DECIMAL);
+                                builder.setView(input);
+                                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        String value = input.getText().toString();
+                                        try {
+                                            double timeInHours = Double.parseDouble(value);
+
+                                            long period = (int) timeInHours * AlarmManager.INTERVAL_HOUR;
+                                            new AutoJoinTask(context, period).execute();
+                                            Toast.makeText(context, "Autojoin task started", Toast.LENGTH_LONG).show();
+                                        } catch (Exception ex) {
+                                            Toast.makeText(context, ex.toString(), Toast.LENGTH_LONG).show();
+                                        }
+                                    }
+                                });
+                                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        dialog.cancel();
+                                    }
+                                });
+
+                                builder.show();
+
+
                             } else if (identifier == R.string.navigation_reset_stats) {
                                 new AutoJoinTask(context, true).execute();
                             } else {

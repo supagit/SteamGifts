@@ -65,9 +65,6 @@ public class AutoJoinCalculator {
         List<Giveaway> pointGiveaways = calculatePointGames(filteredGiveaways);
         filteredGiveaways.removeAll(pointGiveaways);
 
-        List<Giveaway> unbundledGiveaways = calculateUnbundledGames(filteredGiveaways);
-        filteredGiveaways.removeAll(unbundledGiveaways);
-
         List<Giveaway> taggedGiveaways = calculateTaggedGames(filteredGiveaways);
         filteredGiveaways.removeAll(taggedGiveaways);
 
@@ -97,14 +94,6 @@ public class AutoJoinCalculator {
             }
         }
 
-        for (Giveaway giveaway : unbundledGiveaways) {
-            int leftAfterJoin = pointsLeft - giveaway.getPoints();
-            if (leftAfterJoin >= minPointsToKeepForGreatRatio) {
-                result.add(giveaway);
-                pointsLeft -= giveaway.getPoints();
-            }
-        }
-
         for (Giveaway giveaway : filteredGiveaways) {
             int leftAfterJoin = pointsLeft - giveaway.getPoints();
             if (leftAfterJoin >= minPointsToKeepForBadRatio) {
@@ -121,20 +110,6 @@ public class AutoJoinCalculator {
 
         for (Giveaway giveaway : giveaways) {
             if (giveaway.getPoints() == 0) {
-                result.add(giveaway);
-            }
-        }
-
-        sortByRating(result);
-
-        return result;
-    }
-
-    private List<Giveaway> calculateUnbundledGames(List<Giveaway> giveaways) {
-        List<Giveaway> result = new ArrayList<>();
-
-        for (Giveaway giveaway : giveaways) {
-            if (giveaway.getBundle() != null && !giveaway.getBundle()) {
                 result.add(giveaway);
             }
         }

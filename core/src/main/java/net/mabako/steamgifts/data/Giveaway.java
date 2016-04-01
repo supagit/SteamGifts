@@ -64,7 +64,6 @@ public class Giveaway extends BasicGiveaway implements IEndlessAdaptable {
      */
     private int internalGameId;
     private Set<String> tags;
-    private Boolean bundle;
 
     public Giveaway() {
         super(null);
@@ -322,13 +321,5 @@ public class Giveaway extends BasicGiveaway implements IEndlessAdaptable {
             }
         }
         return false;
-    }
-
-    public void setBundle(Boolean bundle) {
-        this.bundle = bundle;
-    }
-
-    public Boolean getBundle() {
-        return bundle;
     }
 }

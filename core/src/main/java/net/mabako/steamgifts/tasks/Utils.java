@@ -253,7 +253,7 @@ public final class Utils {
         }
 
         if (gameInfo == null || !gameInfo.isValid()) {
-            gameInfo = fetchGameInfo(giveaway.getGameId(), giveaway.getTitle());
+            gameInfo = fetchGameInfo(giveaway.getGameId());
             if (gameInfo != null) {
                 savedGameInfo.add(gameInfo, gameInfo.getGameId());
             }
@@ -261,12 +261,6 @@ public final class Utils {
 
         if (gameInfo == null) {
             return;
-        }
-
-        if (gameInfo.getIsBundle() == null) {
-            Boolean bundleInfo = fetchBundleInfo(giveaway.getTitle());
-            gameInfo.setIsBundle(bundleInfo);
-            savedGameInfo.add(gameInfo, gameInfo.getGameId());
         }
 
 //        Set<String> newTags = new HashSet<>();
@@ -280,31 +274,11 @@ public final class Utils {
         gameInfo.updateGiveaway(giveaway);
     }
 
-    public static Boolean fetchBundleInfo(String gameName) {
-        try {
-            Connection connect = Jsoup.connect("http://www.steamgifts.com/bundle-games/search?q=" + gameName)
-                    .userAgent(Constants.JSOUP_USER_AGENT)
-                    .timeout(Constants.JSOUP_TIMEOUT);
-
-            Document document = connect.get();
-            String s = document.toString();
-
-            return !s.contains("No results were found.");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    public static GameInfo fetchGameInfo(int gameId, String title) {
+    public static GameInfo fetchGameInfo(int gameId) {
         GameInfo gameInfo = new GameInfo(gameId, System.currentTimeMillis());
         updateGameInfoFromSteamDB(gameInfo);
         updateGameInfoFromMetacritics(gameInfo);
         updateGameInfoFromSteamPowered(gameInfo);
-
-        Boolean bundleInfo = fetchBundleInfo(title);
-        gameInfo.setIsBundle(bundleInfo);
-
         return gameInfo;
     }
 
