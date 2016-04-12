@@ -39,6 +39,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Exchanger;
 
 public final class Utils {
     private Utils() {
@@ -185,7 +186,12 @@ public final class Utils {
         // Internal ID for blacklisting
         Element popup = element.select(".giveaway__hide.trigger-popup").first();
         if (popup != null)
-            giveaway.setInternalGameId(Integer.parseInt(popup.attr("data-game-id")));
+            try {
+                giveaway.setInternalGameId(Integer.parseInt(popup.attr("data-game-id")));
+            }
+            catch(Exception ex) {
+                giveaway.setInternalGameId(0);
+            }
     }
 
     /**

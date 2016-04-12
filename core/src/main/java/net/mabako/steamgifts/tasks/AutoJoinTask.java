@@ -56,13 +56,19 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
 
     protected Void doInBackground(Void... params) {
         statistics = new Statistics(context);
+        try {
 
-        if (resetStats) {
-            statistics.reset();
-            statistics.updateStatsNotification(0, 0, 0);
-            Toast.makeText(context, "Stats reset done", Toast.LENGTH_SHORT).show();
-        } else {
-            performAutoJoin();
+            if (resetStats) {
+                statistics.reset();
+                statistics.updateStatsNotification(0, 0, 0);
+                Toast.makeText(context, "Stats reset done", Toast.LENGTH_SHORT).show();
+            } else {
+                performAutoJoin();
+            }
+        }
+        catch(Exception ex) {
+            ex.printStackTrace();
+            statistics.updateStatsNotification("Exception", ex.getMessage());
         }
         return null;
     }
@@ -115,8 +121,8 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
                         Toast.makeText(context, "failed to enter giveaway " + giveaway.getTitle(), Toast.LENGTH_SHORT).show();
                     }
 
-                    giveawaysJoined.put(giveaway, success);
-                    if (giveawaysJoined.size() == giveawaysToJoin.size()) {
+                    synchronized (giveawaysJoined) {
+                        giveawaysJoined.put(giveaway, success);
                         showAutoJoinNotification(giveawaysJoined);
                     }
                 }
@@ -150,16 +156,21 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
     protected List<Giveaway> loadGiveAways(Context context) {
         List<Giveaway> giveaways = loadGiveAways(context, 0);
 
-        if (giveaways != null && !giveaways.isEmpty()) {
-            int page = 1;
-            while (autoJoinCalculator.doesGiveawayEndWithInAutoJoinPeriod(giveaways.get(giveaways.size() - 1)) && page < 5) {
-                List<Giveaway> pageGiveaways = loadGiveAways(context, page);
-                if (pageGiveaways == null) {
-                    break;
+        try {
+            if (giveaways != null && !giveaways.isEmpty()) {
+                int page = 1;
+                while (autoJoinCalculator.doesGiveawayEndWithInAutoJoinPeriod(giveaways.get(giveaways.size() - 1)) && page < 5) {
+                    List<Giveaway> pageGiveaways = loadGiveAways(context, page);
+                    if (pageGiveaways == null) {
+                        break;
+                    }
+                    page++;
+                    giveaways.addAll(pageGiveaways);
                 }
-                page++;
-                giveaways.addAll(pageGiveaways);
             }
+        }
+        catch(Exception ex) {
+
         }
 
         return giveaways;

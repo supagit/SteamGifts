@@ -287,12 +287,8 @@ public class Giveaway extends BasicGiveaway implements IEndlessAdaptable {
         return entries + additionalEntriesToExpect;
     }
 
-    public double getEntryRatio() {
-        if (entries > 0) {
-            return (double) getCopies() / getEstimatedEntries();
-        } else {
-            return 0;
-        }
+    public int getEstimatedEntriesPerCopy() {
+        return getEstimatedEntries() / getCopies();
     }
 
     public int getRating() {

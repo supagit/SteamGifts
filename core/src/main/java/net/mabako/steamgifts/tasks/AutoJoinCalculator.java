@@ -181,7 +181,17 @@ public class AutoJoinCalculator {
         Collections.sort(giveaways, new Comparator<Giveaway>() {
             @Override
             public int compare(Giveaway lhs, Giveaway rhs) {
-                return rhs.getRating() - lhs.getRating();
+                int level = rhs.getLevel() - lhs.getLevel();
+                if (level != 0) {
+                    return level;
+                }
+
+                int rating = rhs.getRating() - lhs.getRating();
+                if (rating != 0) {
+                    return rating;
+                }
+
+                return lhs.getEstimatedEntriesPerCopy() - rhs.getEstimatedEntriesPerCopy();
             }
         });
     }
