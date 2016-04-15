@@ -6,6 +6,7 @@ import net.mabako.steamgifts.data.GameInfo;
 import net.mabako.steamgifts.data.Giveaway;
 import net.mabako.steamgifts.persistentdata.SavedGamesBlackList;
 import net.mabako.steamgifts.persistentdata.SavedGamesBlackListTags;
+import net.mabako.steamgifts.persistentdata.SavedGamesMustHaveList;
 import net.mabako.steamgifts.persistentdata.SavedGamesWhiteList;
 import net.mabako.steamgifts.persistentdata.SavedGamesWhiteListTags;
 import net.mabako.steamgifts.persistentdata.SteamGiftsUserData;
@@ -15,7 +16,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 
 /**
  * AutoJoinCalculator
@@ -29,6 +29,7 @@ public class AutoJoinCalculator {
     private final SavedGamesBlackList savedGamesBlackList;
     private final SavedGamesWhiteList savedGamesWhiteList;
     private final SavedGamesWhiteListTags savedGamesWhiteListTags;
+    private final SavedGamesMustHaveList savedGamesMustHaveList;
     private final SavedGamesBlackListTags savedGamesBlackListTags;
     private final int level;
 
@@ -40,6 +41,7 @@ public class AutoJoinCalculator {
 
         savedGamesBlackList = new SavedGamesBlackList(context);
         savedGamesWhiteList = new SavedGamesWhiteList(context);
+        savedGamesMustHaveList = new SavedGamesMustHaveList(context);
         savedGamesWhiteListTags = new SavedGamesWhiteListTags(context);
         savedGamesBlackListTags = new SavedGamesBlackListTags(context);
     }
@@ -52,10 +54,10 @@ public class AutoJoinCalculator {
     private List<Giveaway> generateGiveawaysToJoinList(List<Giveaway> filteredGiveaways) {
         int points = SteamGiftsUserData.getCurrent(context).getPoints();
 
-
         int minPointsToKeepForBadRatio = AutoJoinOptions.getOptionInteger(context, AutoJoinOptions.AutoJoinOption.MINIMUM_POINTS_TO_KEEP_FOR_UNTAGGED);
         int minPointsToKeepForGreatRatio = AutoJoinOptions.getOptionInteger(context, AutoJoinOptions.AutoJoinOption.MINIMUM_POINTS_TO_KEEP_FOR_GREAT_RATIO);
         int minPointsToKeepForNotMeetingTheLevel = AutoJoinOptions.getOptionInteger(context, AutoJoinOptions.AutoJoinOption.MINIMUM_POINTS_TO_KEEP_FOR_NOT_MEETING_LEVEL);
+        int pointsToKeepForNonMustHaveGames = AutoJoinOptions.getOptionInteger(context, AutoJoinOptions.AutoJoinOption.MINIMUM_POINTS_TO_KEEP_FOR_NOT_ON_MUST_HAVE_LIST);
 
         int pointsLeft = points;
 
@@ -63,6 +65,9 @@ public class AutoJoinCalculator {
 
         List<Giveaway> blackListedGiveaways = calculateBlackListedGames(filteredGiveaways);
         filteredGiveaways.removeAll(blackListedGiveaways);
+
+        List<Giveaway> mustHaveListedGames = calculateMustHaveListedGames(filteredGiveaways);
+        filteredGiveaways.removeAll(mustHaveListedGames);
 
         List<Giveaway> whiteListedGames = calculateWhiteListedGames(filteredGiveaways);
         filteredGiveaways.removeAll(whiteListedGames);
@@ -73,49 +78,29 @@ public class AutoJoinCalculator {
         List<Giveaway> taggedGiveaways = calculateTaggedGames(filteredGiveaways);
         filteredGiveaways.removeAll(taggedGiveaways);
 
-
         List<Giveaway> result = new ArrayList<>(zeroPointGiveaways);
-        for (Giveaway giveaway : whiteListedGames) {
-            int leftAfterJoin = pointsLeft - giveaway.getPoints();
-            int pointsToKeep = calculatePointsToKeepForLevel(giveaway, minPointsToKeepForNotMeetingTheLevel);
 
-            if (leftAfterJoin >= pointsToKeep) {
-                result.add(giveaway);
-                pointsLeft -= giveaway.getPoints();
-            }
-        }
-
-        for (Giveaway giveaway : pointGiveaways) {
-            int leftAfterJoin = pointsLeft - giveaway.getPoints();
-            int pointsToKeep = calculatePointsToKeepForLevel(giveaway, minPointsToKeepForNotMeetingTheLevel);
-
-            if (leftAfterJoin >= pointsToKeep) {
-                result.add(giveaway);
-                pointsLeft -= giveaway.getPoints();
-            }
-        }
-
-        for (Giveaway giveaway : taggedGiveaways) {
-            int leftAfterJoin = pointsLeft - giveaway.getPoints();
-            int pointsToKeep = calculatePointsToKeepForLevel(giveaway, minPointsToKeepForNotMeetingTheLevel);
-
-            if (leftAfterJoin >= Math.max(minPointsToKeepForGreatRatio, pointsToKeep)) {
-                result.add(giveaway);
-                pointsLeft -= giveaway.getPoints();
-            }
-        }
-
-        for (Giveaway giveaway : filteredGiveaways) {
-            int leftAfterJoin = pointsLeft - giveaway.getPoints();
-            int pointsToKeep = calculatePointsToKeepForLevel(giveaway, minPointsToKeepForNotMeetingTheLevel);
-
-            if (leftAfterJoin >= Math.max(minPointsToKeepForBadRatio, pointsToKeep)) {
-                result.add(giveaway);
-                pointsLeft -= giveaway.getPoints();
-            }
-        }
+        pointsLeft = addGiveaways(pointsLeft, mustHaveListedGames, 0, 0, result);
+        pointsLeft = addGiveaways(pointsLeft, whiteListedGames,  minPointsToKeepForNotMeetingTheLevel,pointsToKeepForNonMustHaveGames, result);
+        pointsLeft = addGiveaways(pointsLeft, pointGiveaways,  minPointsToKeepForNotMeetingTheLevel, pointsToKeepForNonMustHaveGames,result);
+        pointsLeft = addGiveaways(pointsLeft, taggedGiveaways,  minPointsToKeepForNotMeetingTheLevel, Math.max(minPointsToKeepForGreatRatio, pointsToKeepForNonMustHaveGames),result);
+        pointsLeft = addGiveaways(pointsLeft, filteredGiveaways,  minPointsToKeepForNotMeetingTheLevel, Math.max(minPointsToKeepForBadRatio, pointsToKeepForNonMustHaveGames),result);
 
         return result;
+    }
+
+    private int addGiveaways(int pointsLeft, List<Giveaway> mustHaveListedGames, int minPointsToKeepForNotMeetingTheLevel, int minPointsToKeep, List<Giveaway> result) {
+        for (Giveaway giveaway : mustHaveListedGames) {
+            int leftAfterJoin = pointsLeft - giveaway.getPoints();
+
+            int pointsToKeep = minPointsToKeep + calculatePointsToKeepForLevel(giveaway, minPointsToKeepForNotMeetingTheLevel - minPointsToKeep);
+
+            if (leftAfterJoin >= Math.max(pointsToKeep, minPointsToKeep)) {
+                result.add(giveaway);
+                pointsLeft -= giveaway.getPoints();
+            }
+        }
+        return pointsLeft;
     }
 
     private List<Giveaway> calculateZeroPointGames(List<Giveaway> giveaways) {
@@ -175,6 +160,20 @@ public class AutoJoinCalculator {
         return result;
     }
 
+
+    private List<Giveaway> calculateMustHaveListedGames(List<Giveaway> giveaways) {
+        List<Giveaway> result = new ArrayList<>();
+
+        for (Giveaway giveaway : giveaways) {
+            if (isMustHaveListedGame(giveaway.getGameId())) {
+                result.add(giveaway);
+            }
+        }
+
+        sortByRating(result);
+
+        return result;
+    }
 
     private List<Giveaway> calculateWhiteListedGames(List<Giveaway> giveaways) {
         List<Giveaway> result = new ArrayList<>();
@@ -271,6 +270,18 @@ public class AutoJoinCalculator {
 
     public void addToGamesWhiteList(int gameId) {
         savedGamesWhiteList.add(new GameInfo(gameId, 0), gameId);
+    }
+
+    public boolean isMustHaveListedGame(int gameId) {
+        return savedGamesMustHaveList.get(gameId) != null;
+    }
+
+    public void removeFromMustHaveWhiteList(int gameId) {
+        savedGamesMustHaveList.remove(gameId);
+    }
+
+    public void addToGamesMustHaveList(int gameId) {
+        savedGamesMustHaveList.add(new GameInfo(gameId, 0), gameId);
     }
 
     public int calculatePointsToKeepForLevel(Giveaway giveaway, int pointsToKeepAwayForLevel) {

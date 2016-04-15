@@ -8,6 +8,7 @@
     <attr name="colorLighterSeparatorBackground" format="color" />
     <attr name="lightTextColor" format="color" />
 
+    <attr name="colorMustHave" format="color" />
     <attr name="colorBookmarked" format="color" />
     <attr name="colorBlackListed" format="color" />
     <attr name="colorPoint" format="color" />

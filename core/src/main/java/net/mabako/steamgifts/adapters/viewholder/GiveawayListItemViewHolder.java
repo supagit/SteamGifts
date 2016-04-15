@@ -153,6 +153,8 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
 
         if (autoJoinCalculator.isBlackListedGame(giveaway.getGameId())) {
             StringUtils.setBackgroundDrawable(activity, itemContainer, true, R.attr.colorBlackListed);
+        } else if (autoJoinCalculator.isMustHaveListedGame(giveaway.getGameId())) {
+            StringUtils.setBackgroundDrawable(activity, itemContainer, true, R.attr.colorMustHave);
         } else if (autoJoinCalculator.isWhiteListedGame(giveaway.getGameId())) {
             StringUtils.setBackgroundDrawable(activity, itemContainer, true, R.attr.colorBookmarked);
         } else if (autoJoinCalculator.hasPoints(giveaway)) {
@@ -245,16 +247,22 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
 
             menu.add(Menu.NONE, 6, Menu.NONE, R.string.show_tags).setOnMenuItemClickListener(this);
 
+            if (autoJoinCalculator.isMustHaveListedGame(giveaway.getGameId())) {
+                menu.add(Menu.NONE, 11, Menu.NONE, "Remove from Must-Have").setOnMenuItemClickListener(this);
+            } else {
+                menu.add(Menu.NONE, 12, Menu.NONE, "Add to Must-Have").setOnMenuItemClickListener(this);
+            }
+
             if (autoJoinCalculator.isWhiteListedGame(giveaway.getGameId())) {
                 menu.add(Menu.NONE, 9, Menu.NONE, "Remove from Whitelist").setOnMenuItemClickListener(this);
             } else {
-                menu.add(Menu.NONE, 10, Menu.NONE, "Whitelist").setOnMenuItemClickListener(this);
+                menu.add(Menu.NONE, 10, Menu.NONE, "Add to Whitelist").setOnMenuItemClickListener(this);
             }
 
             if (autoJoinCalculator.isBlackListedGame(giveaway.getGameId())) {
                 menu.add(Menu.NONE, 7, Menu.NONE, "Remove from Blacklist").setOnMenuItemClickListener(this);
             } else {
-                menu.add(Menu.NONE, 8, Menu.NONE, "Blacklist").setOnMenuItemClickListener(this);
+                menu.add(Menu.NONE, 8, Menu.NONE, "Add to Blacklist").setOnMenuItemClickListener(this);
             }
 
 //            // Hide a game... forever
@@ -324,6 +332,15 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
                 autoJoinCalculator.addToGamesWhiteList(giveaway.getGameId());
                 setFrom(giveaway, showImage);
                 return true;
+            case 11:
+                autoJoinCalculator.removeFromMustHaveWhiteList(giveaway.getGameId());
+                setFrom(giveaway, showImage);
+                return true;
+            case 12:
+                autoJoinCalculator.addToGamesMustHaveList(giveaway.getGameId());
+                setFrom(giveaway, showImage);
+                return true;
+
         }
         return false;
     }

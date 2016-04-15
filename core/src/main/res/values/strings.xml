@@ -165,7 +165,7 @@
     <string name="preferences_autojoin_minimum_points_to_keep_for_tagged">points to keep for games matching the whitelist tags</string>
     <string name="preferences_autojoin_games_with_points">autojoin games with points</string>
     <string name="preferences_autojoin_minimum_points_to_keep_for_not_meeting_level">points to keep for giveaways with a level below yours</string>
-
+    <string name="preferences_autojoin_minimum_points_to_keep_for_not_must_have_games">points to keep for non must have games</string>
 
     <string name="preferences_discussions">Discussions</string>
     <string name="preference_sidebar_discussion_list">Navigation Items</string>
