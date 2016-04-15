@@ -85,11 +85,11 @@ public class CustomDateTime implements Serializable {
             return toString(timeDiff, realTimeDiff, useAbbreviation ? "s" : "second",useAbbreviation);
         timeDiff /= 60;
 
-        if (timeDiff < 60)
+        if (timeDiff < 120)
             return toString(timeDiff, realTimeDiff, useAbbreviation ? "m" : "minute", useAbbreviation);
         timeDiff /= 60;
 
-        if (timeDiff < 24)
+        if (timeDiff < 48)
             return toString(timeDiff, realTimeDiff, useAbbreviation ? "h" : "hour", useAbbreviation);
         timeDiff /= 24;
 

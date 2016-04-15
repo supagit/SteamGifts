@@ -164,12 +164,19 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
         }
 
         // Check all the indicators
-        indicatorWhitelist.setVisibility(giveaway.isWhitelist() ? View.VISIBLE : View.GONE);
-        indicatorGroup.setVisibility(giveaway.isGroup() ? View.VISIBLE : View.GONE);
-        indicatorLevelPositive.setVisibility(giveaway.isLevelPositive() ? View.VISIBLE : View.GONE);
         indicatorLevelNegative.setVisibility(giveaway.isLevelNegative() ? View.VISIBLE : View.GONE);
-        indicatorPrivate.setVisibility(giveaway.isPrivate() ? View.VISIBLE : View.GONE);
-        indicatorRegionRestricted.setVisibility(giveaway.isRegionRestricted() ? View.VISIBLE : View.GONE);
+        indicatorLevelPositive.setVisibility(autoJoinCalculator.isMatchingLevel(giveaway) ? View.VISIBLE : View.GONE);
+        indicatorWhitelist.setVisibility(!autoJoinCalculator.isMatchingLevel(giveaway) && giveaway.isLevelPositive() ? View.VISIBLE : View.GONE);
+        indicatorGroup.setVisibility(View.GONE);
+        indicatorPrivate.setVisibility(View.GONE);
+        indicatorRegionRestricted.setVisibility(View.GONE);
+
+//        indicatorWhitelist.setVisibility(giveaway.isWhitelist() ? View.VISIBLE : View.GONE);
+//        indicatorGroup.setVisibility(giveaway.isGroup() ? View.VISIBLE : View.GONE);
+//        indicatorLevelPositive.setVisibility(giveaway.isLevelPositive() ? View.VISIBLE : View.GONE);
+//        indicatorLevelNegative.setVisibility(giveaway.isLevelNegative() ? View.VISIBLE : View.GONE);
+//        indicatorPrivate.setVisibility(giveaway.isPrivate() ? View.VISIBLE : View.GONE);
+//        indicatorRegionRestricted.setVisibility(giveaway.isRegionRestricted() ? View.VISIBLE : View.GONE);
     }
 
     @Override

@@ -11,4 +11,5 @@
     <attr name="colorBookmarked" format="color" />
     <attr name="colorBlackListed" format="color" />
     <attr name="colorPoint" format="color" />
+    <attr name="colorNotLevel" format="color" />
 </resources>

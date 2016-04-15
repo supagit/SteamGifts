@@ -16,6 +16,7 @@
         <item name="colorBookmarked">#aaffaa</item>
         <item name="colorBlackListed">#ffaaaa</item>
         <item name="colorPoint">#aaaaff</item>
+        <item name="colorNotLevel">#fafad2</item>
     </style>
 
     <style name="AppTheme.Dark" parent="MaterialDrawerTheme">

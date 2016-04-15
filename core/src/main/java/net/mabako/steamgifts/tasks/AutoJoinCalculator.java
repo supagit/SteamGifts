@@ -30,10 +30,13 @@ public class AutoJoinCalculator {
     private final SavedGamesWhiteList savedGamesWhiteList;
     private final SavedGamesWhiteListTags savedGamesWhiteListTags;
     private final SavedGamesBlackListTags savedGamesBlackListTags;
+    private final int level;
 
     public AutoJoinCalculator(Context context, long autoJoinPeriod) {
         this.context = context;
         this.autoJoinPeriod = autoJoinPeriod;
+
+        level = SteamGiftsUserData.getCurrent(context).getLevel();
 
         savedGamesBlackList = new SavedGamesBlackList(context);
         savedGamesWhiteList = new SavedGamesWhiteList(context);
@@ -49,8 +52,10 @@ public class AutoJoinCalculator {
     private List<Giveaway> generateGiveawaysToJoinList(List<Giveaway> filteredGiveaways) {
         int points = SteamGiftsUserData.getCurrent(context).getPoints();
 
+
         int minPointsToKeepForBadRatio = AutoJoinOptions.getOptionInteger(context, AutoJoinOptions.AutoJoinOption.MINIMUM_POINTS_TO_KEEP_FOR_UNTAGGED);
         int minPointsToKeepForGreatRatio = AutoJoinOptions.getOptionInteger(context, AutoJoinOptions.AutoJoinOption.MINIMUM_POINTS_TO_KEEP_FOR_GREAT_RATIO);
+        int minPointsToKeepForNotMeetingTheLevel = AutoJoinOptions.getOptionInteger(context, AutoJoinOptions.AutoJoinOption.MINIMUM_POINTS_TO_KEEP_FOR_NOT_MEETING_LEVEL);
 
         int pointsLeft = points;
 
@@ -72,7 +77,9 @@ public class AutoJoinCalculator {
         List<Giveaway> result = new ArrayList<>(zeroPointGiveaways);
         for (Giveaway giveaway : whiteListedGames) {
             int leftAfterJoin = pointsLeft - giveaway.getPoints();
-            if (leftAfterJoin >= 0) {
+            int pointsToKeep = calculatePointsToKeepForLevel(giveaway, minPointsToKeepForNotMeetingTheLevel);
+
+            if (leftAfterJoin >= pointsToKeep) {
                 result.add(giveaway);
                 pointsLeft -= giveaway.getPoints();
             }
@@ -80,7 +87,9 @@ public class AutoJoinCalculator {
 
         for (Giveaway giveaway : pointGiveaways) {
             int leftAfterJoin = pointsLeft - giveaway.getPoints();
-            if (leftAfterJoin >= 0) {
+            int pointsToKeep = calculatePointsToKeepForLevel(giveaway, minPointsToKeepForNotMeetingTheLevel);
+
+            if (leftAfterJoin >= pointsToKeep) {
                 result.add(giveaway);
                 pointsLeft -= giveaway.getPoints();
             }
@@ -88,7 +97,9 @@ public class AutoJoinCalculator {
 
         for (Giveaway giveaway : taggedGiveaways) {
             int leftAfterJoin = pointsLeft - giveaway.getPoints();
-            if (leftAfterJoin >= minPointsToKeepForGreatRatio) {
+            int pointsToKeep = calculatePointsToKeepForLevel(giveaway, minPointsToKeepForNotMeetingTheLevel);
+
+            if (leftAfterJoin >= Math.max(minPointsToKeepForGreatRatio, pointsToKeep)) {
                 result.add(giveaway);
                 pointsLeft -= giveaway.getPoints();
             }
@@ -96,7 +107,9 @@ public class AutoJoinCalculator {
 
         for (Giveaway giveaway : filteredGiveaways) {
             int leftAfterJoin = pointsLeft - giveaway.getPoints();
-            if (leftAfterJoin >= minPointsToKeepForBadRatio) {
+            int pointsToKeep = calculatePointsToKeepForLevel(giveaway, minPointsToKeepForNotMeetingTheLevel);
+
+            if (leftAfterJoin >= Math.max(minPointsToKeepForBadRatio, pointsToKeep)) {
                 result.add(giveaway);
                 pointsLeft -= giveaway.getPoints();
             }
@@ -258,6 +271,24 @@ public class AutoJoinCalculator {
 
     public void addToGamesWhiteList(int gameId) {
         savedGamesWhiteList.add(new GameInfo(gameId, 0), gameId);
+    }
+
+    public int calculatePointsToKeepForLevel(Giveaway giveaway, int pointsToKeepAwayForLevel) {
+        if (level == 0) {
+            return 0;
+        }
+        double levelPercentage = (double)giveaway.getLevel() / level;
+        if (levelPercentage > 1) {
+            levelPercentage = 1;
+        }
+
+        double percentagePointsToKeep = 1 - levelPercentage;
+
+        return (int)(percentagePointsToKeep * pointsToKeepAwayForLevel);
+    }
+
+    public boolean isMatchingLevel(Giveaway giveaway) {
+        return level == giveaway.getLevel();
     }
 
 

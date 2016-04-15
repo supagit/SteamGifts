@@ -69,6 +69,13 @@
             android:summary="these points will be kept even when there are giveaways with a great ratio are available"/>
 
         <net.mabako.sgtools.EditTextIntegerPreference
+            android:defaultValue="50"
+            android:numeric="integer"
+            android:key="preferences_autojoin_minimum_points_to_keep_for_not_meeting_level"
+            android:title="@string/preferences_autojoin_minimum_points_to_keep_for_not_meeting_level"
+            android:summary="these points will be kept when the level does not match" />
+
+        <net.mabako.sgtools.EditTextIntegerPreference
             android:defaultValue="30"
             android:numeric="integer"
             android:key="preferences_autojoin_games_with_points"
