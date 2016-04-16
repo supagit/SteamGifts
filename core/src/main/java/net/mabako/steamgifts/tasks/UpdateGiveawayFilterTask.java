@@ -23,12 +23,6 @@ public class UpdateGiveawayFilterTask<FragmentType extends Fragment> extends Aja
     public UpdateGiveawayFilterTask(FragmentType fragment, String xsrfToken, String what, int internalGameId, String gameTitle) {
         super(fragment, fragment.getContext(), xsrfToken, what);
 
-        // We only use the normal ajax.php if we remove a game
-        // ... like seriously?
-        if (HIDE.equals(what))
-            setUrl("https://www.steamgifts.com");
-
-
         this.internalGameId = internalGameId;
         this.gameTitle = gameTitle;
     }
