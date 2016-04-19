@@ -18,6 +18,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -173,7 +174,12 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
 
         }
 
-        return giveaways;
+        Map<String, Giveaway> giveawayMap = new HashMap<>();
+        for (Giveaway giveAway : giveaways) {
+            giveawayMap.put(giveAway.getGiveawayId(), giveAway);
+        }
+
+        return new ArrayList<>(giveawayMap.values());
     }
 
     protected List<Giveaway> loadGiveAways(Context context, int page) {

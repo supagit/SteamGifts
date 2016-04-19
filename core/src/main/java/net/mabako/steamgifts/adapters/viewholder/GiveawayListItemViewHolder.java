@@ -3,6 +3,7 @@ package net.mabako.steamgifts.adapters.viewholder;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -34,6 +35,8 @@ import net.mabako.steamgifts.persistentdata.SavedGiveaways;
 import net.mabako.steamgifts.persistentdata.SteamGiftsUserData;
 import net.mabako.steamgifts.tasks.AutoJoinCalculator;
 
+import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
@@ -308,12 +311,34 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
                 }
                 return true;
             case 6: {
-                String tagText = "";
+                Set<String> blackListTags = new HashSet<>(autoJoinCalculator.getBlackListTags());
+                Set<String> whiteListTags = new HashSet<>(autoJoinCalculator.getWhiteListTags());
+
                 Set<String> tags = giveaway.getTags();
-                for (String tag : tags) {
-                    tagText += tag + "\n";
+
+                Set<String> blackListed = generateIntersetingTags(blackListTags, tags);
+                Set<String> whiteListed = generateIntersetingTags(whiteListTags, tags);
+
+                tags.removeAll(blackListed);
+                tags.removeAll(whiteListed);
+
+                String blackTagText = generateTagString(blackListed);
+                String whiteTagText = generateTagString(whiteListed);
+                String tagText = generateTagString(tags);
+
+                String text = "";
+
+                if (!blackListed.isEmpty()) {
+                    text += "blackListed:\n" + blackTagText + "\n";
                 }
-                Toast.makeText(fragment.getContext(), tagText, Toast.LENGTH_LONG).show();
+
+                if (!whiteListed.isEmpty()) {
+                    text += "whiteListed:\n" + whiteTagText + "\n";
+                }
+
+                text += tagText;
+
+                Toast.makeText(fragment.getContext(), text, Toast.LENGTH_LONG).show();
             }
             return true;
             case 7:
@@ -343,5 +368,28 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
 
         }
         return false;
+    }
+
+    @NonNull
+    private Set<String> generateIntersetingTags(Set<String> blackListTags, Set<String> tags) {
+        Set<String> blackListed = new HashSet<>();
+        for (String tag : tags) {
+            if (blackListTags.contains(tag)) {
+                blackListed.add(tag);
+            }
+        }
+        return blackListed;
+    }
+
+    @NonNull
+    private String generateTagString(Set<String> tags) {
+        String tagText = "";
+
+        if (tags != null) {
+            for (String tag : tags) {
+                tagText += tag + "\n";
+            }
+        }
+        return tagText;
     }
 }

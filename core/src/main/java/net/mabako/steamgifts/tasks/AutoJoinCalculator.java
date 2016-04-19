@@ -10,6 +10,7 @@ import net.mabako.steamgifts.persistentdata.SavedGamesMustHaveList;
 import net.mabako.steamgifts.persistentdata.SavedGamesWhiteList;
 import net.mabako.steamgifts.persistentdata.SavedGamesWhiteListTags;
 import net.mabako.steamgifts.persistentdata.SteamGiftsUserData;
+import net.mabako.steamgifts.receivers.CheckForAutoJoin;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -112,8 +113,6 @@ public class AutoJoinCalculator {
             }
         }
 
-        sortByRating(result);
-
         return result;
     }
 
@@ -127,7 +126,7 @@ public class AutoJoinCalculator {
             }
         }
 
-        sortByRating(result);
+        sortByTime(result);
 
         return result;
     }
@@ -141,7 +140,7 @@ public class AutoJoinCalculator {
             }
         }
 
-        sortByRating(result);
+        sortByTime(result);
 
         return result;
     }
@@ -155,7 +154,7 @@ public class AutoJoinCalculator {
             }
         }
 
-        sortByRating(result);
+        sortByTime(result);
 
         return result;
     }
@@ -170,7 +169,7 @@ public class AutoJoinCalculator {
             }
         }
 
-        sortByRating(result);
+        sortByTime(result, true);
 
         return result;
     }
@@ -184,23 +183,37 @@ public class AutoJoinCalculator {
             }
         }
 
-        sortByRating(result);
+        sortByTime(result);
 
         return result;
     }
 
-    private void sortByRating(List<Giveaway> giveaways) {
+    private void sortByTime(List<Giveaway> giveaways) {
+        sortByTime(giveaways, false);
+    }
+
+    private void sortByTime(List<Giveaway> giveaways, final boolean ignoreRating) {
+        final long now = System.currentTimeMillis();
         Collections.sort(giveaways, new Comparator<Giveaway>() {
             @Override
             public int compare(Giveaway lhs, Giveaway rhs) {
+                boolean lhsInNext30Mins = lhs.getEndTime().getTimeInMillis() - now < CheckForAutoJoin.AUTO_JOIN_PERIOD;
+                boolean rhsInNext30Mins = rhs.getEndTime().getTimeInMillis() - now < CheckForAutoJoin.AUTO_JOIN_PERIOD;
+
+                if (lhsInNext30Mins != rhsInNext30Mins) {
+                    return lhsInNext30Mins ? 1 : -1;
+                }
+
                 int level = rhs.getLevel() - lhs.getLevel();
                 if (level != 0) {
                     return level;
                 }
 
-                int rating = rhs.getRating() - lhs.getRating();
-                if (rating != 0) {
-                    return rating;
+                if (!ignoreRating) {
+                    int rating = rhs.getRating() - lhs.getRating();
+                    if (rating != 0) {
+                        return rating;
+                    }
                 }
 
                 return lhs.getEstimatedEntriesPerCopy() - rhs.getEstimatedEntriesPerCopy();
@@ -208,13 +221,14 @@ public class AutoJoinCalculator {
         });
     }
 
+
+
     private List<Giveaway> filterGiveaways(List<Giveaway> giveaways) {
         int minimumRating = AutoJoinOptions.getOptionInteger(context, AutoJoinOptions.AutoJoinOption.MINIMUM_RATING);
 
         List<Giveaway> result = new ArrayList<>();
         for (Giveaway giveaway : giveaways) {
-            if (savedGamesBlackList.get(giveaway.getGameId()) == null
-                    && giveaway.getRating() >= minimumRating
+            if (giveaway.getRating() >= minimumRating
                     && doesGiveawayEndWithInAutoJoinPeriod(giveaway)
                     && !giveaway.isEntered()
                     && !giveaway.isLevelNegative()
@@ -236,6 +250,14 @@ public class AutoJoinCalculator {
         List<String> blackListTags = savedGamesBlackListTags.all();
 
         return giveaway.isTagMatching(whiteListTags) && !giveaway.isTagMatching(blackListTags);
+    }
+
+    public List<String> getBlackListTags() {
+        return savedGamesBlackListTags.all();
+    }
+
+    public List<String> getWhiteListTags() {
+        return savedGamesWhiteListTags.all();
     }
 
     public boolean hasBlackListedTag(Giveaway giveaway) {
