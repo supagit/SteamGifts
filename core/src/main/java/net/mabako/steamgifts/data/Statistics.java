@@ -13,6 +13,7 @@ import com.google.gson.Gson;
 
 import net.mabako.steamgifts.activities.MainActivity;
 import net.mabako.steamgifts.core.R;
+import net.mabako.steamgifts.persistentdata.SavedGameInfo;
 import net.mabako.steamgifts.persistentdata.SteamGiftsUserData;
 import net.mabako.steamgifts.receivers.AbstractNotificationCheckReceiver;
 import net.mabako.steamgifts.tasks.AutoJoinTask;
@@ -109,6 +110,14 @@ public class Statistics {
         return today != day;
     }
 
+    private void updateGaminInfoJoinCount(int gameId, int joinDelta) {
+        SavedGameInfo savedGameInfo = new SavedGameInfo(context);
+        GameInfo gameInfo = savedGameInfo.get(gameId);
+        gameInfo.addJoinDelta(joinDelta);
+        savedGameInfo.add(gameInfo, gameId);
+        savedGameInfo.close();
+    }
+
     public void addGiveaway(Giveaway giveaway) {
         todayEntered++;
         todayPointsSpent += giveaway.getPoints();
@@ -116,6 +125,9 @@ public class Statistics {
         overallGiveawaysEntered++;
         overallPointsSpent += giveaway.getPoints();
         overallEntries += giveaway.getEstimatedEntries() / giveaway.getCopies();
+
+        updateGaminInfoJoinCount(giveaway.getGameId(), 1);
+
         save();
     }
 
@@ -126,6 +138,9 @@ public class Statistics {
         overallGiveawaysEntered--;
         overallPointsSpent -= giveaway.getPoints();
         overallEntries -= giveaway.getEstimatedEntries() / giveaway.getCopies();
+
+        updateGaminInfoJoinCount(giveaway.getGameId(), -1);
+
         save();
     }
 

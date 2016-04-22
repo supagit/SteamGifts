@@ -36,6 +36,7 @@ public class Giveaway extends BasicGiveaway implements IEndlessAdaptable {
     private int copies;
     private int points;
     private int rating;
+    private int joinCount;
 
     /**
      * When was this giveaway created?
@@ -317,5 +318,13 @@ public class Giveaway extends BasicGiveaway implements IEndlessAdaptable {
             }
         }
         return false;
+    }
+
+    public int getJoinCount() {
+        return joinCount;
+    }
+
+    public void setJoinCount(int joinCount) {
+        this.joinCount = joinCount;
     }
 }

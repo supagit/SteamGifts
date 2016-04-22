@@ -84,6 +84,7 @@ public class TagListDialog extends Dialog {
 
         List<String> sortedTags = new ArrayList<>(tags);
         Collections.sort(sortedTags);
+        savedGameInfo.close();
         return sortedTags;
     }
 

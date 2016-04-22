@@ -16,6 +16,7 @@ public class GameInfo {
     private long time;
     private Integer rating;
     private int gameId;
+    private int joinCount;
     private Boolean isBundle;
     private Set<String> tags = new HashSet<>();
 
@@ -51,6 +52,10 @@ public class GameInfo {
         return tags;
     }
 
+    public void addJoinDelta(int delta) {
+        joinCount += delta;
+    }
+
     public boolean isValid() {
         if (rating != null) {
             return true;
@@ -73,5 +78,6 @@ public class GameInfo {
     public void updateGiveaway(Giveaway giveaway) {
         giveaway.setRating(rating != null ? rating : 0);
         giveaway.setTags(tags);
+        giveaway.setJoinCount(joinCount);
     }
 }

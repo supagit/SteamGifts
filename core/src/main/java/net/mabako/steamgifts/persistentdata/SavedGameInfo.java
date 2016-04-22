@@ -34,6 +34,6 @@ public class SavedGameInfo extends SavedElements<GameInfo> {
 
     @Override
     public int compare(GameInfo lhs, GameInfo rhs) {
-        return rhs.getRating() - lhs.getRating();
+        return rhs.getGameId() - lhs.getGameId();
     }
 }

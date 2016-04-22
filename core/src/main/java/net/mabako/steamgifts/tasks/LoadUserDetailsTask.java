@@ -36,6 +36,8 @@ public class LoadUserDetailsTask extends AsyncTask<Void, Void, List<Giveaway>> {
         this.user = user;
     }
 
+
+
     @Override
     protected List<Giveaway> doInBackground(Void... params) {
         Log.d(TAG, "Fetching giveaways for user " + path + " on page " + page);
@@ -81,6 +83,7 @@ public class LoadUserDetailsTask extends AsyncTask<Void, Void, List<Giveaway>> {
         }
 
         fragment.addItems(result, page == 1, foundXsrfToken);
+        savedGameInfo.close();
     }
 
     private void loadUser(Document document) {

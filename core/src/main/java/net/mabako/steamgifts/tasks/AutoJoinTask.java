@@ -6,6 +6,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import net.mabako.Constants;
+import net.mabako.steamgifts.data.GameInfo;
 import net.mabako.steamgifts.data.Giveaway;
 import net.mabako.steamgifts.data.Statistics;
 import net.mabako.steamgifts.fragments.GiveawayDetailFragment;
@@ -71,6 +72,7 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
             ex.printStackTrace();
             statistics.updateStatsNotification("Exception", ex.getMessage());
         }
+        savedGameInfo.close();
         return null;
     }
 

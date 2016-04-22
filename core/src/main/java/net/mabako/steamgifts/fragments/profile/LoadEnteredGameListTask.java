@@ -24,6 +24,12 @@ public class LoadEnteredGameListTask extends LoadGameListTask {
     }
 
     @Override
+    protected void onPostExecute(List<IEndlessAdaptable> result) {
+        super.onPostExecute(result);
+        savedGameInfo.close();
+    }
+
+    @Override
     protected IEndlessAdaptable load(Element element) {
         Element firstColumn = element.select(".table__column--width-fill").first();
         Element link = firstColumn.select("a.table__column__heading").first();

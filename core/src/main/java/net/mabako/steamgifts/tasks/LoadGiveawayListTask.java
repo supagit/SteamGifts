@@ -100,6 +100,7 @@ public class LoadGiveawayListTask extends AsyncTask<Void, Void, List<Giveaway>> 
     protected void onPostExecute(List<Giveaway> result) {
         super.onPostExecute(result);
         fragment.addItems(result, page == 1, foundXsrfToken);
+        savedGameInfo.close();
     }
 
     private void addFilterParameter(Connection jsoup, String parameterName, int value) {

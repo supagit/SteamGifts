@@ -177,7 +177,7 @@ public class Navbar {
                                 builder.setTitle("Choose period to autojoin in hours");
 
                                 final EditText input = new EditText(activity);
-                                input.setText("2");
+                                input.setText("3");
                                 input.setInputType(InputType.TYPE_NUMBER_FLAG_DECIMAL);
                                 builder.setView(input);
                                 builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {

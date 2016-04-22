@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
+import android.util.ArraySet;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.Menu;
@@ -117,6 +118,10 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
 
         if (giveaway.getPoints() >= 0)
             sb.append(giveaway.getPoints()).append("P | ");
+
+        if (giveaway.getJoinCount() > 0) {
+            sb.append(giveaway.getJoinCount()).append("J | ");
+        }
 
         if (giveaway.getLevel() > 0)
             sb.append("L").append(giveaway.getLevel()).append(" | ");
@@ -314,7 +319,7 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
                 Set<String> blackListTags = new HashSet<>(autoJoinCalculator.getBlackListTags());
                 Set<String> whiteListTags = new HashSet<>(autoJoinCalculator.getWhiteListTags());
 
-                Set<String> tags = giveaway.getTags();
+                Set<String> tags = new HashSet<>(giveaway.getTags());
 
                 Set<String> blackListed = generateIntersetingTags(blackListTags, tags);
                 Set<String> whiteListed = generateIntersetingTags(whiteListTags, tags);

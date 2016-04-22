@@ -1,5 +1,6 @@
 package net.mabako.steamgifts.tasks;
 
+import android.app.AlarmManager;
 import android.content.Context;
 
 import net.mabako.steamgifts.data.GameInfo;
@@ -70,6 +71,9 @@ public class AutoJoinCalculator {
         List<Giveaway> mustHaveListedGames = calculateMustHaveListedGames(filteredGiveaways);
         filteredGiveaways.removeAll(mustHaveListedGames);
 
+        List<Giveaway> giveawaysEndingTooLate = calculateTooLateGiveaways(filteredGiveaways);
+        filteredGiveaways.removeAll(giveawaysEndingTooLate);
+
         List<Giveaway> whiteListedGames = calculateWhiteListedGames(filteredGiveaways);
         filteredGiveaways.removeAll(whiteListedGames);
 
@@ -88,6 +92,22 @@ public class AutoJoinCalculator {
         pointsLeft = addGiveaways(pointsLeft, filteredGiveaways,  minPointsToKeepForNotMeetingTheLevel, Math.max(minPointsToKeepForBadRatio, pointsToKeepForNonMustHaveGames),result);
 
         return result;
+    }
+
+    private List<Giveaway> calculateTooLateGiveaways(List<Giveaway> giveaways) {
+        List<Giveaway> result = new ArrayList<>();
+
+        long now = System.currentTimeMillis();
+        for (Giveaway giveaway : giveaways) {
+            boolean tooLate = giveaway.getEndTime().getTimeInMillis() - now > AlarmManager.INTERVAL_HOUR;
+            if (tooLate) {
+                result.add(giveaway);
+            }
+        }
+
+        return result;
+
+
     }
 
     private int addGiveaways(int pointsLeft, List<Giveaway> mustHaveListedGames, int minPointsToKeepForNotMeetingTheLevel, int minPointsToKeep, List<Giveaway> result) {
@@ -169,7 +189,7 @@ public class AutoJoinCalculator {
             }
         }
 
-        sortByTime(result, true);
+        sortByTimeOnly(result);
 
         return result;
     }
@@ -192,16 +212,25 @@ public class AutoJoinCalculator {
         sortByTime(giveaways, false);
     }
 
+    private void sortByTimeOnly(List<Giveaway> giveaways) {
+        Collections.sort(giveaways, new Comparator<Giveaway>() {
+            @Override
+            public int compare(Giveaway lhs, Giveaway rhs) {
+                return (int)(lhs.getEndTime().getTimeInMillis() - rhs.getEndTime().getTimeInMillis());
+            }
+        });
+    }
+
     private void sortByTime(List<Giveaway> giveaways, final boolean ignoreRating) {
         final long now = System.currentTimeMillis();
         Collections.sort(giveaways, new Comparator<Giveaway>() {
             @Override
             public int compare(Giveaway lhs, Giveaway rhs) {
-                boolean lhsInNext30Mins = lhs.getEndTime().getTimeInMillis() - now < CheckForAutoJoin.AUTO_JOIN_PERIOD;
-                boolean rhsInNext30Mins = rhs.getEndTime().getTimeInMillis() - now < CheckForAutoJoin.AUTO_JOIN_PERIOD;
+                boolean lhsInNext30Mins = lhs.getEndTime().getTimeInMillis() - now < AlarmManager.INTERVAL_HALF_HOUR;
+                boolean rhsInNext30Mins = rhs.getEndTime().getTimeInMillis() - now < AlarmManager.INTERVAL_HALF_HOUR;
 
                 if (lhsInNext30Mins != rhsInNext30Mins) {
-                    return lhsInNext30Mins ? 1 : -1;
+                    return lhsInNext30Mins ? -1 : 1;
                 }
 
                 int level = rhs.getLevel() - lhs.getLevel();
