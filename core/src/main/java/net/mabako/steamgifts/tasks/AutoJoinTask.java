@@ -11,6 +11,7 @@ import net.mabako.steamgifts.data.Giveaway;
 import net.mabako.steamgifts.data.Statistics;
 import net.mabako.steamgifts.fragments.GiveawayDetailFragment;
 import net.mabako.steamgifts.fragments.interfaces.IHasEnterableGiveaways;
+import net.mabako.steamgifts.persistentdata.SavedErrors;
 import net.mabako.steamgifts.persistentdata.SavedGameInfo;
 import net.mabako.steamgifts.persistentdata.SteamGiftsUserData;
 
@@ -19,6 +20,8 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -69,6 +72,13 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
             }
         }
         catch(Exception ex) {
+            StringWriter errors = new StringWriter();
+            ex.printStackTrace(new PrintWriter(errors));
+
+            SavedErrors savedErrors = new SavedErrors(context);
+            savedErrors.add(errors.toString(), "" + System.currentTimeMillis());
+            savedErrors.close();
+
             ex.printStackTrace();
             statistics.updateStatsNotification("Exception", ex.getMessage());
         }

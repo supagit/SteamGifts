@@ -111,6 +111,8 @@ public class AutoJoinCalculator {
     }
 
     private int addGiveaways(int pointsLeft, List<Giveaway> mustHaveListedGames, int minPointsToKeepForNotMeetingTheLevel, int minPointsToKeep, List<Giveaway> result) {
+        boolean breakWhenGiveAwayIsNotMatchingPoints = minPointsToKeepForNotMeetingTheLevel == 0 && minPointsToKeep == 0;
+
         for (Giveaway giveaway : mustHaveListedGames) {
             int leftAfterJoin = pointsLeft - giveaway.getPoints();
 
@@ -119,6 +121,8 @@ public class AutoJoinCalculator {
             if (leftAfterJoin >= Math.max(pointsToKeep, minPointsToKeep)) {
                 result.add(giveaway);
                 pointsLeft -= giveaway.getPoints();
+            } else if (breakWhenGiveAwayIsNotMatchingPoints) {
+                break;
             }
         }
         return pointsLeft;

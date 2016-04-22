@@ -130,6 +130,8 @@ public class DetailActivity extends CommonActivity {
                         pager.setCurrentItem(0);
                     else if (u.getCreatedNotification() > 0)
                         pager.setCurrentItem(3);
+                    else
+                        pager.setCurrentItem(2);
                 } else if (serializable == AbstractNotificationCheckReceiver.NotificationId.WON) {
                     pager.setCurrentItem(1);
                 } else if (serializable == AbstractNotificationCheckReceiver.NotificationId.MESSAGES) {
