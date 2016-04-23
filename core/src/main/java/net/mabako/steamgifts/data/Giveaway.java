@@ -65,6 +65,7 @@ public class Giveaway extends BasicGiveaway implements IEndlessAdaptable {
      */
     private int internalGameId;
     private Set<String> tags;
+    private int averageEntries;
 
     public Giveaway() {
         super(null);
@@ -326,5 +327,13 @@ public class Giveaway extends BasicGiveaway implements IEndlessAdaptable {
 
     public void setJoinCount(int joinCount) {
         this.joinCount = joinCount;
+    }
+
+    public void setAverageEntries(int averageEntries) {
+        this.averageEntries = averageEntries;
+    }
+
+    public int getAverageEntries() {
+        return averageEntries;
     }
 }

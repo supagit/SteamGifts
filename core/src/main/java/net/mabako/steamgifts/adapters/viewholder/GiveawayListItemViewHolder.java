@@ -128,6 +128,7 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
 
         if (giveaway.getEntries() >= 0) {
             int estimatedEntries = giveaway.getEstimatedEntries();
+//            sb.append(estimatedEntries).append(" (~").append(giveaway.getAverageEntries()).append(")").append(" entries").append(" | ");
             sb.append(activity.getResources().getQuantityString(R.plurals.entries, estimatedEntries, estimatedEntries)).append(" | ");
         }
         giveawayDetails.setText(sb.length() > 3 ? sb.substring(0, sb.length() - 3) : sb.toString());
@@ -163,10 +164,10 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
             StringUtils.setBackgroundDrawable(activity, itemContainer, true, R.attr.colorBlackListed);
         } else if (autoJoinCalculator.isMustHaveListedGame(giveaway.getGameId())) {
             StringUtils.setBackgroundDrawable(activity, itemContainer, true, R.attr.colorMustHave);
+        } else if (autoJoinCalculator.hasGreatDemand(giveaway)) {
+            StringUtils.setBackgroundDrawable(activity, itemContainer, true, R.attr.colorPoint);
         } else if (autoJoinCalculator.isWhiteListedGame(giveaway.getGameId())) {
             StringUtils.setBackgroundDrawable(activity, itemContainer, true, R.attr.colorBookmarked);
-        } else if (autoJoinCalculator.hasPoints(giveaway)) {
-            StringUtils.setBackgroundDrawable(activity, itemContainer, true, R.attr.colorPoint);
         } else if (autoJoinCalculator.hasBlackListedTag(giveaway)) {
             StringUtils.setBackgroundDrawable(activity, itemContainer, true, R.attr.colorBlackListed);
         } else {
@@ -177,12 +178,12 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
         indicatorLevelNegative.setVisibility(giveaway.isLevelNegative() ? View.VISIBLE : View.GONE);
         indicatorLevelPositive.setVisibility(autoJoinCalculator.isMatchingLevel(giveaway) ? View.VISIBLE : View.GONE);
         indicatorWhitelist.setVisibility(!autoJoinCalculator.isMatchingLevel(giveaway) && giveaway.isLevelPositive() ? View.VISIBLE : View.GONE);
-        indicatorGroup.setVisibility(View.GONE);
+//        indicatorGroup.setVisibility(View.GONE);
         indicatorPrivate.setVisibility(View.GONE);
         indicatorRegionRestricted.setVisibility(View.GONE);
 
 //        indicatorWhitelist.setVisibility(giveaway.isWhitelist() ? View.VISIBLE : View.GONE);
-//        indicatorGroup.setVisibility(giveaway.isGroup() ? View.VISIBLE : View.GONE);
+        indicatorGroup.setVisibility(giveaway.isGroup() ? View.VISIBLE : View.GONE);
 //        indicatorLevelPositive.setVisibility(giveaway.isLevelPositive() ? View.VISIBLE : View.GONE);
 //        indicatorLevelNegative.setVisibility(giveaway.isLevelNegative() ? View.VISIBLE : View.GONE);
 //        indicatorPrivate.setVisibility(giveaway.isPrivate() ? View.VISIBLE : View.GONE);
@@ -223,7 +224,7 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
             boolean loggedIn = SteamGiftsUserData.getCurrent(null).isLoggedIn();
 
             // Header
-            menu.setHeaderTitle(giveaway.getTitle());
+            menu.setHeaderTitle(giveaway.getTitle() + " ~" + giveaway.getAverageEntries());
 
             if (loggedIn && xsrfEvents && fragment instanceof IHasEnterableGiveaways) {
                 // Text for Entering or Leaving the giveaway

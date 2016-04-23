@@ -17,8 +17,12 @@ public class GameInfo {
     private Integer rating;
     private int gameId;
     private int joinCount;
+
     private Boolean isBundle;
     private Set<String> tags = new HashSet<>();
+
+    private long numberOfEntriesOfAllGiveaways;
+    private long numberOfGiveAways;
 
     public GameInfo(int gameId, long time) {
         this.gameId = gameId;
@@ -75,9 +79,31 @@ public class GameInfo {
         this.rating = Math.max(this.rating, rating);
     }
 
+    public long getNumberOfEntriesOfAllGiveaways() {
+        return numberOfEntriesOfAllGiveaways;
+    }
+
+    public void setNumberOfEntriesOfAllGiveaways(long numberOfEntriesOfAllGiveaways) {
+        this.numberOfEntriesOfAllGiveaways = numberOfEntriesOfAllGiveaways;
+    }
+
+    public long getNumberOfGiveAways() {
+        return numberOfGiveAways;
+    }
+
+    public void setNumberOfGiveAways(long numberOfGiveAways) {
+        this.numberOfGiveAways = numberOfGiveAways;
+    }
+
     public void updateGiveaway(Giveaway giveaway) {
         giveaway.setRating(rating != null ? rating : 0);
         giveaway.setTags(tags);
         giveaway.setJoinCount(joinCount);
+        long averageEntries = 0;
+        long numberOfGiveAways = this.numberOfGiveAways;
+        if (numberOfGiveAways != 0) {
+            averageEntries = numberOfEntriesOfAllGiveaways / numberOfGiveAways;
+        }
+        giveaway.setAverageEntries((int)averageEntries);
     }
 }

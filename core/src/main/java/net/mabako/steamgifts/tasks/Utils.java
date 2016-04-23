@@ -262,9 +262,18 @@ public final class Utils {
             }
         }
 
+
+
         if (gameInfo == null) {
             return;
         }
+
+        long numberOfEntriesOfAllGiveaways = gameInfo.getNumberOfEntriesOfAllGiveaways();
+        numberOfEntriesOfAllGiveaways += giveaway.getEstimatedEntries();
+        gameInfo.setNumberOfEntriesOfAllGiveaways(numberOfEntriesOfAllGiveaways);
+        gameInfo.setNumberOfGiveAways(gameInfo.getNumberOfGiveAways() + giveaway.getCopies());
+
+        savedGameInfo.add(gameInfo, gameInfo.getGameId());
 
 //        Set<String> newTags = new HashSet<>();
 //        for (String tag : gameInfo.getTags()) {

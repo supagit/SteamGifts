@@ -24,7 +24,7 @@ public class AutoJoinOptions {
         MINIMUM_POINTS_TO_KEEP_FOR_NOT_ON_MUST_HAVE_LIST("preferences_autojoin_minimum_points_to_keep_for_not_must_have_games", 50),
         MINIMUM_RATING("preferences_autojoin_minimum_rating", 75),
         HIDE_GAMES_WITH_BAD_RATING("preferences_hide_low_rating_games", false),
-        AUTO_JOIN_POINTS("preferences_autojoin_games_with_points",30);
+        GREAT_DEMAND_ENTRIES("preferences_great_demand_entries",3000);
 
         private String preference;
         private Integer defaultInteger;

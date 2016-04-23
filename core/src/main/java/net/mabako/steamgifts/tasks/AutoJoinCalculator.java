@@ -11,7 +11,6 @@ import net.mabako.steamgifts.persistentdata.SavedGamesMustHaveList;
 import net.mabako.steamgifts.persistentdata.SavedGamesWhiteList;
 import net.mabako.steamgifts.persistentdata.SavedGamesWhiteListTags;
 import net.mabako.steamgifts.persistentdata.SteamGiftsUserData;
-import net.mabako.steamgifts.receivers.CheckForAutoJoin;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,10 +33,13 @@ public class AutoJoinCalculator {
     private final SavedGamesMustHaveList savedGamesMustHaveList;
     private final SavedGamesBlackListTags savedGamesBlackListTags;
     private final int level;
+    private final int greatDemandEntries;
 
     public AutoJoinCalculator(Context context, long autoJoinPeriod) {
         this.context = context;
         this.autoJoinPeriod = autoJoinPeriod;
+
+        greatDemandEntries = AutoJoinOptions.getOptionInteger(context, AutoJoinOptions.AutoJoinOption.GREAT_DEMAND_ENTRIES);
 
         level = SteamGiftsUserData.getCurrent(context).getLevel();
 
@@ -74,11 +76,12 @@ public class AutoJoinCalculator {
         List<Giveaway> giveawaysEndingTooLate = calculateTooLateGiveaways(filteredGiveaways);
         filteredGiveaways.removeAll(giveawaysEndingTooLate);
 
+        List<Giveaway> greatDemandGames = calculateGreatDemandGames(filteredGiveaways);
+        filteredGiveaways.removeAll(greatDemandGames);
+
         List<Giveaway> whiteListedGames = calculateWhiteListedGames(filteredGiveaways);
         filteredGiveaways.removeAll(whiteListedGames);
 
-        List<Giveaway> pointGiveaways = calculatePointGames(filteredGiveaways);
-        filteredGiveaways.removeAll(pointGiveaways);
 
         List<Giveaway> taggedGiveaways = calculateTaggedGames(filteredGiveaways);
         filteredGiveaways.removeAll(taggedGiveaways);
@@ -87,7 +90,7 @@ public class AutoJoinCalculator {
 
         pointsLeft = addGiveaways(pointsLeft, mustHaveListedGames, 0, 0, result);
         pointsLeft = addGiveaways(pointsLeft, whiteListedGames,  minPointsToKeepForNotMeetingTheLevel,pointsToKeepForNonMustHaveGames, result);
-        pointsLeft = addGiveaways(pointsLeft, pointGiveaways,  minPointsToKeepForNotMeetingTheLevel, pointsToKeepForNonMustHaveGames,result);
+        pointsLeft = addGiveaways(pointsLeft, greatDemandGames,  minPointsToKeepForNotMeetingTheLevel, pointsToKeepForNonMustHaveGames,result);
         pointsLeft = addGiveaways(pointsLeft, taggedGiveaways,  minPointsToKeepForNotMeetingTheLevel, Math.max(minPointsToKeepForGreatRatio, pointsToKeepForNonMustHaveGames),result);
         pointsLeft = addGiveaways(pointsLeft, filteredGiveaways,  minPointsToKeepForNotMeetingTheLevel, Math.max(minPointsToKeepForBadRatio, pointsToKeepForNonMustHaveGames),result);
 
@@ -140,12 +143,12 @@ public class AutoJoinCalculator {
         return result;
     }
 
-    private List<Giveaway> calculatePointGames(List<Giveaway> giveaways) {
-        int minimumPoints = AutoJoinOptions.getOptionInteger(context, AutoJoinOptions.AutoJoinOption.AUTO_JOIN_POINTS);
+    private List<Giveaway> calculateGreatDemandGames(List<Giveaway> giveaways) {
+
         List<Giveaway> result = new ArrayList<>();
 
         for (Giveaway giveaway : giveaways) {
-            if (giveaway.getPoints() >= minimumPoints) {
+            if (hasGreatDemand(giveaway)) {
                 result.add(giveaway);
             }
         }
@@ -220,7 +223,7 @@ public class AutoJoinCalculator {
         Collections.sort(giveaways, new Comparator<Giveaway>() {
             @Override
             public int compare(Giveaway lhs, Giveaway rhs) {
-                return (int)(lhs.getEndTime().getTimeInMillis() - rhs.getEndTime().getTimeInMillis());
+                return (int) (lhs.getEndTime().getTimeInMillis() - rhs.getEndTime().getTimeInMillis());
             }
         });
     }
@@ -299,7 +302,7 @@ public class AutoJoinCalculator {
     }
 
     public boolean hasPoints(Giveaway giveaway) {
-        int minimumPoints = AutoJoinOptions.getOptionInteger(context, AutoJoinOptions.AutoJoinOption.AUTO_JOIN_POINTS);
+        int minimumPoints = AutoJoinOptions.getOptionInteger(context, AutoJoinOptions.AutoJoinOption.GREAT_DEMAND_ENTRIES);
         return giveaway.getPoints() >= minimumPoints;
     }
 
@@ -358,4 +361,7 @@ public class AutoJoinCalculator {
     }
 
 
+    public boolean hasGreatDemand(Giveaway giveaway) {
+        return giveaway.getAverageEntries()>greatDemandEntries;
+    }
 }

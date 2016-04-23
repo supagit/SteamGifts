@@ -85,11 +85,11 @@
 
 
         <net.mabako.sgtools.EditTextIntegerPreference
-            android:defaultValue="30"
+            android:defaultValue="3000"
             android:numeric="integer"
-            android:key="preferences_autojoin_games_with_points"
-            android:title="@string/preferences_autojoin_games_with_points"
-            android:summary="autojoin games with equal or more points than this" />
+            android:key="preferences_great_demand_entries"
+            android:title="@string/preferences_great_demand_entries"
+            android:summary="autojoin games with a great demand" />
 
     </PreferenceCategory>
 
