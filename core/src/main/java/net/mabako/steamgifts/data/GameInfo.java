@@ -19,6 +19,7 @@ public class GameInfo {
     private int joinCount;
 
     private Boolean isBundle;
+    private Long bundleUpdateTime;
     private Set<String> tags = new HashSet<>();
 
     private long numberOfEntriesOfAllGiveaways;
@@ -95,6 +96,15 @@ public class GameInfo {
         this.numberOfGiveAways = numberOfGiveAways;
     }
 
+    public Boolean getIsBundle() {
+        return isBundle;
+    }
+
+    public void setIsBundle(Boolean isBundle) {
+        this.isBundle = isBundle;
+        this.bundleUpdateTime = System.currentTimeMillis();
+    }
+
     public void updateGiveaway(Giveaway giveaway) {
         giveaway.setRating(rating != null ? rating : 0);
         giveaway.setTags(tags);
@@ -105,5 +115,21 @@ public class GameInfo {
             averageEntries = numberOfEntriesOfAllGiveaways / numberOfGiveAways;
         }
         giveaway.setAverageEntries((int)averageEntries);
+        giveaway.setBundleGame(isBundle == null ? false: isBundle);
+    }
+
+    public boolean isBundleInformationValid() {
+        if (isBundle == null || bundleUpdateTime == null) {
+            return false;
+        }
+
+        if (isBundle) {
+            return true;
+        }
+
+//        return false;
+
+        long timeDiff = System.currentTimeMillis() - bundleUpdateTime;
+        return timeDiff < AlarmManager.INTERVAL_DAY * 1;
     }
 }

@@ -66,6 +66,7 @@ public class Giveaway extends BasicGiveaway implements IEndlessAdaptable {
     private int internalGameId;
     private Set<String> tags;
     private int averageEntries;
+    private boolean bundleGame;
 
     public Giveaway() {
         super(null);
@@ -335,5 +336,13 @@ public class Giveaway extends BasicGiveaway implements IEndlessAdaptable {
 
     public int getAverageEntries() {
         return averageEntries;
+    }
+
+    public boolean isBundleGame() {
+        return bundleGame;
+    }
+
+    public void setBundleGame(boolean bundleGame) {
+        this.bundleGame = bundleGame;
     }
 }

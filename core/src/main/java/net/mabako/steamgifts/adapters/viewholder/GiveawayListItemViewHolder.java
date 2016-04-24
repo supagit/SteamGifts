@@ -179,7 +179,8 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
         indicatorLevelPositive.setVisibility(autoJoinCalculator.isMatchingLevel(giveaway) ? View.VISIBLE : View.GONE);
         indicatorWhitelist.setVisibility(!autoJoinCalculator.isMatchingLevel(giveaway) && giveaway.isLevelPositive() ? View.VISIBLE : View.GONE);
 //        indicatorGroup.setVisibility(View.GONE);
-        indicatorPrivate.setVisibility(View.GONE);
+//        indicatorPrivate.setVisibility(View.GONE);
+        indicatorPrivate.setVisibility(!giveaway.isBundleGame() ? View.VISIBLE : View.GONE);
         indicatorRegionRestricted.setVisibility(View.GONE);
 
 //        indicatorWhitelist.setVisibility(giveaway.isWhitelist() ? View.VISIBLE : View.GONE);

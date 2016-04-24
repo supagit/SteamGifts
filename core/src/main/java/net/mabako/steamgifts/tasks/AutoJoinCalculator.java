@@ -240,6 +240,12 @@ public class AutoJoinCalculator {
                     return lhsInNext30Mins ? -1 : 1;
                 }
 
+                boolean lhsBundleGame = lhs.isBundleGame();
+                boolean rhsBundleGame = rhs.isBundleGame();
+                if (lhsBundleGame != rhsBundleGame) {
+                    return lhsBundleGame ? -1 : 1;
+                }
+
                 int level = rhs.getLevel() - lhs.getLevel();
                 if (level != 0) {
                     return level;

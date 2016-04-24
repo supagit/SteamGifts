@@ -17,21 +17,29 @@ import net.mabako.steamgifts.data.ICommentHolder;
 import net.mabako.steamgifts.data.IImageHolder;
 import net.mabako.steamgifts.data.Image;
 import net.mabako.steamgifts.persistentdata.SavedGameInfo;
+import net.mabako.steamgifts.persistentdata.SteamGiftsUserData;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
+import org.jsoup.helper.HttpConnection;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -235,6 +243,7 @@ public final class Utils {
             Utils.loadGiveaway(giveaway, element, "giveaway", "giveaway__heading__thin", uriIcon);
             giveawayList.add(giveaway);
 
+
             applyGiveawayRating(giveaway, savedGameInfo);
         }
 
@@ -262,10 +271,14 @@ public final class Utils {
             }
         }
 
-
-
         if (gameInfo == null) {
             return;
+        }
+
+        if (!gameInfo.isBundleInformationValid() && isWifi(savedGameInfo.getContext())) {
+            Boolean bundleInfo = fetchBundleInfo(giveaway.getTitle(), savedGameInfo.getContext());
+            gameInfo.setIsBundle(bundleInfo);
+            savedGameInfo.add(gameInfo, gameInfo.getGameId());
         }
 
         long numberOfEntriesOfAllGiveaways = gameInfo.getNumberOfEntriesOfAllGiveaways();
@@ -291,7 +304,40 @@ public final class Utils {
         updateGameInfoFromSteamDB(gameInfo);
         updateGameInfoFromMetacritics(gameInfo);
         updateGameInfoFromSteamPowered(gameInfo);
+
         return gameInfo;
+    }
+
+    public static Boolean fetchBundleInfo(String gameName, Context context) {
+        try {
+//            String paramGameName = gameName.replace(" ", "+");
+
+//            String urlString = "https://www.steamgifts.com/bundle-games/search?q=" + gameName;
+
+
+            URI uri = new URI(
+                    "https",
+                    "www.steamgifts.com",
+                    "/bundle-games/search",
+                    "q=" + gameName,
+                    null);
+            String urlPath = uri.toASCIIString();
+
+            Connection connect = Jsoup.connect(urlPath)
+                    .userAgent(Constants.JSOUP_USER_AGENT)
+                    .timeout(Constants.JSOUP_TIMEOUT)
+                    .cookie("PHPSESSID", SteamGiftsUserData.getCurrent(context).getSessionId());;
+
+            Document document = connect.get();
+            String s = document.toString();
+
+            boolean noResultWereFound = s.contains("No results were found.");
+
+            return !noResultWereFound;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     private static void updateGameInfoFromSteamDB(GameInfo gameInfo) {
