@@ -79,6 +79,15 @@ public abstract class SavedElements<T> implements Comparator<T> {
     }
 
     /**
+     * Removes all elements.
+     *
+     * @return number of deleted elements
+     */
+    public int removeAll() {
+        return helper.removeAll();
+    }
+
+    /**
      * Is the element with the given id saved?
      *
      * @param elementId the id of the element
@@ -165,6 +174,10 @@ public abstract class SavedElements<T> implements Comparator<T> {
             cursor.close();
 
             return exists;
+        }
+
+        public int removeAll() {
+            return getWritableDatabase().delete(parent.table, null, null);
         }
 
         public boolean remove(String elementId) {

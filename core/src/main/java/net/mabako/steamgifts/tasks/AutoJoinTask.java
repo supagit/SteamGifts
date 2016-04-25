@@ -187,8 +187,11 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
         }
 
         Map<String, Giveaway> giveawayMap = new HashMap<>();
-        for (Giveaway giveAway : giveaways) {
-            giveawayMap.put(giveAway.getGiveawayId(), giveAway);
+
+        if (giveawayMap != null) {
+            for (Giveaway giveAway : giveaways) {
+                giveawayMap.put(giveAway.getGiveawayId(), giveAway);
+            }
         }
 
         return new ArrayList<>(giveawayMap.values());
