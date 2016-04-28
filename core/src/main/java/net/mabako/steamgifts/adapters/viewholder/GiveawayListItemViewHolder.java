@@ -165,10 +165,10 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
             StringUtils.setBackgroundDrawable(activity, itemContainer, true, R.attr.colorBlackListed);
         } else if (autoJoinCalculator.isMustHaveListedGame(giveaway.getGameId())) {
             StringUtils.setBackgroundDrawable(activity, itemContainer, true, R.attr.colorMustHave);
-        } else if (autoJoinCalculator.hasGreatDemand(giveaway)) {
-            StringUtils.setBackgroundDrawable(activity, itemContainer, true, R.attr.colorPoint);
         } else if (autoJoinCalculator.isWhiteListedGame(giveaway.getGameId())) {
             StringUtils.setBackgroundDrawable(activity, itemContainer, true, R.attr.colorBookmarked);
+        } else if (autoJoinCalculator.hasGreatDemand(giveaway)) {
+            StringUtils.setBackgroundDrawable(activity, itemContainer, true, R.attr.colorPoint);
         } else if (autoJoinCalculator.hasBlackListedTag(giveaway)) {
             StringUtils.setBackgroundDrawable(activity, itemContainer, true, R.attr.colorBlackListed);
         } else {
@@ -178,13 +178,13 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
         // Check all the indicators
         indicatorLevelNegative.setVisibility(giveaway.isLevelNegative() ? View.VISIBLE : View.GONE);
         indicatorLevelPositive.setVisibility(autoJoinCalculator.isMatchingLevel(giveaway) ? View.VISIBLE : View.GONE);
-        indicatorWhitelist.setVisibility(!autoJoinCalculator.isMatchingLevel(giveaway) && giveaway.isLevelPositive() ? View.VISIBLE : View.GONE);
+//        indicatorWhitelist.setVisibility(!autoJoinCalculator.isMatchingLevel(giveaway) && giveaway.isLevelPositive() ? View.VISIBLE : View.GONE);
 //        indicatorGroup.setVisibility(View.GONE);
 //        indicatorPrivate.setVisibility(View.GONE);
         indicatorPrivate.setVisibility(!giveaway.isBundleGame() ? View.VISIBLE : View.GONE);
         indicatorRegionRestricted.setVisibility(View.GONE);
 
-//        indicatorWhitelist.setVisibility(giveaway.isWhitelist() ? View.VISIBLE : View.GONE);
+        indicatorWhitelist.setVisibility(giveaway.isWhitelist() ? View.VISIBLE : View.GONE);
         indicatorGroup.setVisibility(giveaway.isGroup() ? View.VISIBLE : View.GONE);
 //        indicatorLevelPositive.setVisibility(giveaway.isLevelPositive() ? View.VISIBLE : View.GONE);
 //        indicatorLevelNegative.setVisibility(giveaway.isLevelNegative() ? View.VISIBLE : View.GONE);

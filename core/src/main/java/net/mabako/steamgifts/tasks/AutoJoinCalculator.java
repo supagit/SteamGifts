@@ -70,27 +70,30 @@ public class AutoJoinCalculator {
         List<Giveaway> blackListedGiveaways = calculateBlackListedGames(filteredGiveaways);
         filteredGiveaways.removeAll(blackListedGiveaways);
 
-        List<Giveaway> mustHaveListedGames = calculateMustHaveListedGames(filteredGiveaways);
-        filteredGiveaways.removeAll(mustHaveListedGames);
+        List<Giveaway> nearMustHaveListedGames = calculateMustHaveListedGames(filteredGiveaways, AlarmManager.INTERVAL_HOUR);
+        filteredGiveaways.removeAll(nearMustHaveListedGames);
+
+        List<Giveaway> farMustHaveListedGames = calculateMustHaveListedGames(filteredGiveaways, Long.MAX_VALUE);
+        filteredGiveaways.removeAll(farMustHaveListedGames);
 
         List<Giveaway> giveawaysEndingTooLate = calculateTooLateGiveaways(filteredGiveaways);
         filteredGiveaways.removeAll(giveawaysEndingTooLate);
 
-        List<Giveaway> greatDemandGames = calculateGreatDemandGames(filteredGiveaways);
-        filteredGiveaways.removeAll(greatDemandGames);
-
         List<Giveaway> whiteListedGames = calculateWhiteListedGames(filteredGiveaways);
         filteredGiveaways.removeAll(whiteListedGames);
 
+        List<Giveaway> greatDemandGames = calculateGreatDemandGames(filteredGiveaways);
+        filteredGiveaways.removeAll(greatDemandGames);
 
         List<Giveaway> taggedGiveaways = calculateTaggedGames(filteredGiveaways);
         filteredGiveaways.removeAll(taggedGiveaways);
 
         List<Giveaway> result = new ArrayList<>(zeroPointGiveaways);
 
-        pointsLeft = addGiveaways(pointsLeft, mustHaveListedGames, 0, 0, result);
+        pointsLeft = addGiveaways(pointsLeft, nearMustHaveListedGames, 0, 0, result);
         pointsLeft = addGiveaways(pointsLeft, whiteListedGames,  minPointsToKeepForNotMeetingTheLevel,pointsToKeepForNonMustHaveGames, result);
         pointsLeft = addGiveaways(pointsLeft, greatDemandGames,  minPointsToKeepForNotMeetingTheLevel, pointsToKeepForNonMustHaveGames,result);
+        pointsLeft = addGiveaways(pointsLeft, farMustHaveListedGames, minPointsToKeepForNotMeetingTheLevel, pointsToKeepForNonMustHaveGames, result);
         pointsLeft = addGiveaways(pointsLeft, taggedGiveaways,  minPointsToKeepForNotMeetingTheLevel, Math.max(minPointsToKeepForGreatRatio, pointsToKeepForNonMustHaveGames),result);
         pointsLeft = addGiveaways(pointsLeft, filteredGiveaways,  minPointsToKeepForNotMeetingTheLevel, Math.max(minPointsToKeepForBadRatio, pointsToKeepForNonMustHaveGames),result);
 
@@ -187,12 +190,17 @@ public class AutoJoinCalculator {
     }
 
 
-    private List<Giveaway> calculateMustHaveListedGames(List<Giveaway> giveaways) {
+    private List<Giveaway> calculateMustHaveListedGames(List<Giveaway> giveaways, long timePeriod) {
+        final long now = System.currentTimeMillis();
+
         List<Giveaway> result = new ArrayList<>();
 
         for (Giveaway giveaway : giveaways) {
             if (isMustHaveListedGame(giveaway.getGameId())) {
-                result.add(giveaway);
+                boolean inTime = giveaway.getEndTime().getTimeInMillis() - now < timePeriod;
+                if (inTime) {
+                    result.add(giveaway);
+                }
             }
         }
 
