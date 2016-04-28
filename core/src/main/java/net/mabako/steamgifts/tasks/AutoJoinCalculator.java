@@ -69,6 +69,11 @@ public class AutoJoinCalculator {
         int minPointsToKeepForNotMeetingTheLevel = AutoJoinOptions.getOptionInteger(context, AutoJoinOptions.AutoJoinOption.MINIMUM_POINTS_TO_KEEP_FOR_NOT_MEETING_LEVEL);
         int pointsToKeepForNonMustHaveGames = AutoJoinOptions.getOptionInteger(context, AutoJoinOptions.AutoJoinOption.MINIMUM_POINTS_TO_KEEP_FOR_NOT_ON_MUST_HAVE_LIST);
 
+        int pointsToKeepForFarNonMustHaveGames = pointsToKeepForNonMustHaveGames + (minPointsToKeepForNotMeetingTheLevel - pointsToKeepForNonMustHaveGames) / 2;
+        if (pointsToKeepForFarNonMustHaveGames<pointsToKeepForNonMustHaveGames) {
+            pointsToKeepForFarNonMustHaveGames = pointsToKeepForNonMustHaveGames;
+        }
+
         int pointsLeft = points;
 
         List<Giveaway> zeroPointGiveaways = calculateZeroPointGames(filteredGiveaways);
@@ -100,13 +105,13 @@ public class AutoJoinCalculator {
         List<Giveaway> result = new ArrayList<>(zeroPointGiveaways);
 
         pointsLeft = addGiveaways(pointsLeft, urgentMustHaveListedGames, 0, 0, result);
-        pointsLeft = addGiveaways(pointsLeft, nearMustHaveListedGames, minPointsToKeepForNotMeetingTheLevel, 0, result);
+        pointsLeft = addGiveaways(pointsLeft, nearMustHaveListedGames, minPointsToKeepForNotMeetingTheLevel / 2, 0, result);
 
         pointsLeft = addGiveaways(pointsLeft, urgentWhiteListedGames, minPointsToKeepForNotMeetingTheLevel, pointsToKeepForNonMustHaveGames, result);
-        pointsLeft = addGiveaways(pointsLeft, nearWhiteListedGames, minPointsToKeepForNotMeetingTheLevel, pointsToKeepForNonMustHaveGames, result);
+        pointsLeft = addGiveaways(pointsLeft, nearWhiteListedGames, minPointsToKeepForNotMeetingTheLevel, pointsToKeepForFarNonMustHaveGames, result);
 
-        pointsLeft = addGiveaways(pointsLeft, farMustHaveListedGames, minPointsToKeepForNotMeetingTheLevel, pointsToKeepForNonMustHaveGames*2, result);
-        pointsLeft = addGiveaways(pointsLeft, greatDemandGames, minPointsToKeepForNotMeetingTheLevel, pointsToKeepForNonMustHaveGames*2, result);
+        pointsLeft = addGiveaways(pointsLeft, farMustHaveListedGames, minPointsToKeepForNotMeetingTheLevel, pointsToKeepForFarNonMustHaveGames, result);
+        pointsLeft = addGiveaways(pointsLeft, greatDemandGames, minPointsToKeepForNotMeetingTheLevel, pointsToKeepForFarNonMustHaveGames, result);
 
         pointsLeft = addGiveaways(pointsLeft, taggedGiveaways, minPointsToKeepForNotMeetingTheLevel, Math.max(minPointsToKeepForGreatRatio, pointsToKeepForNonMustHaveGames), result);
         pointsLeft = addGiveaways(pointsLeft, filteredGiveaways, minPointsToKeepForNotMeetingTheLevel, Math.max(minPointsToKeepForBadRatio, pointsToKeepForNonMustHaveGames), result);

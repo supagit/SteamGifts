@@ -111,7 +111,7 @@ public abstract class SavedElements<T> implements Comparator<T> {
         private final SavedElements<T> parent;
 
         public GiveawayOpenHelper(Context context, SavedElements<T> parent) {
-            super(context, "savedelements", null, 10);
+            super(context, "savedelements", null, 11);
             this.parent = parent;
         }
 
