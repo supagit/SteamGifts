@@ -158,7 +158,6 @@ public class GiveawayAdapter extends EndlessAdapter {
             if (minPoints >= 0 || maxPoints >= 0
                     || hideEntered
                     || hideGamesWithBadRating
-                    || regionRestrictedOnly
                     || (checkLevelOnlyOnPublicGiveaway && (minLevel >= 0 || maxLevel >= 0))
                     || (entriesPerCopy && (minEntries >= 0 || maxEntries >= 0))) {
                 // Let's actually perform filtering if we have any options set.
@@ -175,8 +174,6 @@ public class GiveawayAdapter extends EndlessAdapter {
                     } else if (checkLevelOnlyOnPublicGiveaway && !giveaway.isGroup() && !giveaway.isWhitelist() && ((minLevel >= 0 && level < minLevel) || (maxLevel >= 0 && level > maxLevel))) {
                         iter.remove();
                     } else if (entriesPerCopy && (minEntries >= 0 && entriesPerCopyValue < minEntries) || (maxEntries >= 0 && entriesPerCopyValue > maxEntries)) {
-                        iter.remove();
-                    } else if (regionRestrictedOnly && !giveaway.isRegionRestricted()) {
                         iter.remove();
                     } else if (hideGamesWithBadRating && giveaway.getRating() < minimumRating) {
                         iter.remove();
