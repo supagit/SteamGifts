@@ -155,8 +155,6 @@ public class GiveawayAdapter extends EndlessAdapter {
             int minEntries = fd.getMinEntries();
             int maxEntries = fd.getMaxEntries();
 
-            boolean regionRestrictedOnly = fd.isRegionRestrictedOnly();
-
             if (minPoints >= 0 || maxPoints >= 0
                     || hideEntered
                     || hideGamesWithBadRating
