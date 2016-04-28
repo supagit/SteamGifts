@@ -7,14 +7,20 @@ import net.mabako.steamgifts.adapters.IEndlessAdaptable;
 import net.mabako.steamgifts.data.Game;
 import net.mabako.steamgifts.data.Giveaway;
 import net.mabako.steamgifts.fragments.interfaces.ILoadItemsListener;
+import net.mabako.steamgifts.persistentdata.SavedGameInfo;
 
 import org.jsoup.nodes.Element;
 
 import java.util.List;
 
 public class LoadWonGameListTask extends LoadGameListTask {
+
+    private final SavedGameInfo savedGameInfo;
+
     public LoadWonGameListTask(ILoadItemsListener listener, Context context, int page) {
         super(listener, context, "giveaways/won", page, null);
+
+        savedGameInfo = new SavedGameInfo(context);
     }
 
     @Override
@@ -49,6 +55,7 @@ public class LoadWonGameListTask extends LoadGameListTask {
         // If so, this would be == 1, 0 hidden items implies both feedback options are currently available to be picked.
         giveaway.setEntered(element.select(".table__gift-feedback-awaiting-reply.is-hidden").size() == 0);
 
+        Utils.applyGiveawayRating(giveaway, savedGameInfo);
         return giveaway;
     }
 }

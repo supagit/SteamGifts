@@ -115,6 +115,11 @@ public class GameInfo {
             averageEntries = numberOfEntriesOfAllGiveaways / numberOfGiveAways;
         }
         giveaway.setAverageEntries((int)averageEntries);
+
+        if (giveaway.getEntries() == -1) {
+            giveaway.setEntries((int)averageEntries);
+        }
+
         giveaway.setBundleGame(isBundle == null ? false: isBundle);
     }
 
