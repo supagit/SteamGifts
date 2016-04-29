@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
-import android.util.ArraySet;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.Menu;
@@ -23,6 +22,7 @@ import com.squareup.picasso.Picasso;
 import net.mabako.steamgifts.activities.DetailActivity;
 import net.mabako.steamgifts.activities.MainActivity;
 import net.mabako.steamgifts.adapters.EndlessAdapter;
+import net.mabako.steamgifts.adapters.IEndlessAdaptable;
 import net.mabako.steamgifts.core.R;
 import net.mabako.steamgifts.data.BasicGiveaway;
 import net.mabako.steamgifts.data.Game;
@@ -32,13 +32,11 @@ import net.mabako.steamgifts.fragments.GiveawayDetailFragment;
 import net.mabako.steamgifts.fragments.GiveawayListFragment;
 import net.mabako.steamgifts.fragments.SavedGiveawaysFragment;
 import net.mabako.steamgifts.fragments.interfaces.IHasEnterableGiveaways;
-import net.mabako.steamgifts.persistentdata.SavedErrors;
 import net.mabako.steamgifts.persistentdata.SavedGiveaways;
 import net.mabako.steamgifts.persistentdata.SteamGiftsUserData;
 import net.mabako.steamgifts.tasks.AutoJoinCalculator;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
@@ -62,7 +60,6 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
     private static int measuredHeight = 0;
     private final Context context;
     private final AutoJoinCalculator autoJoinCalculator;
-    private boolean showImage;
 
     public GiveawayListItemViewHolder(View v, Activity activity, EndlessAdapter adapter, Fragment fragment, SavedGiveaways savedGiveaways) {
         super(v);
@@ -94,8 +91,6 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
 
 
     public void setFrom(Giveaway giveaway, boolean showImage) {
-        this.showImage = showImage;
-
         String title = giveaway.getTitle();
         if (giveaway.getCopies() > 1) {
             title = giveaway.getCopies() + "x " + title;
@@ -360,31 +355,42 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
             return true;
             case 7:
                 autoJoinCalculator.removeFromGamesBlackList(giveaway.getGameId());
-                setFrom(giveaway, showImage);
+                refreshAdapterForGameId(giveaway.getGameId());
                 return true;
             case 8:
                 autoJoinCalculator.addToGamesBlackList(giveaway.getGameId());
-                setFrom(giveaway, showImage);
+                refreshAdapterForGameId(giveaway.getGameId());
                 return true;
             case 9:
                 autoJoinCalculator.removeFromGamesWhiteList(giveaway.getGameId());
-                setFrom(giveaway, showImage);
+                refreshAdapterForGameId(giveaway.getGameId());
                 return true;
             case 10:
                 autoJoinCalculator.addToGamesWhiteList(giveaway.getGameId());
-                setFrom(giveaway, showImage);
+                refreshAdapterForGameId(giveaway.getGameId());
                 return true;
             case 11:
                 autoJoinCalculator.removeFromMustHaveWhiteList(giveaway.getGameId());
-                setFrom(giveaway, showImage);
+                refreshAdapterForGameId(giveaway.getGameId());
                 return true;
             case 12:
                 autoJoinCalculator.addToGamesMustHaveList(giveaway.getGameId());
-                setFrom(giveaway, showImage);
+                refreshAdapterForGameId(giveaway.getGameId());
                 return true;
 
         }
         return false;
+    }
+
+    private void refreshAdapterForGameId(int gameId) {
+        for(int i=0; i<adapter.getItemCount(); i++) {
+            IEndlessAdaptable item = adapter.getItem(i);
+
+            Giveaway giveaway = (Giveaway) item;
+            if (giveaway.getGameId() == gameId) {
+                adapter.notifyItemChanged(item);
+            }
+        }
     }
 
     @NonNull
