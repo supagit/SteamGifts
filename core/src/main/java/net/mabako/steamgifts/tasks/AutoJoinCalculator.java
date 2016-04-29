@@ -84,7 +84,7 @@ public class AutoJoinCalculator {
         List<Giveaway> blackListedGiveaways = calculateBlackListedGames(filteredGiveaways);
         filteredGiveaways.removeAll(blackListedGiveaways);
 
-        List<Giveaway> urgentMustHaveListedGames = calculateMustHaveListedGames(filteredGiveaways, urgentJoinPeriod);
+        List<Giveaway> urgentMustHaveListedGames = calculateMustHaveListedGames(filteredGiveaways, urgentJoinPeriod*2);
         filteredGiveaways.removeAll(urgentMustHaveListedGames);
 
         List<Giveaway> nearMustHaveListedGames = calculateMustHaveListedGames(filteredGiveaways, nearJoinPeriod);
