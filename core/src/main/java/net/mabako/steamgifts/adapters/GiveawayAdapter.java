@@ -1,6 +1,7 @@
 package net.mabako.steamgifts.adapters;
 
 import android.app.Activity;
+import android.app.AlarmManager;
 import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
@@ -13,7 +14,10 @@ import net.mabako.steamgifts.data.Giveaway;
 import net.mabako.steamgifts.fragments.ListFragment;
 import net.mabako.steamgifts.persistentdata.FilterData;
 import net.mabako.steamgifts.persistentdata.SavedGiveaways;
+import net.mabako.steamgifts.receivers.CheckForAutoJoin;
+import net.mabako.steamgifts.tasks.AutoJoinCalculator;
 import net.mabako.steamgifts.tasks.AutoJoinOptions;
+import net.mabako.steamgifts.tasks.AutoJoinTask;
 import net.mabako.steamgifts.tasks.Utils;
 
 import java.util.ArrayList;
@@ -182,5 +186,26 @@ public class GiveawayAdapter extends EndlessAdapter {
             }
         }
         return super.addFiltered(items);
+    }
+
+    @Override
+    public void finishLoading(List<IEndlessAdaptable> addedItems) {
+        super.finishLoading(addedItems);
+
+        List<Giveaway> giveaways = new ArrayList<>();
+        for (IEndlessAdaptable item : getItems()) {
+            if (item instanceof Giveaway) {
+                Giveaway giveaway = (Giveaway) item;
+                giveaways.add(giveaway);
+            }
+        }
+
+        List<Giveaway> giveawaysToJoin = new AutoJoinCalculator(context, CheckForAutoJoin.AUTO_JOIN_PERIOD).calculateGiveawaysToJoin(giveaways);
+        for(int joinOrder = 0; joinOrder< giveawaysToJoin.size();joinOrder++)  {
+            Giveaway giveaway = giveawaysToJoin.get(joinOrder);
+            int effectivJoinOrder = joinOrder + 1;
+            giveaway.setJoinOrderText("[" + effectivJoinOrder + "/" + giveawaysToJoin.size() + "]");
+            notifyItemChanged(giveaway);
+        }
     }
 }

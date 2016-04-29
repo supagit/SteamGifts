@@ -35,6 +35,7 @@ public class LoadWonGameListTask extends LoadGameListTask {
         Giveaway giveaway = new Giveaway(giveawayLink);
         giveaway.setName(giveawayName);
         giveaway.setTitle(link.text());
+        giveaway.setEntered(true);
 
 
         Element image = element.select(".global__image-inner-wrap").first();

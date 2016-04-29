@@ -58,7 +58,8 @@
                     android:singleLine="true"
                     android:layout_alignParentRight="true"
                     android:text="Ratio"
-                    android:textAlignment="viewEnd" />
+                    android:textAlignment="viewEnd"
+                    android:textStyle="bold" />
 
             </RelativeLayout>
 
@@ -72,6 +73,17 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="start">
+
+                    <TextView
+                        android:id="@+id/giveaway_join_order"
+                        style="@style/SmallText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:singleLine="true"
+                        android:text="JoinOrder"
+                        android:textColor="#000000"
+                        android:textStyle="bold" />
 
                     <View
                         android:id="@+id/giveaway_list_indicator_whitelist"

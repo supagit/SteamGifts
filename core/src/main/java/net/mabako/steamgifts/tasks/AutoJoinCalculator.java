@@ -76,6 +76,9 @@ public class AutoJoinCalculator {
 
         int pointsLeft = points;
 
+        List<Giveaway> joinedGiveaways = calculateJoinedGiveaway(filteredGiveaways);
+        filteredGiveaways.removeAll(joinedGiveaways);
+
         List<Giveaway> zeroPointGiveaways = calculateZeroPointGames(filteredGiveaways);
 
         List<Giveaway> blackListedGiveaways = calculateBlackListedGames(filteredGiveaways);
@@ -119,6 +122,8 @@ public class AutoJoinCalculator {
         return result;
     }
 
+
+
     private int addGiveaways(int pointsLeft, List<Giveaway> giveaways, int minPointsToKeepForNotMeetingTheLevel, int minPointsToKeep, List<Giveaway> result) {
         if (minPointsToKeepForNotMeetingTheLevel < minPointsToKeep) {
             minPointsToKeepForNotMeetingTheLevel = minPointsToKeep;
@@ -137,6 +142,18 @@ public class AutoJoinCalculator {
 
         giveaways.removeAll(result);
         return pointsLeft;
+    }
+
+    private List<Giveaway> calculateJoinedGiveaway(List<Giveaway> giveaways) {
+        List<Giveaway> result = new ArrayList<>();
+
+        for (Giveaway giveaway : giveaways) {
+            if (giveaway.isEntered()) {
+                result.add(giveaway);
+            }
+        }
+
+        return result;
     }
 
     private List<Giveaway> calculateZeroPointGames(List<Giveaway> giveaways) {

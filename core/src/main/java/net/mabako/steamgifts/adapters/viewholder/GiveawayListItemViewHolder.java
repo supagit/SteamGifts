@@ -45,6 +45,7 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
 
     private final View itemContainer;
     private final TextView giveawayDetails;
+    private final TextView giveawayJoinOrder;
     private final TextView giveawayName;
     private final TextView giveawayRatio;
     private final TextView giveawayTime;
@@ -67,6 +68,8 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
         giveawayName = (TextView) v.findViewById(R.id.giveaway_name);
         giveawayRatio = (TextView) v.findViewById(R.id.giveaway_ratio);
         giveawayDetails = (TextView) v.findViewById(R.id.giveaway_details);
+        giveawayJoinOrder = (TextView) v.findViewById(R.id.giveaway_join_order);
+
         giveawayTime = (TextView) v.findViewById(R.id.time);
         giveawayImage = (ImageView) v.findViewById(R.id.giveaway_image);
 
@@ -95,8 +98,9 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
         if (giveaway.getCopies() > 1) {
             title = giveaway.getCopies() + "x " + title;
         }
+        giveawayJoinOrder.setText("");
         giveawayName.setText(title);
-        giveawayRatio.setText("");
+        giveawayRatio.setText(giveaway.getJoinOrderText());
 
         if (giveaway.getEndTime() != null) {
             String endTimeText = giveaway.getShortRelativeEndTime(activity);

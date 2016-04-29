@@ -41,6 +41,7 @@ public class LoadEnteredGameListTask extends LoadGameListTask {
         ProfileGiveaway giveaway = new ProfileGiveaway(giveawayLink);
         giveaway.setName(giveawayName);
         giveaway.setTitle(link.text());
+        giveaway.setEntered(true);
 
 
         Element image = element.select(".global__image-inner-wrap").first();
@@ -59,7 +60,7 @@ public class LoadEnteredGameListTask extends LoadGameListTask {
         if (end != null)
             giveaway.setEndTime(end.attr("title"), end.text());
 
-        giveaway.setEntered(giveaway.isOpen());
+//        giveaway.setEntered(giveaway.isOpen());
         giveaway.setDeleted(!element.select(".table__column__deleted").isEmpty());
 
         GameInfo gameInfo = savedGameInfo.get(giveaway.getGameId());

@@ -38,6 +38,8 @@ public class Giveaway extends BasicGiveaway implements IEndlessAdaptable {
     private int rating;
     private int joinCount;
 
+    private String joinOrderText = "";
+
     /**
      * When was this giveaway created?
      */
@@ -344,5 +346,13 @@ public class Giveaway extends BasicGiveaway implements IEndlessAdaptable {
 
     public void setBundleGame(boolean bundleGame) {
         this.bundleGame = bundleGame;
+    }
+
+    public String getJoinOrderText() {
+        return joinOrderText;
+    }
+
+    public void setJoinOrderText(String joinOrderText) {
+        this.joinOrderText = joinOrderText;
     }
 }
