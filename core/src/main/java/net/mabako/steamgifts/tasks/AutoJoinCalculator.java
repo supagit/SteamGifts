@@ -108,7 +108,7 @@ public class AutoJoinCalculator {
         List<Giveaway> result = new ArrayList<>(zeroPointGiveaways);
 
         pointsLeft = addGiveaways(pointsLeft, urgentMustHaveListedGames, 0, 0, result);
-        pointsLeft = addGiveaways(pointsLeft, nearMustHaveListedGames, minPointsToKeepForNotMeetingTheLevel / 2, 0, result);
+        pointsLeft = addGiveaways(pointsLeft, nearMustHaveListedGames, minPointsToKeepForNotMeetingTheLevel, pointsToKeepForNonMustHaveGames, result);
 
         pointsLeft = addGiveaways(pointsLeft, urgentWhiteListedGames, minPointsToKeepForNotMeetingTheLevel, pointsToKeepForNonMustHaveGames, result);
         pointsLeft = addGiveaways(pointsLeft, nearWhiteListedGames, minPointsToKeepForNotMeetingTheLevel, pointsToKeepForFarNonMustHaveGames, result);
@@ -213,8 +213,6 @@ public class AutoJoinCalculator {
 
 
     private List<Giveaway> calculateMustHaveListedGames(List<Giveaway> giveaways, long timePeriod) {
-        final long now = System.currentTimeMillis();
-
         List<Giveaway> result = new ArrayList<>();
 
         for (Giveaway giveaway : giveaways) {
@@ -264,7 +262,7 @@ public class AutoJoinCalculator {
                     return level;
                 }
 
-                return lhs.getEstimatedEntriesPerCopy() - rhs.getEstimatedEntriesPerCopy();
+                return (int) (lhs.getEndTime().getTimeInMillis() - rhs.getEndTime().getTimeInMillis());
             }
         });
     }
