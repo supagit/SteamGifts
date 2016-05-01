@@ -165,7 +165,14 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
         } else if (autoJoinCalculator.isMustHaveListedGame(giveaway.getGameId())) {
             StringUtils.setBackgroundDrawable(activity, itemContainer, true, R.attr.colorMustHave);
         } else if (autoJoinCalculator.isWhiteListedGame(giveaway.getGameId())) {
-            StringUtils.setBackgroundDrawable(activity, itemContainer, true, R.attr.colorBookmarked);
+
+            if (autoJoinCalculator.isMatchingWhiteListLevel(giveaway)) {
+                StringUtils.setBackgroundDrawable(activity, itemContainer, true, R.attr.colorWhitelisted);
+            } else {
+                StringUtils.setBackgroundDrawable(activity, itemContainer, true, R.attr.colorWhitelistedNotLevel);
+            }
+
+
         } else if (autoJoinCalculator.hasGreatDemand(giveaway)) {
             StringUtils.setBackgroundDrawable(activity, itemContainer, true, R.attr.colorPoint);
         } else if (autoJoinCalculator.hasBlackListedTag(giveaway)) {
@@ -390,9 +397,11 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
         for(int i=0; i<adapter.getItemCount(); i++) {
             IEndlessAdaptable item = adapter.getItem(i);
 
-            Giveaway giveaway = (Giveaway) item;
-            if (giveaway.getGameId() == gameId) {
-                adapter.notifyItemChanged(item);
+            if (item instanceof Giveaway) {
+                Giveaway giveaway = (Giveaway) item;
+                if (giveaway.getGameId() == gameId) {
+                    adapter.notifyItemChanged(item);
+                }
             }
         }
     }

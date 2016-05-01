@@ -15,7 +15,6 @@ import net.mabako.steamgifts.persistentdata.SteamGiftsUserData;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -26,7 +25,6 @@ import java.util.List;
 public class AutoJoinCalculator {
 
     private Context context;
-    private long urgentJoinPeriod;
     private long nearJoinPeriod;
     private long farJoinPeriod;
 
@@ -37,11 +35,13 @@ public class AutoJoinCalculator {
     private final SavedGamesBlackListTags savedGamesBlackListTags;
     private final int level;
     private final int greatDemandEntries;
+    private final int minLevelForWhiteList;
+    private final int pointsToKeepForMustHaveGames;
+    private final int minPointsToKeepForNotMeetingTheLevel;
 
     public AutoJoinCalculator(Context context, long autoJoinPeriod) {
         this.context = context;
 
-        urgentJoinPeriod = AlarmManager.INTERVAL_HALF_HOUR;
         nearJoinPeriod = autoJoinPeriod / 2;
         farJoinPeriod = autoJoinPeriod;
 
@@ -54,6 +54,10 @@ public class AutoJoinCalculator {
         savedGamesMustHaveList = new SavedGamesMustHaveList(context);
         savedGamesWhiteListTags = new SavedGamesWhiteListTags(context);
         savedGamesBlackListTags = new SavedGamesBlackListTags(context);
+
+        minLevelForWhiteList = AutoJoinOptions.getOptionInteger(context, AutoJoinOptions.AutoJoinOption.MINIMUM_LEVEL_FOR_WHITELIST);
+        pointsToKeepForMustHaveGames = AutoJoinOptions.getOptionInteger(context, AutoJoinOptions.AutoJoinOption.MINIMUM_POINTS_TO_KEEP_FOR_NOT_ON_MUST_HAVE_LIST);
+        minPointsToKeepForNotMeetingTheLevel = AutoJoinOptions.getOptionInteger(context, AutoJoinOptions.AutoJoinOption.MINIMUM_POINTS_TO_KEEP_FOR_NOT_MEETING_LEVEL);
     }
 
     public List<Giveaway> calculateGiveawaysToJoin(List<Giveaway> giveaways) {
@@ -63,16 +67,6 @@ public class AutoJoinCalculator {
 
     private List<Giveaway> generateGiveawaysToJoinList(List<Giveaway> filteredGiveaways) {
         int points = SteamGiftsUserData.getCurrent(context).getPoints();
-
-        int minPointsToKeepForBadRatio = AutoJoinOptions.getOptionInteger(context, AutoJoinOptions.AutoJoinOption.MINIMUM_POINTS_TO_KEEP_FOR_UNTAGGED);
-        int minPointsToKeepForGreatRatio = AutoJoinOptions.getOptionInteger(context, AutoJoinOptions.AutoJoinOption.MINIMUM_POINTS_TO_KEEP_FOR_GREAT_RATIO);
-        int minPointsToKeepForNotMeetingTheLevel = AutoJoinOptions.getOptionInteger(context, AutoJoinOptions.AutoJoinOption.MINIMUM_POINTS_TO_KEEP_FOR_NOT_MEETING_LEVEL);
-        int pointsToKeepForNonMustHaveGames = AutoJoinOptions.getOptionInteger(context, AutoJoinOptions.AutoJoinOption.MINIMUM_POINTS_TO_KEEP_FOR_NOT_ON_MUST_HAVE_LIST);
-
-        int pointsToKeepForFarNonMustHaveGames = pointsToKeepForNonMustHaveGames + (minPointsToKeepForNotMeetingTheLevel - pointsToKeepForNonMustHaveGames) / 2;
-        if (pointsToKeepForFarNonMustHaveGames<pointsToKeepForNonMustHaveGames) {
-            pointsToKeepForFarNonMustHaveGames = pointsToKeepForNonMustHaveGames;
-        }
 
         int pointsLeft = points;
 
@@ -84,45 +78,32 @@ public class AutoJoinCalculator {
         List<Giveaway> blackListedGiveaways = calculateBlackListedGames(filteredGiveaways);
         filteredGiveaways.removeAll(blackListedGiveaways);
 
-        List<Giveaway> urgentMustHaveListedGames = calculateMustHaveListedGames(filteredGiveaways, urgentJoinPeriod*2);
-        filteredGiveaways.removeAll(urgentMustHaveListedGames);
+        List<Giveaway> mustHaveListedGames = calculateMustHaveListedGames(filteredGiveaways);
+        filteredGiveaways.removeAll(mustHaveListedGames);
 
-        List<Giveaway> nearMustHaveListedGames = calculateMustHaveListedGames(filteredGiveaways, nearJoinPeriod);
-        filteredGiveaways.removeAll(nearMustHaveListedGames);
-
-        List<Giveaway> farMustHaveListedGames = calculateMustHaveListedGames(filteredGiveaways, farJoinPeriod);
-        filteredGiveaways.removeAll(farMustHaveListedGames);
-
-        List<Giveaway> urgentWhiteListedGames = calculateWhiteListedGames(filteredGiveaways, urgentJoinPeriod);
-        filteredGiveaways.removeAll(urgentWhiteListedGames);
-
-        List<Giveaway> nearWhiteListedGames = calculateWhiteListedGames(filteredGiveaways, nearJoinPeriod);
-        filteredGiveaways.removeAll(nearWhiteListedGames);
+        List<Giveaway> whiteListedGamesMatchingLevel = calculateWhiteListedGames(filteredGiveaways, minLevelForWhiteList);
+        filteredGiveaways.removeAll(whiteListedGamesMatchingLevel);
 
         List<Giveaway> greatDemandGames = calculateGreatDemandGames(filteredGiveaways, nearJoinPeriod);
         filteredGiveaways.removeAll(greatDemandGames);
+
+        List<Giveaway> whiteListedGamesNotMatchingLevel = calculateWhiteListedGames(filteredGiveaways, 0);
+        filteredGiveaways.removeAll(whiteListedGamesNotMatchingLevel);
 
         List<Giveaway> taggedGiveaways = calculateTaggedGames(filteredGiveaways, nearJoinPeriod);
         filteredGiveaways.removeAll(taggedGiveaways);
 
         List<Giveaway> result = new ArrayList<>(zeroPointGiveaways);
 
-        pointsLeft = addGiveaways(pointsLeft, urgentMustHaveListedGames, 0, 0, result);
-        pointsLeft = addGiveaways(pointsLeft, nearMustHaveListedGames, minPointsToKeepForNotMeetingTheLevel, pointsToKeepForNonMustHaveGames, result);
-
-        pointsLeft = addGiveaways(pointsLeft, urgentWhiteListedGames, minPointsToKeepForNotMeetingTheLevel, pointsToKeepForNonMustHaveGames, result);
-        pointsLeft = addGiveaways(pointsLeft, nearWhiteListedGames, minPointsToKeepForNotMeetingTheLevel, pointsToKeepForFarNonMustHaveGames, result);
-
-        pointsLeft = addGiveaways(pointsLeft, farMustHaveListedGames, minPointsToKeepForNotMeetingTheLevel, pointsToKeepForFarNonMustHaveGames, result);
-        pointsLeft = addGiveaways(pointsLeft, greatDemandGames, minPointsToKeepForNotMeetingTheLevel, pointsToKeepForFarNonMustHaveGames, result);
-
-        pointsLeft = addGiveaways(pointsLeft, taggedGiveaways, minPointsToKeepForNotMeetingTheLevel, Math.max(minPointsToKeepForGreatRatio, pointsToKeepForNonMustHaveGames), result);
-        pointsLeft = addGiveaways(pointsLeft, filteredGiveaways, minPointsToKeepForNotMeetingTheLevel, Math.max(minPointsToKeepForBadRatio, pointsToKeepForNonMustHaveGames), result);
+        pointsLeft = addGiveaways(pointsLeft, mustHaveListedGames, 0, 0, result);
+        pointsLeft = addGiveaways(pointsLeft, whiteListedGamesMatchingLevel, minPointsToKeepForNotMeetingTheLevel, pointsToKeepForMustHaveGames, result);
+        pointsLeft = addGiveaways(pointsLeft, greatDemandGames, minPointsToKeepForNotMeetingTheLevel, pointsToKeepForMustHaveGames, result);
+        pointsLeft = addGiveaways(pointsLeft, whiteListedGamesNotMatchingLevel, minPointsToKeepForNotMeetingTheLevel, minPointsToKeepForNotMeetingTheLevel, result);
+        pointsLeft = addGiveaways(pointsLeft, taggedGiveaways, minPointsToKeepForNotMeetingTheLevel, minPointsToKeepForNotMeetingTheLevel, result);
+        pointsLeft = addGiveaways(pointsLeft, filteredGiveaways, minPointsToKeepForNotMeetingTheLevel, minPointsToKeepForNotMeetingTheLevel, result);
 
         return result;
     }
-
-
 
     private int addGiveaways(int pointsLeft, List<Giveaway> giveaways, int minPointsToKeepForNotMeetingTheLevel, int minPointsToKeep, List<Giveaway> result) {
         if (minPointsToKeepForNotMeetingTheLevel < minPointsToKeep) {
@@ -178,7 +159,7 @@ public class AutoJoinCalculator {
             }
         }
 
-        sortByLevelThenEntries(result);
+        sortByLevelThenTime(result);
 
         return result;
     }
@@ -192,7 +173,7 @@ public class AutoJoinCalculator {
             }
         }
 
-        sortByLevelThenEntries(result);
+        sortByLevelThenTime(result);
 
         return result;
     }
@@ -206,17 +187,17 @@ public class AutoJoinCalculator {
             }
         }
 
-        sortByLevelThenEntries(result);
+        sortByLevelThenTime(result);
 
         return result;
     }
 
 
-    private List<Giveaway> calculateMustHaveListedGames(List<Giveaway> giveaways, long timePeriod) {
+    private List<Giveaway> calculateMustHaveListedGames(List<Giveaway> giveaways) {
         List<Giveaway> result = new ArrayList<>();
 
         for (Giveaway giveaway : giveaways) {
-            if (isMustHaveListedGame(giveaway.getGameId()) && endsWithinPeriod(giveaway, timePeriod)) {
+            if (isMustHaveListedGame(giveaway.getGameId())) {
                 result.add(giveaway);
             }
         }
@@ -230,16 +211,16 @@ public class AutoJoinCalculator {
         return giveaway.getEndTime().getTimeInMillis() - System.currentTimeMillis() < period;
     }
 
-    private List<Giveaway> calculateWhiteListedGames(List<Giveaway> giveaways, long period) {
+    private List<Giveaway> calculateWhiteListedGames(List<Giveaway> giveaways, int minLevel) {
         List<Giveaway> result = new ArrayList<>();
 
         for (Giveaway giveaway : giveaways) {
-            if (isWhiteListedGame(giveaway.getGameId()) && endsWithinPeriod(giveaway, period)) {
+            if (isWhiteListedGame(giveaway.getGameId()) && giveaway.getLevel() >= minLevel) {
                 result.add(giveaway);
             }
         }
 
-        sortByLevelThenEntries(result);
+        sortByLevelThenTime(result);
 
         return result;
     }
@@ -253,7 +234,7 @@ public class AutoJoinCalculator {
         });
     }
 
-    private void sortByLevelThenEntries(List<Giveaway> giveaways) {
+    private void sortByLevelThenTime(List<Giveaway> giveaways) {
         Collections.sort(giveaways, new Comparator<Giveaway>() {
             @Override
             public int compare(Giveaway lhs, Giveaway rhs) {
@@ -350,10 +331,12 @@ public class AutoJoinCalculator {
     }
 
     public int calculatePointsToKeepForLevel(Giveaway giveaway, int pointsToKeepAwayForLevel) {
-        if (level == 0) {
-            return 0;
+        if (level < minLevelForWhiteList || level == 0) {
+            return pointsToKeepAwayForLevel;
         }
-        double levelPercentage = (double) giveaway.getLevel() / level;
+
+        double levelPercentage = (double) (giveaway.getLevel() - minLevelForWhiteList) / (level - minLevelForWhiteList);
+//        double levelPercentage = (double) giveaway.getLevel() / level;
         if (levelPercentage > 1) {
             levelPercentage = 1;
         }
@@ -370,5 +353,9 @@ public class AutoJoinCalculator {
 
     public boolean hasGreatDemand(Giveaway giveaway) {
         return giveaway.getAverageEntries() > greatDemandEntries;
+    }
+
+    public boolean isMatchingWhiteListLevel(Giveaway giveaway) {
+        return giveaway.getLevel() >= minLevelForWhiteList;
     }
 }

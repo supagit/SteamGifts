@@ -9,7 +9,8 @@
     <attr name="lightTextColor" format="color" />
 
     <attr name="colorMustHave" format="color" />
-    <attr name="colorBookmarked" format="color" />
+    <attr name="colorWhitelisted" format="color" />
+    <attr name="colorWhitelistedNotLevel" format="color" />
     <attr name="colorBlackListed" format="color" />
     <attr name="colorPoint" format="color" />
     <attr name="colorNotLevel" format="color" />

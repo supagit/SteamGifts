@@ -18,10 +18,11 @@ public class AutoJoinOptions {
         ALWAYS_JOIN_GIVEAWAYS_FOR_BOOKMARKS("preferences_autojoin_always_join_bookmarks", true),
         AUTO_JOIN_ON_NON_WIFI_CONNECTION("preferences_autojoin_on_non_wifi", true),
 
-        MINIMUM_POINTS_TO_KEEP_FOR_UNTAGGED("preferences_autojoin_minimum_points_to_keep_for_untagged", 150),
-        MINIMUM_POINTS_TO_KEEP_FOR_GREAT_RATIO("preferences_autojoin_minimum_points_to_keep_for_tagged", 50),
-        MINIMUM_POINTS_TO_KEEP_FOR_NOT_MEETING_LEVEL("preferences_autojoin_minimum_points_to_keep_for_not_meeting_level", 50),
+        MINIMUM_LEVEL_FOR_WHITELIST("preferences_autojoin_minimum_level_for_whitelist", 0), //
+
         MINIMUM_POINTS_TO_KEEP_FOR_NOT_ON_MUST_HAVE_LIST("preferences_autojoin_minimum_points_to_keep_for_not_must_have_games", 50),
+        MINIMUM_POINTS_TO_KEEP_FOR_NOT_MEETING_LEVEL("preferences_autojoin_minimum_points_to_keep_for_not_meeting_level", 250),
+
         MINIMUM_RATING("preferences_autojoin_minimum_rating", 75),
         HIDE_GAMES_WITH_BAD_RATING("preferences_hide_low_rating_games", false),
         GREAT_DEMAND_ENTRIES("preferences_great_demand_entries",3000);
