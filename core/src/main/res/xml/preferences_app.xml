@@ -27,8 +27,8 @@
         <CheckBoxPreference
             android:defaultValue="false"
             android:key="preferences_hide_low_rating_games"
-            android:title="@string/preferences_hide_low_rating_games"
-            android:summary="hides games with a rating below the minimum rating to autojoin"/>
+            android:summary="hides games with a rating below the minimum rating to autojoin"
+            android:title="@string/preferences_hide_low_rating_games" />
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/preferences_autojoin">
@@ -39,48 +39,49 @@
 
         <CheckBoxPreference
             android:defaultValue="true"
-            android:key="preferences_autojoin_always_join_bookmarks"
-            android:title="@string/preferences_autojoin_always_join_bookmarks" />
-
-        <CheckBoxPreference
-            android:defaultValue="true"
             android:key="preferences_autojoin_on_non_wifi"
             android:title="@string/preferences_autojoin_on_non_wifi" />
 
         <net.mabako.sgtools.EditTextIntegerPreference
-            android:defaultValue="75"
+            android:defaultValue="100"
+            android:key="preferences_autojoin_treat_unbundled_as_must_have_with_points"
             android:numeric="integer"
+            android:title="treat unbundled as must have when more than these points" />
+
+        <net.mabako.sgtools.EditTextIntegerPreference
+            android:defaultValue="75"
             android:key="preferences_autojoin_minimum_rating"
-            android:title="@string/preferences_autojoin_minimum_rating"
-            android:summary="minimum rating to autojoin" />
+            android:numeric="integer"
+            android:summary="minimum rating to autojoin"
+            android:title="@string/preferences_autojoin_minimum_rating" />
 
         <net.mabako.sgtools.EditTextIntegerPreference
             android:defaultValue="0"
-            android:numeric="integer"
             android:key="preferences_autojoin_minimum_level_for_whitelist"
-            android:title="whitelist - min level"
-            android:summary="min level  rating to autojoin" />
+            android:numeric="integer"
+            android:summary="min level  rating to autojoin"
+            android:title="whitelist - min level" />
 
         <net.mabako.sgtools.EditTextIntegerPreference
             android:defaultValue="50"
-            android:numeric="integer"
             android:key="preferences_autojoin_minimum_points_to_keep_for_not_must_have_games"
-            android:title="points to keep for must have games"
-            android:summary="these points will be kept when the game is a not Must-Have Game" />
+            android:numeric="integer"
+            android:summary="these points will be kept when the game is a not Must-Have Game"
+            android:title="points to keep for must have games" />
 
         <net.mabako.sgtools.EditTextIntegerPreference
             android:defaultValue="250"
-            android:numeric="integer"
             android:key="preferences_autojoin_minimum_points_to_keep_for_not_meeting_level"
-            android:title="points to keep when nothing matches"
-            android:summary="these points will be kept when the level does not match" />
+            android:numeric="integer"
+            android:summary="these points will be kept when the level does not match"
+            android:title="points to keep when nothing matches" />
 
         <net.mabako.sgtools.EditTextIntegerPreference
             android:defaultValue="3000"
-            android:numeric="integer"
             android:key="preferences_great_demand_entries"
-            android:title="@string/preferences_great_demand_entries"
-            android:summary="autojoin games with a great demand" />
+            android:numeric="integer"
+            android:summary="autojoin games with a great demand"
+            android:title="@string/preferences_great_demand_entries" />
 
     </PreferenceCategory>
 

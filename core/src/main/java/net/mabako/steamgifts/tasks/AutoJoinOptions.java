@@ -15,10 +15,10 @@ import java.util.Set;
 public class AutoJoinOptions {
     public enum AutoJoinOption {
         AUTO_JOIN_ACTIVATED("preferences_autojoin_activated", true),
-        ALWAYS_JOIN_GIVEAWAYS_FOR_BOOKMARKS("preferences_autojoin_always_join_bookmarks", true),
         AUTO_JOIN_ON_NON_WIFI_CONNECTION("preferences_autojoin_on_non_wifi", true),
 
-        MINIMUM_LEVEL_FOR_WHITELIST("preferences_autojoin_minimum_level_for_whitelist", 0), //
+        TREAT_UNBUNDLED_AS_MUST_HAVE_WITH_POINTS("preferences_autojoin_treat_unbundled_as_must_have_with_points", 100),
+        MINIMUM_LEVEL_FOR_WHITELIST("preferences_autojoin_minimum_level_for_whitelist", 0),
 
         MINIMUM_POINTS_TO_KEEP_FOR_NOT_ON_MUST_HAVE_LIST("preferences_autojoin_minimum_points_to_keep_for_not_must_have_games", 50),
         MINIMUM_POINTS_TO_KEEP_FOR_NOT_MEETING_LEVEL("preferences_autojoin_minimum_points_to_keep_for_not_meeting_level", 250),
