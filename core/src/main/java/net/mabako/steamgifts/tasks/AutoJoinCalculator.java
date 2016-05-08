@@ -10,6 +10,7 @@ import net.mabako.steamgifts.persistentdata.SavedGamesBlackListTags;
 import net.mabako.steamgifts.persistentdata.SavedGamesMustHaveList;
 import net.mabako.steamgifts.persistentdata.SavedGamesWhiteList;
 import net.mabako.steamgifts.persistentdata.SavedGamesWhiteListTags;
+import net.mabako.steamgifts.persistentdata.SavedIgnoreList;
 import net.mabako.steamgifts.persistentdata.SteamGiftsUserData;
 
 import java.util.ArrayList;
@@ -33,6 +34,7 @@ public class AutoJoinCalculator {
     private final SavedGamesWhiteListTags savedGamesWhiteListTags;
     private final SavedGamesMustHaveList savedGamesMustHaveList;
     private final SavedGamesBlackListTags savedGamesBlackListTags;
+    private final SavedIgnoreList savedIgnoreList;
     private final int level;
     private final int greatDemandEntries;
     private final int minLevelForWhiteList;
@@ -61,7 +63,7 @@ public class AutoJoinCalculator {
         savedGamesMustHaveList = new SavedGamesMustHaveList(context);
         savedGamesWhiteListTags = new SavedGamesWhiteListTags(context);
         savedGamesBlackListTags = new SavedGamesBlackListTags(context);
-
+        savedIgnoreList = new SavedIgnoreList(context);
     }
 
     public List<Giveaway> calculateGiveawaysToJoin(List<Giveaway> giveaways) {
@@ -310,6 +312,10 @@ public class AutoJoinCalculator {
         return savedGamesBlackList.get(gameId) != null;
     }
 
+    public boolean isIgnoreListGame(int gameId) {
+        return savedIgnoreList.get(gameId) != null;
+    }
+
     public void removeFromGamesBlackList(int gameId) {
         savedGamesBlackList.remove(gameId);
     }
@@ -410,5 +416,14 @@ public class AutoJoinCalculator {
 
     public boolean isMatchingWhiteListLevel(Giveaway giveaway) {
         return calculateLevel(giveaway) >= minLevelForWhiteList;
+    }
+
+
+    public void removeFromIgnoreList(int gameId) {
+        savedIgnoreList.remove(gameId);
+    }
+
+    public void addToIgnoreList(int gameId) {
+        savedIgnoreList.add(new GameInfo(gameId, 0), gameId);
     }
 }

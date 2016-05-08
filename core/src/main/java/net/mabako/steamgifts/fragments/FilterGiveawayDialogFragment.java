@@ -61,6 +61,8 @@ public class FilterGiveawayDialogFragment extends DialogFragment implements Dial
         setValue(view.findViewById(R.id.filter_copies_min), f.getMinCopies());
 
         ((CheckBox) view.findViewById(R.id.filter_entered)).setChecked(f.isHideEntered());
+        ((CheckBox) view.findViewById(R.id.filter_ignored)).setChecked(f.isHideIgnored());
+        ((CheckBox) view.findViewById(R.id.filter_blacklisted)).setChecked(f.isHideBlacklisted());
         ((CheckBox) view.findViewById(R.id.filter_whitelist_or_group)).setChecked(f.isRestrictLevelOnlyOnPublicGiveaways());
         ((CheckBox) view.findViewById(R.id.filter_entries_per_copy)).setChecked(f.isEntriesPerCopy());
         ((CheckBox) view.findViewById(R.id.filter_region_restricted)).setChecked(f.isRegionRestrictedOnly());
@@ -82,6 +84,8 @@ public class FilterGiveawayDialogFragment extends DialogFragment implements Dial
         newFilterData.setMinPoints(getValueAndUpdateFlags(R.id.filter_points_min, oldFilterData.getMinPoints()));
         newFilterData.setMinCopies(getValueAndUpdateFlags(R.id.filter_copies_min, oldFilterData.getMinCopies()));
         newFilterData.setHideEntered(getValueAndUpdateFlags(R.id.filter_entered, oldFilterData.isHideEntered()));
+        newFilterData.setHideIgnored(getValueAndUpdateFlags(R.id.filter_ignored, oldFilterData.isHideIgnored()));
+        newFilterData.setHideBlacklisted(getValueAndUpdateFlags(R.id.filter_blacklisted, oldFilterData.isHideBlacklisted()));
         newFilterData.setRestrictLevelOnlyOnPublicGiveaways(getValueAndUpdateFlags(R.id.filter_whitelist_or_group, oldFilterData.isRestrictLevelOnlyOnPublicGiveaways()));
         newFilterData.setEntriesPerCopy(getValueAndUpdateFlags(R.id.filter_entries_per_copy, oldFilterData.isEntriesPerCopy()));
         newFilterData.setRegionRestrictedOnly(getValueAndUpdateFlags(R.id.filter_region_restricted, oldFilterData.isRegionRestrictedOnly()));

@@ -32,6 +32,7 @@ import net.mabako.steamgifts.fragments.GiveawayDetailFragment;
 import net.mabako.steamgifts.fragments.GiveawayListFragment;
 import net.mabako.steamgifts.fragments.SavedGiveawaysFragment;
 import net.mabako.steamgifts.fragments.interfaces.IHasEnterableGiveaways;
+import net.mabako.steamgifts.persistentdata.FilterData;
 import net.mabako.steamgifts.persistentdata.SavedErrors;
 import net.mabako.steamgifts.persistentdata.SavedGiveaways;
 import net.mabako.steamgifts.persistentdata.SteamGiftsUserData;
@@ -137,7 +138,6 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
         }
 
 
-
         if (giveaway.getEntries() >= 0) {
             int estimatedEntries = giveaway.getEstimatedEntries();
 //            sb.append(estimatedEntries).append(" (~").append(giveaway.getAverageEntries()).append(")").append(" entries").append(" | ");
@@ -183,12 +183,12 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
             } else {
                 StringUtils.setBackgroundDrawable(activity, itemContainer, true, R.attr.colorWhitelistedNotLevel);
             }
-
-
         } else if (autoJoinCalculator.hasGreatDemand(giveaway)) {
             StringUtils.setBackgroundDrawable(activity, itemContainer, true, R.attr.colorPoint);
         } else if (autoJoinCalculator.hasBlackListedTag(giveaway)) {
             StringUtils.setBackgroundDrawable(activity, itemContainer, true, R.attr.colorBlackListed);
+        } else if (autoJoinCalculator.isIgnoreListGame(giveaway.getGameId())) {
+            StringUtils.setBackgroundDrawable(activity, itemContainer, true, R.attr.colorIgnore);
         } else {
             StringUtils.setBackgroundDrawable(activity, itemContainer, autoJoinCalculator.isTagMatching(giveaway));
         }
@@ -292,6 +292,12 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
                 menu.add(Menu.NONE, 7, Menu.NONE, "Remove from Blacklist").setOnMenuItemClickListener(this);
             } else {
                 menu.add(Menu.NONE, 8, Menu.NONE, "Add to Blacklist").setOnMenuItemClickListener(this);
+            }
+
+            if (autoJoinCalculator.isIgnoreListGame(giveaway.getGameId())) {
+                menu.add(Menu.NONE, 13, Menu.NONE, "Remove from Ignore List").setOnMenuItemClickListener(this);
+            } else {
+                menu.add(Menu.NONE, 14, Menu.NONE, "Add to Ignore List").setOnMenuItemClickListener(this);
             }
 
 //            // Hide a game... forever
@@ -400,13 +406,35 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
                 autoJoinCalculator.addToGamesMustHaveList(giveaway.getGameId());
                 refreshAdapterForGameId(giveaway.getGameId());
                 return true;
+            case 13:
+                autoJoinCalculator.removeFromIgnoreList(giveaway.getGameId());
+                refreshAdapterForGameId(giveaway.getGameId());
+                return true;
+            case 14:
+
+                if (autoJoinCalculator.isWhiteListedGame(giveaway.getGameId())
+                        || autoJoinCalculator.isMustHaveListedGame(giveaway.getGameId())
+                        || autoJoinCalculator.isMustHaveListedGameOrUnbundled(giveaway)
+                        ) {
+                    Toast.makeText(activity, "Cannot Ignore giveaway on white or musthave list", Toast.LENGTH_SHORT).show();
+                    return true;
+                }
+
+                autoJoinCalculator.addToIgnoreList(giveaway.getGameId());
+                refreshAdapterForGameId(giveaway.getGameId());
+                return true;
 
         }
         return false;
     }
 
     private void refreshAdapterForGameId(int gameId) {
-        for(int i=0; i<adapter.getItemCount(); i++) {
+//        FilterData filterData = FilterData.getCurrent(context);///
+//
+//        boolean hideIgnored = filterData.isHideIgnored();
+//        boolean hideBlacklisted = filterData.isHideBlacklisted();
+
+        for (int i = 0; i < adapter.getItemCount(); i++) {
             IEndlessAdaptable item = adapter.getItem(i);
 
             if (item instanceof Giveaway) {

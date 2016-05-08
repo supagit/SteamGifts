@@ -20,7 +20,7 @@ public class FilterData implements Serializable {
     private static FilterData current = null;
 
     private int minEntries = -1, maxEntries = -1, minPoints = -1, maxPoints = -1, minLevel = -1, maxLevel = -1, minCopies = -1, maxCopies = -1;
-    private boolean hideEntered, restrictLevelOnlyOnPublicGiveaways, entriesPerCopy, regionRestrictedOnly;
+    private boolean hideEntered, hideIgnored, hideBlacklisted, restrictLevelOnlyOnPublicGiveaways, entriesPerCopy, regionRestrictedOnly;
 
     public static synchronized FilterData getCurrent(Context context) {
         if (current == null) {
@@ -141,5 +141,21 @@ public class FilterData implements Serializable {
 
     public boolean isAnyActive() {
         return minEntries > -1 || maxEntries > -1 || minPoints > -1 || maxPoints > -1 || minLevel > -1 || maxLevel > -1 || minCopies > -1 || maxCopies > -1 || hideEntered || regionRestrictedOnly;
+    }
+
+    public boolean isHideIgnored() {
+        return hideIgnored;
+    }
+
+    public void setHideIgnored(boolean hideIgnored) {
+        this.hideIgnored = hideIgnored;
+    }
+
+    public boolean isHideBlacklisted() {
+        return hideBlacklisted;
+    }
+
+    public void setHideBlacklisted(boolean hideBlacklisted) {
+        this.hideBlacklisted = hideBlacklisted;
     }
 }

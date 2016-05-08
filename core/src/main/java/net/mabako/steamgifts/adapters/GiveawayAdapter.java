@@ -57,6 +57,7 @@ public class GiveawayAdapter extends EndlessAdapter {
      * Should we load images for this list?
      */
     private final boolean loadImages;
+    private transient AutoJoinCalculator autoJoinCalculator;
 
     public GiveawayAdapter(Activity context, int itemsPerPage, SharedPreferences sharedPreferences) {
         this(context, itemsPerPage, false, sharedPreferences);
@@ -71,6 +72,8 @@ public class GiveawayAdapter extends EndlessAdapter {
         } else {
             this.loadImages = sharedPreferences.getString("preference_giveaway_load_images", "details;list").contains("list");
         }
+
+        autoJoinCalculator = new AutoJoinCalculator(context, 0);
     }
 
     public void setFragmentValues(@NonNull Activity activity, @NonNull ListFragment fragment, SavedGiveaways savedGiveaways) {
@@ -150,6 +153,8 @@ public class GiveawayAdapter extends EndlessAdapter {
             int maxPoints = fd.getMaxPoints();
 
             boolean hideEntered = fd.isHideEntered();
+            boolean hideIgnored = fd.isHideIgnored();
+            boolean hideBlacklisted = fd.isHideBlacklisted();
 
             boolean checkLevelOnlyOnPublicGiveaway = fd.isRestrictLevelOnlyOnPublicGiveaways();
             int minLevel = fd.getMinLevel();
@@ -172,6 +177,10 @@ public class GiveawayAdapter extends EndlessAdapter {
                     int entriesPerCopyValue = giveaway.getEntries() / giveaway.getCopies();
 
                     if (hideEntered && giveaway.isEntered()) {
+                        iter.remove();
+                    } else if (hideIgnored && autoJoinCalculator.isIgnoreListGame(giveaway.getGameId())) {
+                        iter.remove();
+                    } else if (hideBlacklisted && (autoJoinCalculator.isBlackListedGame(giveaway.getGameId()) || autoJoinCalculator.hasBlackListedTag(giveaway))) {
                         iter.remove();
                     } else if (points >= 0 && ((minPoints >= 0 && points < minPoints) || (maxPoints >= 0 && points > maxPoints))) {
                         iter.remove();
@@ -201,7 +210,7 @@ public class GiveawayAdapter extends EndlessAdapter {
         }
 
         List<Giveaway> giveawaysToJoin = new AutoJoinCalculator(context, CheckForAutoJoin.AUTO_JOIN_PERIOD).calculateGiveawaysToJoin(giveaways);
-        for(int joinOrder = 0; joinOrder< giveawaysToJoin.size();joinOrder++)  {
+        for (int joinOrder = 0; joinOrder < giveawaysToJoin.size(); joinOrder++) {
             Giveaway giveaway = giveawaysToJoin.get(joinOrder);
             int effectivJoinOrder = joinOrder + 1;
             giveaway.setJoinOrderText("[" + effectivJoinOrder + "/" + giveawaysToJoin.size() + "]");

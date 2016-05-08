@@ -17,6 +17,7 @@
         <item name="colorWhitelisted">#88ff88</item>
         <item name="colorWhitelistedNotLevel">#ccffcc</item>
         <item name="colorBlackListed">#ffaaaa</item>
+        <item name="colorIgnore">#aaaaaa</item>
         <item name="colorPoint">#aaaaff</item>
         <item name="colorNotLevel">#fafad2</item>
     </style>
