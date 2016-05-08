@@ -31,7 +31,6 @@ public class SteamGiftsUserData {
     private String imageUrl;
 
 
-
     private String suspensionText;
 
     private transient int points = 0;
@@ -93,10 +92,24 @@ public class SteamGiftsUserData {
 
         Elements navbar = document.select(".nav__button-container");
 
-        Element userContainer = navbar.last().select("a").first();
-        String link = userContainer.attr("href");
+        Element userContainer = null;// = navbar.last().select("a") .first();
+        String link = "";// = userContainer.attr("href");
 
-        if (link.startsWith("/user/")) {
+        if (!navbar.isEmpty()) {
+            userContainer = navbar.last().select("a").first();
+            link = userContainer.attr("href");
+        } else {
+            navbar = document.select(".nav__flex");
+            for (Element element : navbar.last().select("a")) {
+                link = element.attr("href");
+                if (link != null && link.startsWith("/user/")) {
+                    userContainer = element;
+                    break;
+                }
+            }
+        }
+
+        if (userContainer != null && link.startsWith("/user/")) {
             current.setName(link.substring(6));
 
             // fetch the image
@@ -114,9 +127,13 @@ public class SteamGiftsUserData {
 
             // Notifications
             Elements notifications = navbar.select(".nav__button-container--notification");
-            current.setCreatedNotification(getInt(notifications.select("a[href=/giveaways/created]").first().text()));
-            current.setWonNotification(getInt(notifications.select("a[href=/giveaways/won]").first().text()));
-            current.setMessageNotification(getInt(notifications.select("a[href=/messages]").first().text()));
+            try {
+                current.setCreatedNotification(getInt(notifications.select("a[href=/giveaways/created]").first().text()));
+                current.setWonNotification(getInt(notifications.select("a[href=/giveaways/won]").first().text()));
+                current.setMessageNotification(getInt(notifications.select("a[href=/messages]").first().text()));
+            } catch (Exception ex) {
+
+            }
         }
     }
 

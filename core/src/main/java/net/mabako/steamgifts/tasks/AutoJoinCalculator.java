@@ -39,6 +39,7 @@ public class AutoJoinCalculator {
     private final int pointsToKeepForMustHaveGames;
     private final int minPointsToKeepForNotMeetingTheLevel;
     private final int treatUnbundledAsMustHaveWithPoints;
+    private final int minimumRating;
 
     public AutoJoinCalculator(Context context, long autoJoinPeriod) {
         this.context = context;
@@ -46,6 +47,7 @@ public class AutoJoinCalculator {
         nearJoinPeriod = autoJoinPeriod / 2;
         farJoinPeriod = autoJoinPeriod;
 
+        minimumRating = AutoJoinOptions.getOptionInteger(context, AutoJoinOptions.AutoJoinOption.MINIMUM_RATING);
         greatDemandEntries = AutoJoinOptions.getOptionInteger(context, AutoJoinOptions.AutoJoinOption.GREAT_DEMAND_ENTRIES);
         minLevelForWhiteList = AutoJoinOptions.getOptionInteger(context, AutoJoinOptions.AutoJoinOption.MINIMUM_LEVEL_FOR_WHITELIST);
         pointsToKeepForMustHaveGames = AutoJoinOptions.getOptionInteger(context, AutoJoinOptions.AutoJoinOption.MINIMUM_POINTS_TO_KEEP_FOR_NOT_ON_MUST_HAVE_LIST);
@@ -252,19 +254,32 @@ public class AutoJoinCalculator {
 
 
     private List<Giveaway> filterGiveaways(List<Giveaway> giveaways) {
-        int minimumRating = AutoJoinOptions.getOptionInteger(context, AutoJoinOptions.AutoJoinOption.MINIMUM_RATING);
-
         List<Giveaway> result = new ArrayList<>();
         for (Giveaway giveaway : giveaways) {
-            if (giveaway.getRating() >= minimumRating
-                    && !giveaway.isEntered()
-                    && !giveaway.isLevelNegative()
-                    && !SteamGiftsUserData.getCurrent(context).getName().equals(giveaway.getCreator())) {
+
+            if (isGoodGame(giveaway)) {
                 result.add(giveaway);
             }
         }
-
         return result;
+    }
+
+    private boolean isGoodGame(Giveaway giveaway) {
+        if (SteamGiftsUserData.getCurrent(context).getName().equals(giveaway.getCreator())) {
+            return false;
+        }
+        if (giveaway.isEntered()) {
+            return  false;
+        }
+        if (giveaway.isBundleGame()) {
+            return true;
+        }
+
+        if (giveaway.getRating()>=minimumRating) {
+            return true;
+        }
+
+        return !giveaway.isLevelNegative();
     }
 
     public boolean doesGiveawayEndWithInAutoJoinPeriod(Giveaway giveaway) {
