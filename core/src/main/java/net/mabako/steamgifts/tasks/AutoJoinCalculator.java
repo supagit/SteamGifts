@@ -26,8 +26,7 @@ import java.util.List;
 public class AutoJoinCalculator {
 
     private Context context;
-    private long nearJoinPeriod;
-    private long farJoinPeriod;
+    private long autoJoinPeriod;
 
     private final SavedGamesBlackList savedGamesBlackList;
     private final SavedGamesWhiteList savedGamesWhiteList;
@@ -45,9 +44,7 @@ public class AutoJoinCalculator {
 
     public AutoJoinCalculator(Context context, long autoJoinPeriod) {
         this.context = context;
-
-        nearJoinPeriod = autoJoinPeriod / 2;
-        farJoinPeriod = autoJoinPeriod;
+        this.autoJoinPeriod = autoJoinPeriod;
 
         minimumRating = AutoJoinOptions.getOptionInteger(context, AutoJoinOptions.AutoJoinOption.MINIMUM_RATING);
         greatDemandEntries = AutoJoinOptions.getOptionInteger(context, AutoJoinOptions.AutoJoinOption.GREAT_DEMAND_ENTRIES);
@@ -90,13 +87,13 @@ public class AutoJoinCalculator {
         List<Giveaway> whiteListedGamesMatchingLevel = calculateWhiteListedGames(filteredGiveaways, minLevelForWhiteList);
         filteredGiveaways.removeAll(whiteListedGamesMatchingLevel);
 
-        List<Giveaway> greatDemandGames = calculateGreatDemandGames(filteredGiveaways, nearJoinPeriod);
+        List<Giveaway> greatDemandGames = calculateGreatDemandGames(filteredGiveaways);
         filteredGiveaways.removeAll(greatDemandGames);
 
         List<Giveaway> whiteListedGamesNotMatchingLevel = calculateWhiteListedGames(filteredGiveaways, 0);
         filteredGiveaways.removeAll(whiteListedGamesNotMatchingLevel);
 
-        List<Giveaway> taggedGiveaways = calculateTaggedGames(filteredGiveaways, nearJoinPeriod);
+        List<Giveaway> taggedGiveaways = calculateTaggedGames(filteredGiveaways);
         filteredGiveaways.removeAll(taggedGiveaways);
 
         List<Giveaway> result = new ArrayList<>(zeroPointGiveaways);
@@ -155,12 +152,12 @@ public class AutoJoinCalculator {
         return result;
     }
 
-    private List<Giveaway> calculateGreatDemandGames(List<Giveaway> giveaways, long period) {
+    private List<Giveaway> calculateGreatDemandGames(List<Giveaway> giveaways) {
 
         List<Giveaway> result = new ArrayList<>();
 
         for (Giveaway giveaway : giveaways) {
-            if (hasGreatDemand(giveaway) && endsWithinPeriod(giveaway, period)) {
+            if (hasGreatDemand(giveaway)) {
                 result.add(giveaway);
             }
         }
@@ -184,11 +181,11 @@ public class AutoJoinCalculator {
         return result;
     }
 
-    private List<Giveaway> calculateTaggedGames(List<Giveaway> giveaways, long period) {
+    private List<Giveaway> calculateTaggedGames(List<Giveaway> giveaways) {
         List<Giveaway> result = new ArrayList<>();
 
         for (Giveaway giveaway : giveaways) {
-            if (isTagMatching(giveaway) && endsWithinPeriod(giveaway, period)) {
+            if (isTagMatching(giveaway)) {
                 result.add(giveaway);
             }
         }
@@ -267,6 +264,9 @@ public class AutoJoinCalculator {
     }
 
     private boolean isGoodGame(Giveaway giveaway) {
+        if (!doesGiveawayEndWithInAutoJoinPeriod(giveaway)) {
+            return false;
+        }
         if (SteamGiftsUserData.getCurrent(context).getName().equals(giveaway.getCreator())) {
             return false;
         }
@@ -285,7 +285,7 @@ public class AutoJoinCalculator {
     }
 
     public boolean doesGiveawayEndWithInAutoJoinPeriod(Giveaway giveaway) {
-        return endsWithinPeriod(giveaway, farJoinPeriod);
+        return endsWithinPeriod(giveaway, autoJoinPeriod);
     }
 
     public boolean isTagMatching(Giveaway giveaway) {
@@ -377,9 +377,6 @@ public class AutoJoinCalculator {
             int actualLevelDelta = (int) Math.round(levelDelta);
 
             int newGiveawayLevel = giveawayLevel + actualLevelDelta;
-            if (newGiveawayLevel >= level) {
-                newGiveawayLevel = level;
-            }
             return newGiveawayLevel;
         }
         catch(Exception ex) {
@@ -406,7 +403,7 @@ public class AutoJoinCalculator {
     }
 
     public boolean isMatchingLevel(Giveaway giveaway) {
-        return level == calculateLevel(giveaway);
+        return level == giveaway.getLevel();
     }
 
 
