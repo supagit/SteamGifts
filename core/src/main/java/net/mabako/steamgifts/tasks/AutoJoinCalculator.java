@@ -20,7 +20,7 @@ import java.util.List;
 
 /**
  * AutoJoinCalculator
- * <p/>
+ * <p>
  * Created by Supa on 16.03.2016.
  */
 public class AutoJoinCalculator {
@@ -99,10 +99,30 @@ public class AutoJoinCalculator {
         List<Giveaway> result = new ArrayList<>(zeroPointGiveaways);
 
         pointsLeft = addGiveaways(pointsLeft, mustHaveListedGames, 0, 0, result);
+        if (!mustHaveListedGames.isEmpty()) {
+            return result;
+        }
+
         pointsLeft = addGiveaways(pointsLeft, whiteListedGamesMatchingLevel, minPointsToKeepForNotMeetingTheLevel, pointsToKeepForMustHaveGames, result);
+        if (!whiteListedGamesMatchingLevel.isEmpty()) {
+            return result;
+        }
+
         pointsLeft = addGiveaways(pointsLeft, greatDemandGames, minPointsToKeepForNotMeetingTheLevel, pointsToKeepForMustHaveGames, result);
+        if (!greatDemandGames.isEmpty()) {
+            return result;
+        }
+
         pointsLeft = addGiveaways(pointsLeft, whiteListedGamesNotMatchingLevel, minPointsToKeepForNotMeetingTheLevel, minPointsToKeepForNotMeetingTheLevel, result);
+        if (!whiteListedGamesNotMatchingLevel.isEmpty()) {
+            return result;
+        }
+
         pointsLeft = addGiveaways(pointsLeft, taggedGiveaways, minPointsToKeepForNotMeetingTheLevel, minPointsToKeepForNotMeetingTheLevel, result);
+        if (!taggedGiveaways.isEmpty()) {
+            return result;
+        }
+
         pointsLeft = addGiveaways(pointsLeft, filteredGiveaways, minPointsToKeepForNotMeetingTheLevel, minPointsToKeepForNotMeetingTheLevel, result);
 
         return result;
@@ -211,6 +231,9 @@ public class AutoJoinCalculator {
     }
 
     private boolean endsWithinPeriod(Giveaway giveaway, long period) {
+        if (giveaway.getEndTime() == null) {
+            return false;
+        }
         return giveaway.getEndTime().getTimeInMillis() - System.currentTimeMillis() < period;
     }
 
@@ -271,13 +294,13 @@ public class AutoJoinCalculator {
             return false;
         }
         if (giveaway.isEntered()) {
-            return  false;
+            return false;
         }
         if (giveaway.isBundleGame()) {
             return true;
         }
 
-        if (giveaway.getRating()>=minimumRating) {
+        if (giveaway.getRating() >= minimumRating) {
             return true;
         }
 
@@ -355,9 +378,7 @@ public class AutoJoinCalculator {
     public int calculateLevel(Giveaway giveaway) {
         int giveawayLevel = giveaway.getLevel();
         try {
-            if (giveawayLevel >= level) {
-                return giveawayLevel;
-            }
+            giveawayLevel += calculateCopiesBonus(giveaway.getCopies());
 
             long maxShortRunTime = AlarmManager.INTERVAL_HOUR * 2;
             long maxLevelDelta = 2;
@@ -378,12 +399,30 @@ public class AutoJoinCalculator {
 
             int newGiveawayLevel = giveawayLevel + actualLevelDelta;
             return newGiveawayLevel;
-        }
-        catch(Exception ex) {
+        } catch (Exception ex) {
             ex.printStackTrace();
             return giveawayLevel;
         }
 
+    }
+
+    private int calculateCopiesBonus(int copies) {
+        if (copies <= 1) {
+            return 0;
+        }
+        if (copies < 5) {
+            return 1;
+        }
+        if (copies < 20) {
+            return 2;
+        }
+        if (copies < 50) {
+            return 3;
+        }
+        if (copies < 100) {
+            return 4;
+        }
+        return 5;
     }
 
     public int calculatePointsToKeepForLevel(Giveaway giveaway, int pointsToKeepAwayForLevel) {
