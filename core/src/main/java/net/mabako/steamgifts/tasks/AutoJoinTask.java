@@ -1,5 +1,6 @@
 package net.mabako.steamgifts.tasks;
 
+import android.app.AlarmManager;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
@@ -35,7 +36,7 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
     private boolean resetStats;
     private long autoJoinPeriod;
     public static final String TAG = AutoJoinTask.class.getSimpleName();
-    private String foundXsrfToken;
+
     private Statistics statistics;
     private final SavedGameInfo savedGameInfo;
 
@@ -91,15 +92,24 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
                 && isOption(AutoJoinOptions.AutoJoinOption.AUTO_JOIN_ACTIVATED)
                 && (isOption(AutoJoinOptions.AutoJoinOption.AUTO_JOIN_ON_NON_WIFI_CONNECTION) || Utils.isConnectedToWifi(TAG, context));
 
+        AutoJoinGiveawayLoader autoJoinGiveawayLoader = new AutoJoinGiveawayLoader(context, savedGameInfo);
 
-        autoJoinCalculator = new AutoJoinCalculator(context, autoJoinPeriod);
+
         points = SteamGiftsUserData.getCurrent(context).getPoints();
 
         if (doAutoJoin) {
             statistics.updateStatsNotification("Auto Join in progress", "");
 
-            List<Giveaway> giveaways = loadGiveAways(context);
-            List<Giveaway> giveAwaysToJoin = autoJoinCalculator.calculateGiveawaysToJoin(giveaways);
+            List<Giveaway> giveAwaysToJoin;
+            while(true) {
+                autoJoinCalculator = new AutoJoinCalculator(context, autoJoinPeriod);
+                autoJoinGiveawayLoader.loadWithInPeriod(autoJoinPeriod);
+                giveAwaysToJoin = autoJoinCalculator.calculateGiveawaysToJoin(autoJoinGiveawayLoader.getGiveaways());
+                if (!autoJoinCalculator.isIncludesUnwanted() || autoJoinPeriod > AlarmManager.INTERVAL_DAY) {
+                    break;
+                }
+                autoJoinPeriod += AlarmManager.INTERVAL_HALF_HOUR;
+            }
 
             String suspensionText = SteamGiftsUserData.getCurrent(context).getSuspensionText();
             if (suspensionText != null) {
@@ -107,7 +117,7 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
             } else if (giveAwaysToJoin.isEmpty()) {
                 showAutoJoinNotification(new HashMap<Giveaway, Boolean>());
             } else {
-                requestEnterLeave(giveAwaysToJoin, foundXsrfToken);
+                requestEnterLeave(giveAwaysToJoin, autoJoinGiveawayLoader.getFoundXsrfToken());
             }
 
         }
@@ -166,66 +176,5 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
         statistics.updateStatsNotification(giveawaysEntered, pointsSpent, entries);
     }
 
-    protected List<Giveaway> loadGiveAways(Context context) {
-        List<Giveaway> giveaways = loadGiveAways(context, 0);
 
-        try {
-            if (giveaways != null && !giveaways.isEmpty()) {
-                int page = 1;
-                while (autoJoinCalculator.doesGiveawayEndWithInAutoJoinPeriod(giveaways.get(giveaways.size() - 1)) && page < 5) {
-                    List<Giveaway> pageGiveaways = loadGiveAways(context, page);
-                    if (pageGiveaways == null) {
-                        break;
-                    }
-                    page++;
-                    giveaways.addAll(pageGiveaways);
-                }
-            }
-        }
-        catch(Exception ex) {
-
-        }
-
-        Map<String, Giveaway> giveawayMap = new HashMap<>();
-
-        if (giveaways != null) {
-            for (Giveaway giveAway : giveaways) {
-                giveawayMap.put(giveAway.getGiveawayId(), giveAway);
-            }
-        }
-
-        return new ArrayList<>(giveawayMap.values());
-    }
-
-    protected List<Giveaway> loadGiveAways(Context context, int page) {
-        Log.d(TAG, "Fetching giveaways for page " + page);
-
-        try {
-            // Fetch the Giveaway page
-            Connection jsoup = Jsoup.connect("http://www.steamgifts.com/giveaways/search")
-                    .userAgent(Constants.JSOUP_USER_AGENT)
-                    .timeout(Constants.JSOUP_TIMEOUT);
-            jsoup.data("page", Integer.toString(page));
-
-            if (SteamGiftsUserData.getCurrent(context).isLoggedIn())
-                jsoup.cookie("PHPSESSID", SteamGiftsUserData.getCurrent(context).getSessionId());
-            Document document = jsoup.get();
-
-            SteamGiftsUserData.extract(context, document);
-
-            // Fetch the xsrf token
-            Element xsrfToken = document.select("input[name=xsrf_token]").first();
-            if (xsrfToken != null)
-                foundXsrfToken = xsrfToken.attr("value");
-
-            // Do away with pinned giveaways.
-            document.select(".pinned-giveaways__outer-wrap").html("");
-
-            // Parse all rows of giveaways
-            return Utils.loadGiveawaysFromList(document, savedGameInfo);
-        } catch (Exception e) {
-            Log.e(TAG, "Error fetching URL", e);
-            return null;
-        }
-    }
 }

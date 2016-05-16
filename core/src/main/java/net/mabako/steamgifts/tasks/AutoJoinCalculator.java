@@ -42,6 +42,9 @@ public class AutoJoinCalculator {
     private final int treatUnbundledAsMustHaveWithPoints;
     private final int minimumRating;
 
+    int pointsLeft;
+    boolean includesUnwanted;
+
     public AutoJoinCalculator(Context context, long autoJoinPeriod) {
         this.context = context;
         this.autoJoinPeriod = autoJoinPeriod;
@@ -63,6 +66,14 @@ public class AutoJoinCalculator {
         savedIgnoreList = new SavedIgnoreList(context);
     }
 
+    public int getPointsLeft() {
+        return pointsLeft;
+    }
+
+    public boolean isIncludesUnwanted() {
+        return includesUnwanted;
+    }
+
     public List<Giveaway> calculateGiveawaysToJoin(List<Giveaway> giveaways) {
         List<Giveaway> filteredGiveaways = filterGiveaways(giveaways);
         return generateGiveawaysToJoinList(filteredGiveaways);
@@ -71,7 +82,8 @@ public class AutoJoinCalculator {
     private List<Giveaway> generateGiveawaysToJoinList(List<Giveaway> filteredGiveaways) {
         int points = SteamGiftsUserData.getCurrent(context).getPoints();
 
-        int pointsLeft = points;
+        includesUnwanted = false;
+        pointsLeft = points;
 
         List<Giveaway> joinedGiveaways = calculateJoinedGiveaway(filteredGiveaways);
         filteredGiveaways.removeAll(joinedGiveaways);
@@ -112,6 +124,8 @@ public class AutoJoinCalculator {
         if (!greatDemandGames.isEmpty()) {
             return result;
         }
+
+        includesUnwanted = true;
 
         pointsLeft = addGiveaways(pointsLeft, whiteListedGamesNotMatchingLevel, minPointsToKeepForNotMeetingTheLevel, minPointsToKeepForNotMeetingTheLevel, result);
         if (!whiteListedGamesNotMatchingLevel.isEmpty()) {
@@ -451,7 +465,7 @@ public class AutoJoinCalculator {
     }
 
     public boolean isMatchingWhiteListLevel(Giveaway giveaway) {
-        return calculateLevel(giveaway) >= minLevelForWhiteList;
+        return calculateLevel(giveaway) > minLevelForWhiteList;
     }
 
 
