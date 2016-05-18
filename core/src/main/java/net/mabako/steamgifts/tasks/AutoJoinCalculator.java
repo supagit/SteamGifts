@@ -417,26 +417,28 @@ public class AutoJoinCalculator {
             ex.printStackTrace();
             return giveawayLevel;
         }
-
     }
 
     private int calculateCopiesBonus(int copies) {
         if (copies <= 1) {
             return 0;
         }
-        if (copies < 5) {
+        if (copies <= 2) {
             return 1;
         }
-        if (copies < 20) {
+        if (copies < 5) {
             return 2;
         }
-        if (copies < 50) {
+        if (copies < 20) {
             return 3;
         }
-        if (copies < 100) {
+        if (copies < 50) {
             return 4;
         }
-        return 5;
+        if (copies < 100) {
+            return 5;
+        }
+        return 6;
     }
 
     public int calculatePointsToKeepForLevel(Giveaway giveaway, int pointsToKeepAwayForLevel) {

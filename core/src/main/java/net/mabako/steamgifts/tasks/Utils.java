@@ -241,10 +241,11 @@ public final class Utils {
             Uri uriIcon = icon == link ? null : Uri.parse(icon.attr("href"));
 
             Utils.loadGiveaway(giveaway, element, "giveaway", "giveaway__heading__thin", uriIcon);
-            giveawayList.add(giveaway);
 
-
-            applyGiveawayRating(giveaway, savedGameInfo);
+            if (giveaway.getEndTime() != null) {
+                giveawayList.add(giveaway);
+                applyGiveawayRating(giveaway, savedGameInfo);
+            }
         }
 
         return giveawayList;

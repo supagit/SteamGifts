@@ -175,6 +175,7 @@ public class GiveawayAdapter extends EndlessAdapter {
                     int points = giveaway.getPoints();
                     int level = giveaway.getLevel();
                     int entriesPerCopyValue = giveaway.getEntries() / giveaway.getCopies();
+                    boolean bundleGame = giveaway.isBundleGame();
 
                     if (hideEntered && giveaway.isEntered()) {
                         iter.remove();
@@ -182,14 +183,16 @@ public class GiveawayAdapter extends EndlessAdapter {
                         iter.remove();
                     } else if (hideBlacklisted && (autoJoinCalculator.isBlackListedGame(giveaway.getGameId()) || autoJoinCalculator.hasBlackListedTag(giveaway))) {
                         iter.remove();
-                    } else if (points >= 0 && ((minPoints >= 0 && points < minPoints) || (maxPoints >= 0 && points > maxPoints))) {
-                        iter.remove();
-                    } else if (checkLevelOnlyOnPublicGiveaway && !giveaway.isGroup() && !giveaway.isWhitelist() && ((minLevel >= 0 && level < minLevel) || (maxLevel >= 0 && level > maxLevel))) {
-                        iter.remove();
-                    } else if (entriesPerCopy && (minEntries >= 0 && entriesPerCopyValue < minEntries) || (maxEntries >= 0 && entriesPerCopyValue > maxEntries)) {
-                        iter.remove();
-                    } else if (hideGamesWithBadRating && giveaway.getRating() < minimumRating) {
-                        iter.remove();
+                    } else if (bundleGame) {
+                        if (points >= 0 && ((minPoints >= 0 && points < minPoints) || (maxPoints >= 0 && points > maxPoints))) {
+                            iter.remove();
+                        } else if (checkLevelOnlyOnPublicGiveaway && !giveaway.isGroup() && !giveaway.isWhitelist() && ((minLevel >= 0 && level < minLevel) || (maxLevel >= 0 && level > maxLevel))) {
+                            iter.remove();
+                        } else if (entriesPerCopy && (minEntries >= 0 && entriesPerCopyValue < minEntries) || (maxEntries >= 0 && entriesPerCopyValue > maxEntries)) {
+                            iter.remove();
+                        } else if (hideGamesWithBadRating && giveaway.getRating() < minimumRating) {
+                            iter.remove();
+                        }
                     }
                 }
             }

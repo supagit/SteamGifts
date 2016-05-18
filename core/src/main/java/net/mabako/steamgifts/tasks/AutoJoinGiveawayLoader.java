@@ -55,6 +55,9 @@ public class AutoJoinGiveawayLoader {
             Collections.sort(giveaways, new Comparator<Giveaway>() {
                 @Override
                 public int compare(Giveaway lhs, Giveaway rhs) {
+                    if (lhs.getEndTime() == null || rhs.getEndTime() == null) {
+                        return lhs.getEndTime() == null ? -1 : 1;
+                    }
                     return (int) (lhs.getEndTime().getTimeInMillis() - rhs.getEndTime().getTimeInMillis());
                 }
             });
@@ -103,8 +106,11 @@ public class AutoJoinGiveawayLoader {
     public boolean loadWithInPeriod(long autoJoinPeriod) {
         while (true) {
             Giveaway last = getLast();
-            if (last != null && !endsWithinPeriod(last, autoJoinPeriod)) {
+            if ((last != null && !endsWithinPeriod(last, autoJoinPeriod))) {
                 return true;
+            }
+            if (last != null && curPage > 1) {
+                return false;
             }
             loadNextPage();
         }
