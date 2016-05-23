@@ -109,7 +109,7 @@ public class AutoJoinGiveawayLoader {
             if ((last != null && !endsWithinPeriod(last, autoJoinPeriod))) {
                 return true;
             }
-            if (last != null && curPage > 1) {
+            if (last == null && curPage > 1) {
                 return false;
             }
             loadNextPage();

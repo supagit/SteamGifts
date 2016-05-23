@@ -190,7 +190,7 @@ public class GiveawayAdapter extends EndlessAdapter {
                             iter.remove();
                         } else if (entriesPerCopy && (minEntries >= 0 && entriesPerCopyValue < minEntries) || (maxEntries >= 0 && entriesPerCopyValue > maxEntries)) {
                             iter.remove();
-                        } else if (hideGamesWithBadRating && giveaway.getRating() < minimumRating) {
+                        } else if (hideGamesWithBadRating && giveaway.getRating() < minimumRating && giveaway.getRating() != 0) {
                             iter.remove();
                         }
                     }

@@ -314,7 +314,7 @@ public class AutoJoinCalculator {
             return true;
         }
 
-        if (giveaway.getRating() >= minimumRating) {
+        if (giveaway.getRating() >= minimumRating || giveaway.getRating() == 0) {
             return true;
         }
 
@@ -393,6 +393,7 @@ public class AutoJoinCalculator {
         int giveawayLevel = giveaway.getLevel();
         try {
             giveawayLevel += calculateCopiesBonus(giveaway.getCopies());
+            giveawayLevel += giveaway.isWhitelist() ? 10 : 0;
 
             long maxShortRunTime = AlarmManager.INTERVAL_HOUR * 2;
             long maxLevelDelta = 2;
