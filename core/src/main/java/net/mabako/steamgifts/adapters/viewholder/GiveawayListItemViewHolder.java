@@ -32,14 +32,11 @@ import net.mabako.steamgifts.fragments.GiveawayDetailFragment;
 import net.mabako.steamgifts.fragments.GiveawayListFragment;
 import net.mabako.steamgifts.fragments.SavedGiveawaysFragment;
 import net.mabako.steamgifts.fragments.interfaces.IHasEnterableGiveaways;
-import net.mabako.steamgifts.persistentdata.FilterData;
-import net.mabako.steamgifts.persistentdata.SavedErrors;
 import net.mabako.steamgifts.persistentdata.SavedGiveaways;
 import net.mabako.steamgifts.persistentdata.SteamGiftsUserData;
 import net.mabako.steamgifts.tasks.AutoJoinCalculator;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
@@ -174,7 +171,7 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
 
         if (autoJoinCalculator.isBlackListedGame(giveaway.getGameId())) {
             StringUtils.setBackgroundDrawable(activity, itemContainer, true, R.attr.colorBlackListed);
-        } else if (autoJoinCalculator.isMustHaveListedGameOrUnbundled(giveaway)) {
+        } else if (autoJoinCalculator.isMustHaveListedGameOrUnbundledOrGroup(giveaway)) {
             StringUtils.setBackgroundDrawable(activity, itemContainer, true, R.attr.colorMustHave);
         } else if (autoJoinCalculator.isWhiteListedGame(giveaway.getGameId())) {
 
@@ -414,7 +411,7 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
 
                 if (autoJoinCalculator.isWhiteListedGame(giveaway.getGameId())
                         || autoJoinCalculator.isMustHaveListedGame(giveaway.getGameId())
-                        || autoJoinCalculator.isMustHaveListedGameOrUnbundled(giveaway)
+                        || autoJoinCalculator.isMustHaveListedGameOrUnbundledOrGroup(giveaway)
                         ) {
                     Toast.makeText(activity, "Cannot Ignore giveaway on white or musthave list", Toast.LENGTH_SHORT).show();
                     return true;

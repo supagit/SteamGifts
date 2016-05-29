@@ -46,7 +46,15 @@
             android:defaultValue="100"
             android:key="preferences_autojoin_treat_unbundled_as_must_have_with_points"
             android:numeric="integer"
-            android:title="treat unbundled as must have when more than these points" />
+            android:title="unbundled as must have"
+            android:summary="unbundled are treated as must have with more than these points"/>
+
+        <net.mabako.sgtools.EditTextIntegerPreference
+            android:defaultValue="100"
+            android:key="preferences_autojoin_treat_group_whitelisted_as_must_have_with_less_entries"
+            android:numeric="integer"
+            android:title="group as must have"
+            android:summary="interesting group giveaways are treated as must have with less than these entries"/>
 
         <net.mabako.sgtools.EditTextIntegerPreference
             android:defaultValue="75"

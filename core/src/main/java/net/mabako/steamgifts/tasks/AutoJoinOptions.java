@@ -18,6 +18,8 @@ public class AutoJoinOptions {
         AUTO_JOIN_ON_NON_WIFI_CONNECTION("preferences_autojoin_on_non_wifi", true),
 
         TREAT_UNBUNDLED_AS_MUST_HAVE_WITH_POINTS("preferences_autojoin_treat_unbundled_as_must_have_with_points", 100),
+        TREAT_GROUP_WHITE_LISTED_GIVEAWAYS_AS_MUST_HAVE_WITH_LESS_ENTRIES("preferences_autojoin_treat_group_whitelisted_as_must_have_with_less_entries", 100),
+
         MINIMUM_LEVEL_FOR_WHITELIST("preferences_autojoin_minimum_level_for_whitelist", 0),
 
         MINIMUM_POINTS_TO_KEEP_FOR_NOT_ON_MUST_HAVE_LIST("preferences_autojoin_minimum_points_to_keep_for_not_must_have_games", 50),

@@ -24,7 +24,6 @@ import java.util.List;
  * Created by Supa on 16.03.2016.
  */
 public class AutoJoinCalculator {
-
     private Context context;
     private long autoJoinPeriod;
 
@@ -40,6 +39,7 @@ public class AutoJoinCalculator {
     private final int pointsToKeepForMustHaveGames;
     private final int minPointsToKeepForNotMeetingTheLevel;
     private final int treatUnbundledAsMustHaveWithPoints;
+    private final int treatGroupGiveawaysAsMustHaveWithLessEntries;
     private final int minimumRating;
 
     int pointsLeft;
@@ -55,6 +55,8 @@ public class AutoJoinCalculator {
         pointsToKeepForMustHaveGames = AutoJoinOptions.getOptionInteger(context, AutoJoinOptions.AutoJoinOption.MINIMUM_POINTS_TO_KEEP_FOR_NOT_ON_MUST_HAVE_LIST);
         minPointsToKeepForNotMeetingTheLevel = AutoJoinOptions.getOptionInteger(context, AutoJoinOptions.AutoJoinOption.MINIMUM_POINTS_TO_KEEP_FOR_NOT_MEETING_LEVEL);
         treatUnbundledAsMustHaveWithPoints = AutoJoinOptions.getOptionInteger(context, AutoJoinOptions.AutoJoinOption.TREAT_UNBUNDLED_AS_MUST_HAVE_WITH_POINTS);
+
+        treatGroupGiveawaysAsMustHaveWithLessEntries = AutoJoinOptions.getOptionInteger(context, AutoJoinOptions.AutoJoinOption.TREAT_GROUP_WHITE_LISTED_GIVEAWAYS_AS_MUST_HAVE_WITH_LESS_ENTRIES);
 
         level = SteamGiftsUserData.getCurrent(context).getLevel();
 
@@ -234,7 +236,7 @@ public class AutoJoinCalculator {
         List<Giveaway> result = new ArrayList<>();
 
         for (Giveaway giveaway : giveaways) {
-            if (isMustHaveListedGameOrUnbundled(giveaway)) {
+            if (isMustHaveListedGameOrUnbundledOrGroup(giveaway)) {
                 result.add(giveaway);
             }
         }
@@ -377,8 +379,18 @@ public class AutoJoinCalculator {
         return savedGamesMustHaveList.get(gameId) != null;
     }
 
-    public boolean isMustHaveListedGameOrUnbundled(Giveaway giveaway) {
-        return isMustHaveListedGame(giveaway.getGameId()) || (!giveaway.isBundleGame() && giveaway.getPoints() >= treatUnbundledAsMustHaveWithPoints);
+    private boolean isInterestingGame(Giveaway giveaway) {
+        return isMustHaveListedGame(giveaway.getGameId()) || isWhiteListedGame(giveaway.getGameId()) || !giveaway.isBundleGame() || hasGreatDemand(giveaway);
+    }
+
+    public boolean isMustHaveListedGameOrUnbundledOrGroup(Giveaway giveaway) {
+        if (giveaway.isGroup() && isInterestingGame(giveaway) && giveaway.getEntries()<=treatGroupGiveawaysAsMustHaveWithLessEntries) {
+            return true;
+        }
+        if (!giveaway.isBundleGame() && giveaway.getPoints() >= treatUnbundledAsMustHaveWithPoints) {
+            return true;
+        }
+        return isMustHaveListedGame(giveaway.getGameId());
     }
 
     public void removeFromMustHaveWhiteList(int gameId) {

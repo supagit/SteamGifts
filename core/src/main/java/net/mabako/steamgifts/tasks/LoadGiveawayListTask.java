@@ -51,7 +51,6 @@ public class LoadGiveawayListTask extends AsyncTask<Void, Void, List<Giveaway>> 
 
         try {
             // Fetch the Giveaway page
-
             Connection jsoup = Jsoup.connect("https://www.steamgifts.com/giveaways/search")
                     .userAgent(Constants.JSOUP_USER_AGENT)
                     .timeout(Constants.JSOUP_TIMEOUT);
@@ -73,7 +72,10 @@ public class LoadGiveawayListTask extends AsyncTask<Void, Void, List<Giveaway>> 
             addFilterParameter(jsoup, "copy_min", filterData.getMinCopies());
             addFilterParameter(jsoup, "copy_max", filterData.getMaxCopies());
 
-            if (type != GiveawayListFragment.Type.ALL)
+            if (filterData.isShowGroupOnly()) {
+                jsoup.data("type", GiveawayListFragment.Type.GROUP.name().toLowerCase(Locale.ENGLISH));
+            }
+            else if (type != GiveawayListFragment.Type.ALL)
                 jsoup.data("type", type.name().toLowerCase(Locale.ENGLISH));
 
             if (SteamGiftsUserData.getCurrent(fragment.getContext()).isLoggedIn())
