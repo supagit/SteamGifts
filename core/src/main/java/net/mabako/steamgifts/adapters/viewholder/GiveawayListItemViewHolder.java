@@ -26,12 +26,14 @@ import net.mabako.steamgifts.adapters.IEndlessAdaptable;
 import net.mabako.steamgifts.core.R;
 import net.mabako.steamgifts.data.BasicGiveaway;
 import net.mabako.steamgifts.data.Game;
+import net.mabako.steamgifts.data.GameInfo;
 import net.mabako.steamgifts.data.Giveaway;
 import net.mabako.steamgifts.data.Statistics;
 import net.mabako.steamgifts.fragments.GiveawayDetailFragment;
 import net.mabako.steamgifts.fragments.GiveawayListFragment;
 import net.mabako.steamgifts.fragments.SavedGiveawaysFragment;
 import net.mabako.steamgifts.fragments.interfaces.IHasEnterableGiveaways;
+import net.mabako.steamgifts.persistentdata.SavedGameInfo;
 import net.mabako.steamgifts.persistentdata.SavedGiveaways;
 import net.mabako.steamgifts.persistentdata.SteamGiftsUserData;
 import net.mabako.steamgifts.tasks.AutoJoinCalculator;
@@ -61,6 +63,7 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
     private static int measuredHeight = 0;
     private final Context context;
     private final AutoJoinCalculator autoJoinCalculator;
+    private final SavedGameInfo savedGameInfo;
 
     public GiveawayListItemViewHolder(View v, Activity activity, EndlessAdapter adapter, Fragment fragment, SavedGiveaways savedGiveaways) {
         super(v);
@@ -90,6 +93,7 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
         v.setOnCreateContextMenuListener(this);
 
         autoJoinCalculator = new AutoJoinCalculator(context, 0);
+        savedGameInfo = new SavedGameInfo(context);
     }
 
 
@@ -297,6 +301,10 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
                 menu.add(Menu.NONE, 14, Menu.NONE, "Add to Ignore List").setOnMenuItemClickListener(this);
             }
 
+            if (!giveaway.isBundleGame()) {
+                menu.add(Menu.NONE, 15, Menu.NONE, "Set Bundle Info").setOnMenuItemClickListener(this);
+            }
+
 //            // Hide a game... forever
 //            if (loggedIn && xsrfEvents && giveaway.getInternalGameId() > 0 && fragment instanceof GiveawayListFragment) {
 //                menu.add(Menu.NONE, 3, Menu.NONE, R.string.hide_game).setOnMenuItemClickListener(this);
@@ -419,6 +427,15 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
 
                 autoJoinCalculator.addToIgnoreList(giveaway.getGameId());
                 refreshAdapterForGameId(giveaway.getGameId());
+                return true;
+
+            case 15: {
+                GameInfo gameInfo = savedGameInfo.get(giveaway.getGameId());
+                gameInfo.setIsBundle(true);
+                savedGameInfo.add(gameInfo, giveaway.getGameId());
+                giveaway.setBundleGame(true);
+                refreshAdapterForGameId(giveaway.getGameId());
+            }
                 return true;
 
         }
