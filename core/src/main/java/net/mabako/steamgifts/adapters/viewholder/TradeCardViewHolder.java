@@ -11,18 +11,20 @@ import android.widget.TextView;
 
 import net.mabako.steamgifts.activities.CommonActivity;
 import net.mabako.steamgifts.core.R;
-import net.mabako.steamgifts.data.Discussion;
-import net.mabako.steamgifts.data.DiscussionExtras;
-import net.mabako.steamgifts.fragments.DiscussionDetailFragment;
+import net.mabako.steamgifts.data.Trade;
+import net.mabako.steamgifts.data.TradeExtras;
+import net.mabako.steamgifts.fragments.TradeDetailFragment;
 import net.mabako.steamgifts.fragments.interfaces.ICommentableFragment;
-import net.mabako.steamgifts.fragments.util.DiscussionDetailsCard;
+import net.mabako.steamgifts.fragments.util.TradeDetailsCard;
 
-public class DiscussionCardViewHolder extends RecyclerView.ViewHolder {
+import java.util.Locale;
+
+public class TradeCardViewHolder extends RecyclerView.ViewHolder {
     private final ICommentableFragment fragment;
     private final Context context;
 
     private final View progressBar;
-    private final TextView discussionTime;
+    private final TextView tradeTime;
     private final TextView user;
     private final TextView description;
     private final View separator;
@@ -31,46 +33,56 @@ public class DiscussionCardViewHolder extends RecyclerView.ViewHolder {
 
     private final Button commentDiscussion;
 
-    public DiscussionCardViewHolder(View v, DiscussionDetailFragment fragment, Context context) {
+    private final View scoreDivider;
+    private final TextView scorePositive;
+    private final TextView scoreNegative;
+
+    public TradeCardViewHolder(View v, TradeDetailFragment fragment, Context context) {
         super(v);
         this.fragment = fragment;
         this.context = context;
 
         progressBar = v.findViewById(R.id.progressBar);
         user = (TextView) v.findViewById(R.id.user);
-        discussionTime = (TextView) v.findViewById(R.id.time);
+        tradeTime = (TextView) v.findViewById(R.id.time);
         description = (TextView) v.findViewById(R.id.description);
         description.setMovementMethod(LinkMovementMethod.getInstance());
         separator = v.findViewById(R.id.separator);
         actionSeparator = v.findViewById(R.id.action_separator);
-        title = (TextView) v.findViewById(R.id.discussion_title);
+        title = (TextView) v.findViewById(R.id.trade_title);
+
+        scoreDivider = v.findViewById(R.id.trade_divider);
+        scorePositive = (TextView) v.findViewById(R.id.trade_score_positive);
+        scoreNegative = (TextView) v.findViewById(R.id.trade_score_negative);
 
         commentDiscussion = (Button) v.findViewById(R.id.comment);
     }
 
-    public void setFrom(final DiscussionDetailsCard card) {
-        final Discussion discussion = card.getDiscussion();
-        DiscussionExtras extras = card.getExtras();
+    public void setFrom(final TradeDetailsCard card) {
+        final Trade trade = card.getTrade();
+        TradeExtras extras = card.getExtras();
 
-        for (View view : new View[]{commentDiscussion, description, discussionTime, user, title, separator, actionSeparator})
+        for (View view : new View[]{commentDiscussion, description, tradeTime, user, scoreDivider, scorePositive, scoreNegative, title, separator, actionSeparator})
             view.setVisibility(View.GONE);
 
-        if (discussion == null) {
+        if (trade == null) {
             progressBar.setVisibility(View.VISIBLE);
         } else {
-            for (View view : new View[]{discussionTime, user, title})
+            for (View view : new View[]{tradeTime, user, scoreDivider, scorePositive, scoreNegative, title})
                 view.setVisibility(View.VISIBLE);
 
-            title.setText(discussion.getTitle());
+            title.setText(trade.getTitle());
 
-            user.setText("{faw-user} " + discussion.getCreator());
+            user.setText("{faw-user} " + trade.getCreator());
             user.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    fragment.showProfile(discussion.getCreator());
+                    fragment.showProfile(trade.getCreator());
                 }
             });
-            discussionTime.setText("{faw-calendar-o} " + discussion.getRelativeCreatedTime(context));
+            scorePositive.setText(String.format(Locale.ENGLISH, "+%d", trade.getCreatorScorePositive()));
+            scoreNegative.setText(String.format(Locale.ENGLISH, "-%d", trade.getCreatorScoreNegative()));
+            tradeTime.setText("{faw-calendar-o} " + trade.getRelativeCreatedTime(context));
 
             if (extras == null) {
                 // Still loading...

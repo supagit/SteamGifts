@@ -18,7 +18,7 @@
             android:orientation="vertical">
 
             <TextView
-                android:id="@+id/discussion_title"
+                android:id="@+id/trade_title"
                 style="@style/BigText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -41,7 +41,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentRight="true"
-                    android:layout_toRightOf="@+id/user"
+                    android:layout_toRightOf="@+id/trade_score_negative"
                     android:gravity="right"
                     android:padding="@dimen/card_margin_small"
                     android:text="Time"
@@ -56,6 +56,41 @@
                     android:text="Creator"
                     android:textColor="?attr/lightTextColor"
                     android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/trade_score_positive"
+                    style="@style/SmallText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_toRightOf="@id/user"
+                    android:paddingBottom="@dimen/card_margin_small"
+                    android:paddingTop="@dimen/card_margin_small"
+                    android:singleLine="true"
+                    android:text="+0"
+                    android:textColor="?attr/colorTradeScorePositive" />
+
+                <TextView
+                    android:id="@+id/trade_divider"
+                    style="@style/SmallText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_toRightOf="@id/trade_score_positive"
+                    android:paddingBottom="@dimen/card_margin_small"
+                    android:paddingTop="@dimen/card_margin_small"
+                    android:singleLine="true"
+                    android:text="/" />
+
+                <TextView
+                    android:id="@+id/trade_score_negative"
+                    style="@style/SmallText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_toRightOf="@id/trade_divider"
+                    android:paddingBottom="@dimen/card_margin_small"
+                    android:paddingTop="@dimen/card_margin_small"
+                    android:singleLine="true"
+                    android:text="-0"
+                    android:textColor="?attr/colorTradeScoreNegative" />
 
                 <View
                     android:id="@+id/separator"
@@ -75,7 +110,7 @@
                     android:paddingLeft="@dimen/card_margin_small"
                     android:paddingRight="@dimen/card_margin_small"
                     android:paddingTop="@dimen/card_margin_small"
-                    android:text="Discussion description"
+                    android:text="Trade description"
                     android:visibility="visible" />
 
                 <ProgressBar
