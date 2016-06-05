@@ -280,11 +280,16 @@ public class Giveaway extends BasicGiveaway implements IEndlessAdaptable {
     }
 
     public int getEstimatedEntries() {
-        if (createdTime == null) {
+        if (createdTime == null || endTime == null) {
             return entries;
         }
-        final long timeSinceCreation = Math.abs(Calendar.getInstance().getTimeInMillis() - createdTime.getCalendar().getTimeInMillis()) / 1000;
-        final long timeToEnd = Math.abs(endTime.getCalendar().getTimeInMillis() - Calendar.getInstance().getTimeInMillis()) / 1000;
+        long now = Calendar.getInstance().getTimeInMillis();
+
+        if (now > endTime.getCalendar().getTimeInMillis()) {
+            return entries;
+        }
+        final long timeSinceCreation = Math.abs(now - createdTime.getCalendar().getTimeInMillis()) / 1000;
+        final long timeToEnd = Math.abs(endTime.getCalendar().getTimeInMillis() - now) / 1000;
 
         double entriesPerSecond = (double) entries / timeSinceCreation;
         int additionalEntriesToExpect = (int) (timeToEnd * entriesPerSecond);

@@ -380,11 +380,14 @@ public class AutoJoinCalculator {
     }
 
     private boolean isInterestingGame(Giveaway giveaway) {
+        if (isIgnoreListGame(giveaway.getGameId()) || isBlackListedGame(giveaway.getGameId())) {
+            return false;
+        }
         return isMustHaveListedGame(giveaway.getGameId()) || isWhiteListedGame(giveaway.getGameId()) || !giveaway.isBundleGame() || hasGreatDemand(giveaway);
     }
 
     public boolean isMustHaveListedGameOrUnbundledOrGroup(Giveaway giveaway) {
-        if (giveaway.isGroup() && isInterestingGame(giveaway) && giveaway.getEntries()<=treatGroupGiveawaysAsMustHaveWithLessEntries) {
+        if (giveaway.isGroup() && isInterestingGame(giveaway) && giveaway.getEstimatedEntries()<=treatGroupGiveawaysAsMustHaveWithLessEntries) {
             return true;
         }
         if (!giveaway.isBundleGame() && giveaway.getPoints() >= treatUnbundledAsMustHaveWithPoints) {
