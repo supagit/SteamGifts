@@ -121,7 +121,7 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
             sb.append(giveaway.getRating()).append("% | ");
 
         if (giveaway.getPoints() >= 0)
-            sb.append(giveaway.getPoints()).append("P | ");
+            sb.append(giveaway.getPoints()).append("P \u2022 ");
 
         if (giveaway.getJoinCount() > 0) {
             sb.append(giveaway.getJoinCount()).append("J | ");
