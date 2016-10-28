@@ -42,31 +42,31 @@ public class CustomDateTime implements Serializable {
         calendar.setTimeInMillis(1000L * timestamp);
     }
 
-    public String toString(Context context) {
-        return toString(context, false);
+    public String toString(Context context, boolean useShort){
+        return toString(context);
     }
 
-    public String toString(Context context, boolean useAbbreviation) {
+    public String toString(Context context) {
         final long realTimeDiff = (Calendar.getInstance().getTimeInMillis() - calendar.getTimeInMillis()) / 1000;
         long timeDiff = Math.abs(realTimeDiff);
 
         if (timeDiff < 60)
-            return toString(timeDiff, realTimeDiff, useAbbreviation ? "s" : "second",useAbbreviation);
+            return toString(timeDiff, realTimeDiff, "second");
         timeDiff /= 60;
 
-        if (timeDiff < 120)
-            return toString(timeDiff, realTimeDiff, useAbbreviation ? "m" : "minute", useAbbreviation);
+        if (timeDiff < 60)
+            return toString(timeDiff, realTimeDiff, "minute");
         timeDiff /= 60;
 
-        if (timeDiff < 48)
-            return toString(timeDiff, realTimeDiff, useAbbreviation ? "h" : "hour", useAbbreviation);
+        if (timeDiff < 24)
+            return toString(timeDiff, realTimeDiff, "hour");
         timeDiff /= 24;
 
         if (timeDiff <= 7)
-            return toString(timeDiff, realTimeDiff, useAbbreviation ? "d" : "day", useAbbreviation);
+            return toString(timeDiff, realTimeDiff, "day");
 
         if (timeDiff <= 30)
-            return toString(timeDiff / 7, realTimeDiff, useAbbreviation ? "w": "week", useAbbreviation);
+            return toString(timeDiff / 7, realTimeDiff, "week");
 
         return DateUtils.formatDateTime(context, calendar.getTimeInMillis(), DateUtils.FORMAT_SHOW_DATE | DateUtils.FORMAT_ABBREV_ALL);
     }
