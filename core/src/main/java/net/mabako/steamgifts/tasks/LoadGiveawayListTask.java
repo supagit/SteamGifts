@@ -72,10 +72,7 @@ public class LoadGiveawayListTask extends AsyncTask<Void, Void, List<Giveaway>> 
             addFilterParameter(jsoup, "copy_min", filterData.getMinCopies());
             addFilterParameter(jsoup, "copy_max", filterData.getMaxCopies());
 
-            if (filterData.isShowGroupOnly()) {
-                jsoup.data("type", GiveawayListFragment.Type.GROUP.name().toLowerCase(Locale.ENGLISH));
-            }
-            else if (type != GiveawayListFragment.Type.ALL)
+            if (type != GiveawayListFragment.Type.ALL)
                 jsoup.data("type", type.name().toLowerCase(Locale.ENGLISH));
 
             if (SteamGiftsUserData.getCurrent(fragment.getContext()).isLoggedIn())

@@ -34,12 +34,14 @@ import net.mabako.steamgifts.fragments.GiveawayDetailFragment;
 import net.mabako.steamgifts.fragments.GiveawayListFragment;
 import net.mabako.steamgifts.fragments.SavedGiveawaysFragment;
 import net.mabako.steamgifts.fragments.interfaces.IHasEnterableGiveaways;
+import net.mabako.steamgifts.persistentdata.SavedErrors;
 import net.mabako.steamgifts.persistentdata.SavedGameInfo;
 import net.mabako.steamgifts.persistentdata.SavedGiveaways;
 import net.mabako.steamgifts.persistentdata.SteamGiftsUserData;
 import net.mabako.steamgifts.tasks.AutoJoinCalculator;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
@@ -349,14 +351,14 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
                 }
                 return true;
             case 6: {
-//
-//                SavedErrors savedErrors = new SavedErrors(context);
-//                List<String> all = savedErrors.all();
-//                for (String errorString : all) {
-//                    System.err.println(errorString);
-//                }
+
+                SavedErrors savedErrors = new SavedErrors(context);
+                List<String> all = savedErrors.all();
+                for (String errorString : all) {
+                    System.err.println(errorString);
+                }
 //                savedErrors.removeAll();
-//                savedErrors.close();
+                savedErrors.close();
 
                 Set<String> blackListTags = new HashSet<>(autoJoinCalculator.getBlackListTags());
                 Set<String> whiteListTags = new HashSet<>(autoJoinCalculator.getWhiteListTags());

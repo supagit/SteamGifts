@@ -303,24 +303,29 @@ public class AutoJoinCalculator {
     }
 
     private boolean isGoodGame(Giveaway giveaway) {
-        if (!doesGiveawayEndWithInAutoJoinPeriod(giveaway)) {
-            return false;
-        }
-        if (SteamGiftsUserData.getCurrent(context).getName().equals(giveaway.getCreator())) {
-            return false;
-        }
-        if (giveaway.isEntered()) {
-            return false;
-        }
-        if (giveaway.isBundleGame()) {
-            return true;
-        }
+        try {
+            if (!doesGiveawayEndWithInAutoJoinPeriod(giveaway)) {
+                return false;
+            }
+            if (SteamGiftsUserData.getCurrent(context).getName().equals(giveaway.getCreator())) {
+                return false;
+            }
+            if (giveaway.isEntered()) {
+                return false;
+            }
+            if (giveaway.isBundleGame()) {
+                return true;
+            }
 
-        if (giveaway.getRating() >= minimumRating || giveaway.getRating() == 0) {
-            return true;
-        }
+            if (giveaway.getRating() >= minimumRating || giveaway.getRating() == 0) {
+                return true;
+            }
 
-        return !giveaway.isLevelNegative();
+            return !giveaway.isLevelNegative();
+        }
+        catch(Exception ex) {
+            return false;
+        }
     }
 
     public boolean doesGiveawayEndWithInAutoJoinPeriod(Giveaway giveaway) {
