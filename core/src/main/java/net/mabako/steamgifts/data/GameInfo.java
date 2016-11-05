@@ -66,7 +66,7 @@ public class GameInfo {
             return true;
         }
         long timeDiff = System.currentTimeMillis() - time;
-        return timeDiff < AlarmManager.INTERVAL_DAY * 30;
+        return timeDiff < AlarmManager.INTERVAL_DAY * 90;
     }
 
     public void updateRating(Integer rating) {

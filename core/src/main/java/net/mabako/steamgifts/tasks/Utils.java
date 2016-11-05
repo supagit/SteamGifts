@@ -273,14 +273,16 @@ public final class Utils {
     public static void applyGiveawayRating(Giveaway giveaway, SavedGameInfo savedGameInfo) {
         GameInfo gameInfo = savedGameInfo.get(giveaway.getGameId());
 
-        if (!isWifi(savedGameInfo.getContext())) {
-            if (gameInfo != null) {
-                gameInfo.updateGiveaway(giveaway);
-            }
-            return;
-        }
+        boolean wifi = isWifi(savedGameInfo.getContext());
 
-        if (gameInfo == null || !gameInfo.isValid()) {
+//        if (!isWifi(savedGameInfo.getContext())) {
+//            if (gameInfo != null) {
+//                gameInfo.updateGiveaway(giveaway);
+//            }
+//            return;
+//        }
+
+        if (gameInfo == null || (wifi && !gameInfo.isValid())) {
             gameInfo = fetchGameInfo(giveaway.getGameId());
             if (gameInfo != null) {
                 savedGameInfo.add(gameInfo, gameInfo.getGameId());
@@ -291,7 +293,7 @@ public final class Utils {
             return;
         }
 
-        if (!gameInfo.isBundleInformationValid() && isWifi(savedGameInfo.getContext())) {
+        if (!gameInfo.isBundleInformationValid() && wifi) {
             Boolean bundleInfo = fetchBundleInfo(giveaway.getTitle(), savedGameInfo.getContext());
             gameInfo.setIsBundle(bundleInfo);
             savedGameInfo.add(gameInfo, gameInfo.getGameId());

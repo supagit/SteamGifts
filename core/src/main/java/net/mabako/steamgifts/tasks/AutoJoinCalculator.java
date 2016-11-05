@@ -241,7 +241,7 @@ public class AutoJoinCalculator {
             }
         }
 
-        sortByTime(result);
+        sortByLevelThenTime(result);
 
         return result;
     }
@@ -276,7 +276,8 @@ public class AutoJoinCalculator {
         });
     }
 
-    private void sortByLevelThenTime(List<Giveaway> giveaways) {
+    private void
+    sortByLevelThenTime(List<Giveaway> giveaways) {
         Collections.sort(giveaways, new Comparator<Giveaway>() {
             @Override
             public int compare(Giveaway lhs, Giveaway rhs) {
