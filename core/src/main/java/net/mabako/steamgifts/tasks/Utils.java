@@ -186,7 +186,19 @@ public final class Utils {
         // Steam link
         if (steamUri != null) {
             List<String> pathSegments = steamUri.getPathSegments();
-            if (pathSegments.size() >= 2) {
+
+            String appId = steamUri.getQueryParameter("app");
+            String subId = steamUri.getQueryParameter("sub");
+
+            if (appId != null)
+            {
+                giveaway.setGame(new Game(Game.Type.APP, Integer.parseInt(appId)));
+            }
+            else if (subId != null) {
+                giveaway.setGame(new Game(Game.Type.SUB, Integer.parseInt(subId)));
+            }
+            else if (pathSegments.size() >= 2) {
+
                 giveaway.setGame(new Game("app".equals(pathSegments.get(0)) ? Game.Type.APP : Game.Type.SUB, Integer.parseInt(pathSegments.get(1))));
             }
         }
