@@ -225,7 +225,8 @@ public class Navbar {
                                     }
                                 }
 
-                            return false;
+                                return false;
+                            }
                         }
 
                         drawer.closeDrawer();

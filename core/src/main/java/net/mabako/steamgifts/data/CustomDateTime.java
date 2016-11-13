@@ -51,11 +51,11 @@ public class CustomDateTime implements Serializable {
         long timeDiff = Math.abs(realTimeDiff);
 
         if (timeDiff < 60)
-            return toString(timeDiff, realTimeDiff, "second");
+            return toString(timeDiff, realTimeDiff, "sec");
         timeDiff /= 60;
 
         if (timeDiff < 60)
-            return toString(timeDiff, realTimeDiff, "minute");
+            return toString(timeDiff, realTimeDiff, "min");
         timeDiff /= 60;
 
         if (timeDiff < 24)

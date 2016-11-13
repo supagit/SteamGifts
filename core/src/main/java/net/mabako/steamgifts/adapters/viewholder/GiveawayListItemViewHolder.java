@@ -7,6 +7,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.util.StringBuilderPrinter;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -101,10 +102,25 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
 
 
     public void setFrom(Giveaway giveaway, boolean showImage) {
-        String title = giveaway.getTitle();
+        String title = "";
         if (giveaway.getCopies() > 1) {
-            title = giveaway.getCopies() + "x " + title;
+            title = giveaway.getCopies() + "x ";
         }
+
+        StringBuilder stringBuilder = new StringBuilder();
+        int level = autoJoinCalculator.calculateLevel(giveaway);
+        if (level > 0) {
+            int giveawayLevel = giveaway.getLevel();
+
+            if (giveawayLevel == level) {
+                stringBuilder.append("L").append(level).append(" | ");
+            } else {
+                stringBuilder.append("L").append(level).append(" (L").append(giveawayLevel).append(")").append(" | ");
+            }
+        }
+        title += stringBuilder.toString();
+        title += giveaway.getTitle();
+
         giveawayJoinOrder.setText("");
         giveawayName.setText(title);
         giveawayRatio.setText(giveaway.getJoinOrderText());
@@ -121,30 +137,14 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
 
         StringBuilder sb = new StringBuilder();
         if (giveaway.getRating() != 0)
-            sb.append(giveaway.getRating()).append("% | ");
+            sb.append(giveaway.getRating()).append("% ");
 
         if (giveaway.getPoints() >= 0)
             sb.append(giveaway.getPoints()).append("P \u2022 ");
 
-        if (giveaway.getJoinCount() > 0) {
-            sb.append(giveaway.getJoinCount()).append("J | ");
-        }
-
-        int level = autoJoinCalculator.calculateLevel(giveaway);
-        if (level > 0) {
-            int giveawayLevel = giveaway.getLevel();
-
-            if (giveawayLevel == level) {
-                sb.append("L").append(level).append(" | ");
-            } else {
-                sb.append("L").append(level).append(" (L").append(giveawayLevel).append(")").append(" | ");
-            }
-        }
-
 
         if (giveaway.getEntries() >= 0) {
             int estimatedEntries = giveaway.getEstimatedEntries();
-//            sb.append(estimatedEntries).append(" (~").append(giveaway.getAverageEntries()).append(")").append(" entries").append(" | ");
             sb.append(activity.getResources().getQuantityString(R.plurals.entries, estimatedEntries, estimatedEntries)).append(" | ");
         }
         giveawayDetails.setText(sb.length() > 3 ? sb.substring(0, sb.length() - 3) : sb.toString());
@@ -247,8 +247,13 @@ public class GiveawayListItemViewHolder extends RecyclerView.ViewHolder implemen
             boolean xsrfEvents = adapter.getXsrfToken() != null && giveaway.isOpen();
             boolean loggedIn = SteamGiftsUserData.getCurrent(null).isLoggedIn();
 
+            String joinText = "";
+            if (giveaway.getJoinCount()>0) {
+                joinText = "" + giveaway.getJoinCount() + " joins";
+            }
+
             // Header
-            menu.setHeaderTitle(giveaway.getTitle() + " ~" + giveaway.getAverageEntries());
+            menu.setHeaderTitle(giveaway.getTitle() + " ~" + giveaway.getAverageEntries() + " " + joinText);
 
             if (loggedIn && xsrfEvents && fragment instanceof IHasEnterableGiveaways) {
                 // Text for Entering or Leaving the giveaway
