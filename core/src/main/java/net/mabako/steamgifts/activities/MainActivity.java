@@ -13,7 +13,6 @@ import net.mabako.steamgifts.data.Statistics;
 import net.mabako.steamgifts.fragments.DiscussionListFragment;
 import net.mabako.steamgifts.fragments.GiveawayListFragment;
 import net.mabako.steamgifts.fragments.SavedFragment;
-import net.mabako.steamgifts.fragments.TradeListFragment;
 import net.mabako.steamgifts.fragments.interfaces.IActivityTitle;
 import net.mabako.steamgifts.intro.IntroActivity;
 import net.mabako.steamgifts.persistentdata.IPointUpdateNotification;
@@ -67,11 +66,6 @@ public class MainActivity extends CommonActivity implements IPointUpdateNotifica
 
                 if (navbar != null)
                     navbar.setSelection(((DiscussionListFragment.Type) type).getNavbarResource());
-            } else if (type instanceof TradeListFragment.Type) {
-                loadFragment(TradeListFragment.newInstance((TradeListFragment.Type) type, null));
-
-                if (navbar != null)
-                    navbar.setSelection(((TradeListFragment.Type) type).getNavbarResource());
             }
         } else {
             Fragment fragment = getCurrentFragment();
