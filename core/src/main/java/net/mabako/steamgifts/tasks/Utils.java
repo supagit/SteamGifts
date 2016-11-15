@@ -271,7 +271,11 @@ public final class Utils {
             // More details
             Elements icons = element.select("h2 a");
             Element icon = icons.size() < 2 ? null : icons.get(icons.size() - 2);
-            Uri uriIcon = icon == link ? null : Uri.parse(icon.attr("href"));
+
+            Uri uriIcon = null;
+            if (icon != null) {
+                uriIcon = icon == link ? null : Uri.parse(icon.attr("href"));
+            }
 
             Utils.loadGiveaway(giveaway, element, "giveaway", "giveaway__heading__thin", uriIcon);
 
