@@ -391,7 +391,13 @@ public final class Utils {
 
             String ratingText = getValueFromHtml(s, "ratingValue");
             if (ratingText != null) {
-                gameInfo.updateRating(Integer.parseInt(ratingText));
+                if (ratingText.contains(".")) {
+                    Double rating = Double.parseDouble(ratingText);
+                    gameInfo.updateRating(rating.intValue());
+                }
+                else {
+                    gameInfo.updateRating(Integer.parseInt(ratingText));
+                }
             }
 
             gameInfo.getTags().addAll(searchTags(s, "/tags/?tagid", 0));
