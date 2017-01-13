@@ -126,6 +126,8 @@
         <!-- check for auto join -->
         <receiver android:name="net.mabako.steamgifts.receivers.CheckForAutoJoin" />
 
+        <receiver android:name="net.mabako.steamgifts.receivers.CheckDailyDrops" />
+
         <!-- check for won giveaways -->
         <receiver android:name="net.mabako.steamgifts.receivers.CheckForWonGiveaways" />
     </application>

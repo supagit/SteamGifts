@@ -14,6 +14,7 @@ import net.mabako.steamgifts.fragments.GiveawayDetailFragment;
 import net.mabako.steamgifts.fragments.interfaces.IHasEnterableGiveaways;
 import net.mabako.steamgifts.persistentdata.SavedErrors;
 import net.mabako.steamgifts.persistentdata.SavedGameInfo;
+import net.mabako.steamgifts.persistentdata.SavedStrings;
 import net.mabako.steamgifts.persistentdata.SteamGiftsUserData;
 
 import org.jsoup.Connection;
@@ -62,8 +63,6 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
 
     protected Void doInBackground(Void... params) {
         statistics = new Statistics(context);
-
-        new FanmilesDailyDropChecker(context, statistics).check();
 
         try {
 

@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
+import net.mabako.steamgifts.receivers.CheckDailyDrops;
 import net.mabako.steamgifts.receivers.CheckForAutoJoin;
 import net.mabako.steamgifts.receivers.CheckForNewMessages;
 
@@ -42,7 +43,9 @@ public class PeriodicTasks {
      */
     public enum Task {
         CHECK_FOR_MESSAGES(AlarmManager.INTERVAL_HALF_HOUR, CheckForNewMessages.class),
-        CHECK_FOR_AUTO_JOIN(CheckForAutoJoin.AUTO_JOIN_FREQUENCE, CheckForAutoJoin.class);
+        CHECK_FOR_AUTO_JOIN(CheckForAutoJoin.AUTO_JOIN_FREQUENCE, CheckForAutoJoin.class),
+        CHECK_FOR_DAILY_DROP(CheckDailyDrops.FREQUENCE, CheckDailyDrops.class);
+        ;
 
         private final long interval;
         private final Class<? extends BroadcastReceiver> taskClass;

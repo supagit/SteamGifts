@@ -26,6 +26,8 @@ public class FanmilesDailyDropChecker {
     private Statistics statistics;
     private final SavedStrings savedStrings;
 
+    public static String DAILY_DROP_SAVE = "dailyDrop";
+
     public FanmilesDailyDropChecker(Context context, Statistics statistics) {
         this.context = context;
         this.statistics = statistics;
@@ -48,7 +50,16 @@ public class FanmilesDailyDropChecker {
     }
 
     private boolean isNewDailyDrops(List<String> currentDailyDrops) {
-        List<String> all = new ArrayList<>(savedStrings.all());
+        List<String> all1 = savedStrings.all();
+        String saved = savedStrings.get(DAILY_DROP_SAVE);
+        List<String> all = new ArrayList<>();
+        if (saved != null) {
+            String[] split = saved.split("##");
+            for (String s : split) {
+                all.add(s);
+            }
+        }
+
         ArrayList<String> current = new ArrayList<>(currentDailyDrops);
         current.removeAll(all);
 
@@ -57,12 +68,15 @@ public class FanmilesDailyDropChecker {
     }
 
     private void updateSave(List<String> currentDailyDrops) {
-        savedStrings.removeAll();
+        String save = "";
         for (String drop : currentDailyDrops) {
-            savedStrings.add(drop, drop);
+            save += drop + "##";
         }
-    }
+        save = save.substring(0, save.length() - "##".length());
 
+        savedStrings.add(save, DAILY_DROP_SAVE);
+        savedStrings.close();
+    }
 
 
     public List<String> getDailyDrops() {

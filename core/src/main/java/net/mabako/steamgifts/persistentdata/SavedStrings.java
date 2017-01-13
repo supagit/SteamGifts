@@ -16,32 +16,10 @@ public class SavedStrings extends SavedElements<String> {
     @Override
     protected String getElement(Gson gson, String json) {
         return gson.fromJson(json, String.class);
-
     }
 
     @Override
     public int compare(String lhs, String rhs) {
         return lhs.compareTo(rhs);
     }
-
-    //public GameInfo get(int elementId) {
-//        return super.get(Integer.toString(elementId));
-//    }
-
-//    public boolean remove(int elementId) {
-//        return super.remove(Integer.toString(elementId));
-//    }
-//
-//
-//
-//    @Override
-//    protected GameInfo getElement(Gson gson, String json) {
-//        GameInfo rating = gson.fromJson(json, GameInfo.class);
-//        return rating;
-//    }
-//
-//    @Override
-//    public int compare(GameInfo lhs, GameInfo rhs) {
-//        return rhs.getRating() - lhs.getRating();
-//    }
 }
