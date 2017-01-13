@@ -8,6 +8,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Paint;
 import android.graphics.Typeface;
+import android.media.RingtoneManager;
+import android.net.Uri;
 
 import com.google.gson.Gson;
 
@@ -184,6 +186,47 @@ public class Statistics {
 
         for (String line : lines) {
             inboxStyle.addLine(line);
+        }
+
+        Notification notification = inboxStyle.build();
+
+        ((NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE)).notify(notificationId, notification);
+    }
+
+    public void updateDailyDropsNotification(String title, List<String> drops, boolean playSound) {
+        String content = "Daily drops: " + drops.size();
+        if (drops.size() == 0) {
+            content = "No drops";
+        }
+        else if (drops.size() == 1) {
+            content = drops.get(0);
+        }
+
+        android.app.Notification.Builder builder = new Notification.Builder(context);
+
+        int notificationId = AbstractNotificationCheckReceiver.NotificationId.DAILY_DROPS.ordinal();
+
+        Intent notificationIntent = new Intent(context, MainActivity.class);
+        PendingIntent intent = PendingIntent.getActivity(context, notificationId, notificationIntent, 0);
+        builder.setContentIntent(intent);
+
+        if (playSound) {
+            Uri alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+            builder.setSound(alarmSound);
+        }
+
+        builder.setContentTitle(title)
+                .setContentText(content)
+                .setSmallIcon(R.drawable.ic_magnify)
+                .setOngoing(true)
+                .setPriority(Notification.PRIORITY_HIGH);
+
+        Notification.InboxStyle inboxStyle = new Notification.InboxStyle(builder);
+
+        if (drops.size() > 1) {
+            for (String line : drops) {
+                inboxStyle.addLine(line);
+            }
         }
 
         Notification notification = inboxStyle.build();

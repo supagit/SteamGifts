@@ -62,6 +62,9 @@ public class AutoJoinTask extends AsyncTask<Void, Void, Void> {
 
     protected Void doInBackground(Void... params) {
         statistics = new Statistics(context);
+
+        new FanmilesDailyDropChecker(context, statistics).check();
+
         try {
 
             if (resetStats) {
