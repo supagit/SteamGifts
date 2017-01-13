@@ -14,6 +14,10 @@ import java.util.Set;
  */
 public class AutoJoinOptions {
     public enum AutoJoinOption {
+        EMAIL_USER("preferences_user", ""),
+        EMAIL_PASS("preferences_pass", ""),
+        EMAIL_RECEIPIENTS("preferences_receipients", ""),
+
         AUTO_JOIN_ACTIVATED("preferences_autojoin_activated", true),
         AUTO_JOIN_ON_NON_WIFI_CONNECTION("preferences_autojoin_on_non_wifi", true),
 
@@ -32,6 +36,12 @@ public class AutoJoinOptions {
         private String preference;
         private Integer defaultInteger;
         private boolean defaultBoolean;
+        private String defaultString;
+
+        AutoJoinOption(String preference, String defaultString) {
+            this.preference = preference;
+            this.defaultString = defaultString;
+        }
 
         AutoJoinOption(String preference, boolean defaultBoolean) {
             this.preference = preference;
@@ -54,6 +64,8 @@ public class AutoJoinOptions {
         public Integer getDefaultInteger() {
             return defaultInteger;
         }
+
+        public String getDefaultString() { return defaultString; }
     }
 
     public static boolean isOptionBoolean(Context context, AutoJoinOption option) {
@@ -66,6 +78,14 @@ public class AutoJoinOptions {
             return Integer.parseInt(stringValue);
         } catch (Exception ex) {
             return option.getDefaultInteger();
+        }
+    }
+
+    public static String getOptionString(Context context, AutoJoinOption option) {
+        try {
+            return PreferenceManager.getDefaultSharedPreferences(context).getString(option.getPreference(), option.getDefaultString());
+        } catch (Exception ex) {
+            return option.getDefaultString();
         }
     }
 }

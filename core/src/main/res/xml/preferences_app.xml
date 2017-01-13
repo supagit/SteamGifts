@@ -31,8 +31,25 @@
         <CheckBoxPreference
             android:defaultValue="false"
             android:key="preferences_hide_low_rating_games"
-            android:title="@string/preferences_hide_low_rating_games"
-            android:summary="hides games with a rating below the minimum rating to autojoin"/>
+            android:summary="hides games with a rating below the minimum rating to autojoin"
+            android:title="@string/preferences_hide_low_rating_games" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/preferences_autojoin">
+        <EditTextPreference
+            android:defaultValue=""
+            android:key="preferences_user"
+            android:title="@string/preferences_user" />
+
+        <EditTextPreference
+            android:defaultValue=""
+            android:key="preferences_pass"
+            android:title="@string/preferences_pass" />
+
+        <EditTextPreference
+            android:defaultValue=""
+            android:key="preferences_receipients"
+            android:title="@string/preferences_receipients" />
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/preferences_autojoin">
@@ -50,15 +67,15 @@
             android:defaultValue="100"
             android:key="preferences_autojoin_treat_unbundled_as_must_have_with_points"
             android:numeric="integer"
-            android:title="unbundled as must have"
-            android:summary="unbundled are treated as must have with more than these points"/>
+            android:summary="unbundled are treated as must have with more than these points"
+            android:title="unbundled as must have" />
 
         <net.mabako.sgtools.EditTextIntegerPreference
             android:defaultValue="100"
             android:key="preferences_autojoin_treat_group_whitelisted_as_must_have_with_less_entries"
             android:numeric="integer"
-            android:title="group as must have"
-            android:summary="interesting group giveaways are treated as must have with less than these entries"/>
+            android:summary="interesting group giveaways are treated as must have with less than these entries"
+            android:title="group as must have" />
 
         <net.mabako.sgtools.EditTextIntegerPreference
             android:defaultValue="75"

@@ -157,6 +157,11 @@
     <string name="preference_giveaway_show_pinned_off">Not highlighted in a special way</string>
     <string name="preferences_hide_low_rating_games">Hide games with a low rating</string>
 
+    <string name="preferences_email">Email</string>
+    <string name="preferences_user">User</string>
+    <string name="preferences_pass">Pass</string>
+    <string name="preferences_receipients">Receipients</string>
+
     <string name="preferences_autojoin">Autojoin</string>
     <string name="preferences_autojoin_show_ratio">show ratio</string>
     <string name="preferences_autojoin_activated">activated</string>

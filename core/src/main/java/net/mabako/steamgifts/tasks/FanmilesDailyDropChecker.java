@@ -20,6 +20,8 @@ import java.util.List;
 
 public class FanmilesDailyDropChecker {
 
+    public static final String EURE_TÄGLICHEN_DROPS = "Eure täglichen Drops";
+    public static String DAILY_DROP_URL = "https://www.fanmiles.com/DE/de/partners/dailydrop/";
     private Context context;
     private Statistics statistics;
     private final SavedStrings savedStrings;
@@ -32,23 +34,26 @@ public class FanmilesDailyDropChecker {
 
     public void check() {
         List<String> dailyDrops = getDailyDrops();
-        dailyDrops.remove("Eure täglichen Drops");
+        boolean error = dailyDrops.isEmpty();
+        dailyDrops.remove(EURE_TÄGLICHEN_DROPS);
         //sending mails, see: http://stackoverflow.com/questions/2020088/sending-email-in-android-using-javamail-api-without-using-the-default-built-in-a/2033124#2033124
-        statistics.updateDailyDropsNotification("Daily Drops", dailyDrops, isNewDailyDrops(dailyDrops));
+
+        String title = "Daily Drops";
+        if (error) {
+            title += ": keine Verbindung";
+        }
+
+        boolean newDailyDrops = isNewDailyDrops(dailyDrops);
+        statistics.updateDailyDropsNotification(title, dailyDrops, newDailyDrops);
     }
 
     private boolean isNewDailyDrops(List<String> currentDailyDrops) {
         List<String> all = new ArrayList<>(savedStrings.all());
+        ArrayList<String> current = new ArrayList<>(currentDailyDrops);
+        current.removeAll(all);
 
         updateSave(currentDailyDrops);
-
-        if (currentDailyDrops.size() > all.size()) {
-            return true;
-        }
-
-        all.removeAll(currentDailyDrops);
-
-        return !all.isEmpty();
+        return !current.isEmpty();
     }
 
     private void updateSave(List<String> currentDailyDrops) {
@@ -58,10 +63,12 @@ public class FanmilesDailyDropChecker {
         }
     }
 
+
+
     public List<String> getDailyDrops() {
         List<String> result = new ArrayList<>();
         try {
-            Connection jsoup = Jsoup.connect("https://www.fanmiles.com/DE/de/partners/dailydrop/")
+            Connection jsoup = Jsoup.connect(DAILY_DROP_URL)
                     .timeout(Constants.JSOUP_TIMEOUT);
 
             Document document = jsoup.get();

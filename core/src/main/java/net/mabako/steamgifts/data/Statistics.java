@@ -11,21 +11,22 @@ import android.graphics.Typeface;
 import android.media.RingtoneManager;
 import android.net.Uri;
 
-import com.google.gson.Gson;
-
 import net.mabako.steamgifts.activities.MainActivity;
 import net.mabako.steamgifts.core.R;
 import net.mabako.steamgifts.persistentdata.SavedGameInfo;
 import net.mabako.steamgifts.persistentdata.SteamGiftsUserData;
 import net.mabako.steamgifts.receivers.AbstractNotificationCheckReceiver;
+import net.mabako.steamgifts.tasks.AutoJoinOptions;
 import net.mabako.steamgifts.tasks.AutoJoinTask;
+import net.mabako.steamgifts.tasks.FanmilesDailyDropChecker;
+import net.mabako.steamgifts.tasks.MailSender;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+
+import javax.mail.MessagingException;
 
 /**
  * Statistics
@@ -193,24 +194,66 @@ public class Statistics {
         ((NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE)).notify(notificationId, notification);
     }
 
-    public void updateDailyDropsNotification(String title, List<String> drops, boolean playSound) {
+    public void updateDailyDropsNotification(String title, List<String> drops, boolean newDrops) {
         String content = "Daily drops: " + drops.size();
+        if (newDrops) {
+            title = title + " - new drops";
+        }
+
         if (drops.size() == 0) {
             content = "No drops";
-        }
-        else if (drops.size() == 1) {
+        } else if (drops.size() == 1) {
             content = drops.get(0);
         }
+
+        if (newDrops) {
+            String body = "<b>" + content + "</b><br/>";
+            body += "<ul>";
+            for (String drop : drops) {
+                body += "<li>" + drop + "</li>";
+            }
+            body += "</ul>";
+
+            String user = AutoJoinOptions.getOptionString(context, AutoJoinOptions.AutoJoinOption.EMAIL_USER);
+            String pass = AutoJoinOptions.getOptionString(context, AutoJoinOptions.AutoJoinOption.EMAIL_PASS);
+            String recipient = AutoJoinOptions.getOptionString(context, AutoJoinOptions.AutoJoinOption.EMAIL_RECEIPIENTS);
+            String sender = user;
+
+            if (!recipient.isEmpty()) {
+
+                MailSender.setCredentials("smtp.gmail.com", user, pass);
+                try {
+                    new MailSender(user, recipient, title, body, body).sendAuthenticated();
+                    title = title + " mail";
+                } catch (Throwable e) {
+                    e.printStackTrace();
+                }
+
+                //               GMailSender gMailSender = new GMailSender(user, pass);
+                try {
+//                    gMailSender.sendMail(title, body, sender, recipient);
+//                    title = title + " mail";
+                } catch (Exception e) {
+                }
+            }
+        }
+
 
         android.app.Notification.Builder builder = new Notification.Builder(context);
 
         int notificationId = AbstractNotificationCheckReceiver.NotificationId.DAILY_DROPS.ordinal();
 
-        Intent notificationIntent = new Intent(context, MainActivity.class);
+        Intent notificationIntent = new Intent(Intent.ACTION_VIEW);
+
+        notificationIntent.setData(Uri.parse(FanmilesDailyDropChecker.DAILY_DROP_URL));
+        PendingIntent contentIntent = PendingIntent.getActivity(context, 0, notificationIntent, 0);
+
+
+//        Intent notificationIntent = new Intent(context, MainActivity.class);
         PendingIntent intent = PendingIntent.getActivity(context, notificationId, notificationIntent, 0);
         builder.setContentIntent(intent);
 
-        if (playSound) {
+        if (newDrops) {
             Uri alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
             builder.setSound(alarmSound);
         }
@@ -230,6 +273,7 @@ public class Statistics {
         }
 
         Notification notification = inboxStyle.build();
+        notification.contentIntent = contentIntent;
 
         ((NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE)).notify(notificationId, notification);
     }
@@ -272,7 +316,7 @@ public class Statistics {
     }
 
     private int getWidth(int column) {
-        switch(column){
+        switch (column) {
             case 0:
                 return 50;
             case 1:
